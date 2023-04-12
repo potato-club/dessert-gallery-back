@@ -1,5 +1,6 @@
 package com.dessert.gallery.jwt;
 
+import com.dessert.gallery.service.Jwt.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,10 +18,13 @@ import java.io.IOException;
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisService redisService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
+        String ipAddress = request.getRemoteAddr();
 
         if (path.equals("/login") || path.equals("/signup")) {
             filterChain.doFilter(request, response);
@@ -30,13 +34,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         if (accessToken == null) {
             String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-            if (jwtTokenProvider.validateToken(refreshToken)) {
+            if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)) {
                 accessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
                 jwtTokenProvider.setHeaderAccessToken(response, accessToken);
                 this.setAuthentication(accessToken);
             }
         } else if (accessToken != null) {
-            if (jwtTokenProvider.validateToken(accessToken)) {
+            if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
                 this.setAuthentication(accessToken);
             }
         }

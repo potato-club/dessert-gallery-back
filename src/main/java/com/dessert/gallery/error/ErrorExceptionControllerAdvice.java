@@ -63,4 +63,14 @@ public class ErrorExceptionControllerAdvice {
                         .errorMessage(e.getErrorCode().getMessage())
                         .build());
     }
+
+    @ExceptionHandler({InternerServerException.class})
+    public ResponseEntity<ErrorEntity> exceptionHandler(HttpServletRequest request, final InvalidTokenException e) {
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
+    }
 }

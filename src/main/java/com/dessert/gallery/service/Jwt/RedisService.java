@@ -1,8 +1,11 @@
 package com.dessert.gallery.service.Jwt;
 
+import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -32,6 +35,22 @@ public class RedisService {
             return (Map<String, String>) object;
         }
         return null;
+    }
+
+    public boolean isRefreshTokenValid(String token, String ipAddress) {
+        Map<String, String> values = getValues(token);
+        if (values == null) {
+            return false;
+        }
+        String storedIpAddress = values.get("ipAddress");
+        return ipAddress.equals(storedIpAddress);
+    }
+
+    public boolean isTokenInBlacklist(String token) {
+        if (redisTemplate.hasKey(token)) {
+            throw new InvalidTokenException("401_Invalid", ErrorCode.INVALID_TOKEN_EXCEPTION);
+        }
+        return false;
     }
 
     public void addTokenToBlacklist(String token, long expiration) {
