@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Getter
 @Entity
@@ -29,6 +26,7 @@ public class User extends BaseTimeEntity {
     @Column
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "loginType")
     private UserRole userRole;
 

@@ -1,6 +1,7 @@
 package com.dessert.gallery.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
@@ -16,6 +17,7 @@ import java.util.function.Predicate;
 
 @Configuration
 @EnableSwagger2
+@ComponentScan(basePackages = {"com.dessert"})
 @Import(BeanValidatorPluginsConfiguration.class)
 public class Swagger2Config {
 
@@ -29,7 +31,6 @@ public class Swagger2Config {
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(userApiInfo())
-                .apiInfo(shopApiInfo())
                 .enable(true);
     }
 
@@ -52,7 +53,7 @@ public class Swagger2Config {
     @Bean
     public Docket userApi() {
 
-        Predicate<String> path = PathSelectors.ant("/api/**/user/**");
+        Predicate<String> path = PathSelectors.ant("/user/**");
 
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("Users & Authorization")
@@ -66,7 +67,7 @@ public class Swagger2Config {
     @Bean
     public Docket shopApi() {
 
-        Predicate<String> path = PathSelectors.ant("/api/**/shop/**");
+        Predicate<String> path = PathSelectors.ant("/shop/**");
 
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("Shop's Functions")

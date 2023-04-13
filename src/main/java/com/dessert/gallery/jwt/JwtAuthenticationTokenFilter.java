@@ -26,7 +26,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String ipAddress = request.getRemoteAddr();
 
-        if (path.equals("/login") || path.equals("/signup")) {
+        if (path.equals("/user/login/**") || path.equals("/user/signup/**")) {
             filterChain.doFilter(request, response);
         }
 
