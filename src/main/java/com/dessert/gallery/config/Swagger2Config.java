@@ -21,17 +21,41 @@ import java.util.function.Predicate;
 @Import(BeanValidatorPluginsConfiguration.class)
 public class Swagger2Config {
 
-    @Bean
-    public Docket swagger() {
+    @Bean(name = "defaultApi")
+    public Docket defaultApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .ignoredParameterTypes(java.sql.Date.class)
                 .forCodeGeneration(true)
                 .select()
-                .apis(RequestHandlerSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage("com.dessert"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(userApiInfo())
                 .enable(true);
+    }
+
+    @Bean(name = "userApi")
+    public Docket userApi() {
+        Predicate<String> path = PathSelectors.ant("/user/**");
+
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Users & Authorization")
+                .select()
+                .paths(path)
+                .build()
+                .apiInfo(userApiInfo());
+    }
+
+    @Bean(name = "shopApi")
+    public Docket shopApi() {
+        Predicate<String> path = PathSelectors.ant("/shop/**");
+
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Shop's Functions")
+                .select()
+                .paths(path)
+                .build()
+                .apiInfo(shopApiInfo());
     }
 
     private ApiInfo userApiInfo(){
@@ -48,33 +72,5 @@ public class Swagger2Config {
                 .description("API 상세소개 및 사용법")
                 .version("1.0")
                 .build();
-    }
-
-    @Bean
-    public Docket userApi() {
-
-        Predicate<String> path = PathSelectors.ant("/user/**");
-
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Users & Authorization")
-                .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(path)
-                .build()
-                .apiInfo(userApiInfo());
-    }
-
-    @Bean
-    public Docket shopApi() {
-
-        Predicate<String> path = PathSelectors.ant("/shop/**");
-
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Shop's Functions")
-                .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(path)
-                .build()
-                .apiInfo(shopApiInfo());
     }
 }
