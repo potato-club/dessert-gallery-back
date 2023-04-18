@@ -159,7 +159,7 @@ public class JwtTokenProvider {
     }
 
     // Email로 권한 정보 가져오기
-    public String getRoles(String email) {
-        return userRepository.findByEmail(email).get().getUserRole().toString();
+    public UserRole getRoles(String email) {
+        return userRepository.findByEmail(email).get().getUserRole();
     }
 }

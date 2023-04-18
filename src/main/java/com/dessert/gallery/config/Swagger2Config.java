@@ -31,15 +31,16 @@ public class Swagger2Config {
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(userApiInfo())
-                .enable(true);
+                .enable(true)
+                .host("localhost:8080");
     }
 
     @Bean(name = "userApi")
     public Docket userApi() {
-        Predicate<String> path = PathSelectors.ant("/user/**");
+        Predicate<String> path = PathSelectors.ant("/users/**");
 
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Users & Authorization")
+                .groupName("Users and Authorization")
                 .select()
                 .paths(path)
                 .build()

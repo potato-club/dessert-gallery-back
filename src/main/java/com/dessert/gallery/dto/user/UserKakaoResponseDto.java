@@ -1,11 +1,11 @@
-package com.dessert.gallery.dto;
+package com.dessert.gallery.dto.user;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class UserResponseDto {
+public class UserKakaoResponseDto {
     private String email;
     private String responseCode;
 }

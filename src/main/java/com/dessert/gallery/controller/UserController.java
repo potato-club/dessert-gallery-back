@@ -1,6 +1,6 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.dto.UserResponseDto;
+import com.dessert.gallery.dto.user.UserKakaoResponseDto;
 import com.dessert.gallery.service.Interface.UserService;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
@@ -13,14 +13,14 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/user")
+@RequestMapping(value = "/users")
 @Api(tags = {"Users & Authorization Controller"})
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/login/kakao")
-    public UserResponseDto kakaoLogin(@RequestParam String code, HttpServletResponse response) {
+    public UserKakaoResponseDto kakaoLogin(@RequestParam String code, HttpServletResponse response) {
         return userService.kakaoLogin(code, response);
     }
 }
