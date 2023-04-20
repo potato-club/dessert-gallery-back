@@ -1,8 +1,12 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.dto.user.OwnerSignUpRequestDto;
-import com.dessert.gallery.dto.user.UserSignUpRequestDto;
-import com.dessert.gallery.dto.user.UserKakaoResponseDto;
+import com.dessert.gallery.dto.user.request.OwnerSignUpRequestDto;
+import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
+import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
+import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
+import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
+import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
+import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
@@ -39,7 +43,7 @@ public class UserServiceImpl implements UserService {
         String access_token = kakaoApi.getAccessToken(code);
         String email = kakaoApi.getUserInfo(access_token);
 
-        if (userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmailAndDeleted(email, false)) {
             this.setJwtTokenInHeader(email, response);
 
             return UserKakaoResponseDto.builder()
@@ -50,6 +54,20 @@ public class UserServiceImpl implements UserService {
         return UserKakaoResponseDto.builder()
                 .email(email)
                 .responseCode("201_CREATED")
+                .build();
+    }
+
+    @Override
+    public UserLoginResponseDto login(UserLoginRequestDto requestDto, HttpServletResponse response) {
+        if (!userRepository.existsByEmail(requestDto.getEmail())
+                && userRepository.existsByEmailAndDeleted(requestDto.getEmail(), true)) {
+            throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
+        }
+
+        this.setJwtTokenInHeader(requestDto.getEmail(), response);
+
+        return UserLoginResponseDto.builder()
+                .responseCode("200_OK")
                 .build();
     }
 
@@ -94,18 +112,47 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(HttpServletRequest request) {
+    public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        UserRole userRole = jwtTokenProvider.getRoles(email);
 
-        if (userRole.equals(UserRole.USER)) {
-            User user = userRepository.findByEmail(email).orElseThrow(() ->
-            { throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION); });
+        User user = userRepository.findByEmail(email).orElseThrow();
+        user.update(requestDto);
+    }
 
+    @Override
+    public UserProfileResponseDto viewProfile(HttpServletRequest request) {
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        User user = userRepository.findByEmail(email).orElseThrow();
 
-        } else if (userRole.equals(UserRole.MANAGER)) {
+        UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
+                .nickname(user.getNickname())
+                .loginType(user.getLoginType())
+                .userRole(user.getUserRole())
+                .storeAddress(user.getStoreAddress())
+                .storePhoneNumber(user.getStorePhoneNumber())
+                .build();
 
-        }
+        return responseDto;
+    }
+
+    @Override
+    public void logout(HttpServletRequest request) {
+        redisService.delValues(jwtTokenProvider.resolveRefreshToken(request));
+        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(request));
+    }
+
+    @Override
+    public void withdrawalMembership(HttpServletRequest request) {
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        user.setDeleted(true);
+        this.logout(request);
+    }
+
+    @Override
+    public void cancelMembership() {
+
     }
 
     public void setJwtTokenInHeader(String email, HttpServletResponse response) {

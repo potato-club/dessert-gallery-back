@@ -1,5 +1,6 @@
 package com.dessert.gallery.entity;
 
+import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
 import lombok.AllArgsConstructor;
@@ -45,4 +46,14 @@ public class User extends BaseTimeEntity {
 
     @Column
     private boolean deleted;
+
+    public void update(UserUpdateRequestDto userDto) {
+        this.nickname = userDto.getNickname();
+        this.storeAddress = userDto.getStoreAddress();
+        this.storePhoneNumber = userDto.getStorePhoneNumber();
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }
