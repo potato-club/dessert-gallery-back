@@ -97,8 +97,7 @@ public class JwtTokenProvider {
             throw new ForbiddenException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-        String accessToken = createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
-        return accessToken;
+        return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
     }
 
     // Request의 Header에서 AccessToken 값을 가져옵니다. "authorization" : "token"
