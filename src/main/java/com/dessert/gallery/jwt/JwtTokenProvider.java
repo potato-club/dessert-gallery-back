@@ -7,6 +7,7 @@ import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Jwt.CustomUserDetailService;
 import com.dessert.gallery.service.Jwt.RedisService;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +84,11 @@ public class JwtTokenProvider {
 
     // 토큰에서 회원 정보 추출
     public String getUserEmail(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        JwtParser jwtParser = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .build();
+
+        return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
     public String reissueAccessToken(String refreshToken) {
@@ -136,15 +141,15 @@ public class JwtTokenProvider {
 
             return !claims.getBody().getExpiration().before(new Date());
         } catch (MalformedJwtException e) {
-            throw new MalformedJwtException("Invalid JWT token");
+            throw new MalformedJwtException("Invalid JWT token", e);
         } catch (ExpiredJwtException e) {
             throw new JwtExpiredException("JWT token has expired");
         } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException("JWT token is unsupported");
+            throw new UnsupportedJwtException("JWT token is unsupported", e);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("JWT claims string is empty");
+            throw new IllegalArgumentException("JWT claims string is empty", e);
         } catch (SignatureException e) {
-            throw new SignatureException("JWT signature does not match");
+            throw new SignatureException("JWT signature verification failed", e);
         }
     }
 
