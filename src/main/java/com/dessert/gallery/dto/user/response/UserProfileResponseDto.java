@@ -16,6 +16,6 @@ public class UserProfileResponseDto {
     @ApiModelProperty(value = "로그인 타입", example = "NORMAL / KAKAO")
     private LoginType loginType;
 
-    @ApiModelProperty(value = "유저 역할", example = "USER / MANANGER")
+    @ApiModelProperty(value = "유저 역할", example = "USER / MANAGER")
     private UserRole userRole;
 }

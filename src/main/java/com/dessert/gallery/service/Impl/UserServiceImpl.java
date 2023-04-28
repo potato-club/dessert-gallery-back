@@ -46,27 +46,55 @@ public class UserServiceImpl implements UserService {
             this.setJwtTokenInHeader(email, response);
 
             return UserKakaoResponseDto.builder()
-                    .responseCode("200_OK")
+                    .responseCode("200")
+                    .build();
+        }
+
+        if (userRepository.existsByEmailAndDeletedIsTrue(email)) {
+            User user = userRepository.findByEmail(email).orElseThrow();
+            user.setDeleted(false);
+            this.setJwtTokenInHeader(email, response);
+
+            return UserKakaoResponseDto.builder()
+                    .responseCode("2000")   // 회원가입 필요
                     .build();
         }
 
         return UserKakaoResponseDto.builder()
                 .email(email)
-                .responseCode("201_CREATED")
+                .responseCode("201")
                 .build();
     }
 
     @Override
     public UserLoginResponseDto login(UserLoginRequestDto requestDto, HttpServletResponse response) {
-        if (!userRepository.existsByEmail(requestDto.getEmail())
-                && userRepository.existsByEmailAndDeleted(requestDto.getEmail(), true)) {
-            throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
+        if (!userRepository.existsByEmailAndDeletedAndEmailOtp(requestDto.getEmail(), false, true)) {
+            if (!userRepository.existsByEmail(requestDto.getEmail())) {
+                return UserLoginResponseDto.builder()
+                        .responseCode("2001")   // 회원이 아닐 경우
+                        .build();
+            } else if (userRepository.existsByEmailAndDeletedIsTrue(requestDto.getEmail())) {
+                return UserLoginResponseDto.builder()
+                        .responseCode("2002")   // 탈퇴한 회원인 경우
+                        .build();
+            } else if (userRepository.existsByEmailAndEmailOtpIsFalse(requestDto.getEmail())) {
+                userRepository.delete(userRepository.findByEmail(requestDto.getEmail()).orElseThrow());
+                return UserLoginResponseDto.builder()
+                        .responseCode("2003")   // 2차 인증이 제대로 이루어지지 않은 경우 -> 처음부터 회원 가입 필요
+                        .build();
+            }
+        }
+
+        User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow();
+
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);    // 패스워드 불일치
         }
 
         this.setJwtTokenInHeader(requestDto.getEmail(), response);
 
         return UserLoginResponseDto.builder()
-                .responseCode("200_OK")
+                .responseCode("200")
                 .build();
     }
 
@@ -76,18 +104,19 @@ public class UserServiceImpl implements UserService {
             throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
         }
 
-        if (requestDto.getLoginType().equals(LoginType.KAKAO)) {
+        if (requestDto.getLoginType().equals(LoginType.KAKAO)) {    // 카카오 회원가입은 바로 저장 후 토큰 발급
             User user = requestDto.toEntity();
+            user.setEmailOtp(true);
             userRepository.save(user);
-        } else if (requestDto.getLoginType().equals(LoginType.NORMAL)) {
+            this.setJwtTokenInHeader(requestDto.getEmail(), response);
+        } else if (requestDto.getLoginType().equals(LoginType.NORMAL)) {    // 일반 회원가입은 2차 인증 후 토큰 발급 예정
             requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
             User user = requestDto.toEntity();
+            user.setEmailOtp(false);
             userRepository.save(user);
         } else {
             throw new UnAuthorizedException("401_NOT_ALLOW", ErrorCode.NOT_ALLOW_WRITE_EXCEPTION);
         }
-
-        this.setJwtTokenInHeader(requestDto.getEmail(), response);
     }
 
     @Override
@@ -125,11 +154,6 @@ public class UserServiceImpl implements UserService {
 
         user.setDeleted(true);
         this.logout(request);
-    }
-
-    @Override
-    public void cancelMembership() {
-
     }
 
     public void setJwtTokenInHeader(String email, HttpServletResponse response) {

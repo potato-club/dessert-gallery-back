@@ -41,11 +41,14 @@ public class User extends BaseTimeEntity {
     @Column
     private boolean deleted;
 
-    public void update(UserUpdateRequestDto userDto) {
-        this.nickname = userDto.getNickname();
-    }
+    @Column
+    private boolean emailOtp;
+
+    public void update(UserUpdateRequestDto userDto) { this.nickname = userDto.getNickname(); }
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
+
+    public void setEmailOtp(boolean emailOtp) { this.emailOtp = emailOtp; }
 }

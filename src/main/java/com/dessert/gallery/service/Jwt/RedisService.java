@@ -62,4 +62,22 @@ public class RedisService {
     public void delValues(String token) {
         redisTemplate.delete(token);
     }
+
+    // key를 통해 Email OTP value 리턴
+    public String getEmailOtpData(String key) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        return valueOperations.get(key);
+    }
+
+    // 유효 시간 동안 Email OTP(key, value) 저장
+    public void setEmailOtpDataExpire(String key, String value, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(key, value, expireDuration);
+    }
+
+    // Email OTP 값 삭제
+    public void deleteEmailOtpData(String key) {
+        redisTemplate.delete(key);
+    }
 }
