@@ -1,6 +1,5 @@
 package com.dessert.gallery.service.Interface;
 
-import com.dessert.gallery.dto.user.request.OwnerSignUpRequestDto;
 import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
 import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
 import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
@@ -16,9 +15,7 @@ public interface UserService {
 
     UserLoginResponseDto login(UserLoginRequestDto requestDto, HttpServletResponse response);
 
-    void userSignUp(UserSignUpRequestDto requestDto, HttpServletResponse response);
-
-    void ownerSignUp(OwnerSignUpRequestDto requestDto, HttpServletResponse response);
+    void signUp(UserSignUpRequestDto requestDto, HttpServletResponse response);
 
     void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request);
 

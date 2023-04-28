@@ -16,17 +16,9 @@ public class UserUpdateRequestDto {
     @ApiModelProperty(value = "닉네임")
     private String nickname;
 
-    @ApiModelProperty(value = "가게 주소")
-    private String storeAddress;
-
-    @ApiModelProperty(value = "가게 전화번호")
-    private String storePhoneNumber;
-
     public User toEntity() {
         User user = User.builder()
                 .nickname(nickname)
-                .storeAddress(storeAddress)
-                .storePhoneNumber(storePhoneNumber)
                 .build();
 
         return user;

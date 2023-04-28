@@ -24,10 +24,13 @@ public class Store extends BaseTimeEntity {
     private String content;
 
     @Column
-    private String coordinate;
+    private String coordinates;
 
     @Column(nullable = false)
-    private String address;
+    private String storeAddress;
+
+    @Column(nullable = false)
+    private String storePhoneNumber;
 
     @Column
     private Double score;

@@ -3,6 +3,7 @@ package com.dessert.gallery.config;
 import com.dessert.gallery.jwt.JwtAuthenticationTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,10 +35,10 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 // 로그인, 회원가입은 토큰 없이도 호출 가능하도록 permitAll() 설정
-//                .antMatchers(HttpMethod.POST,"/signup").permitAll()
-//                .antMatchers(HttpMethod.GET,"/login").permitAll()
+                .antMatchers(HttpMethod.POST,"/users/signup").permitAll()
+                .antMatchers(HttpMethod.GET,"/users/login").permitAll()
                 // 정보수정은 USER, MANAGER, ADMIN 권한이 필요하도록 설정
-//                .antMatchers(HttpMethod.PUT,"/").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.PUT,"/users/").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                 // 나머지 요청에 대해서는 권한 제한 없이 호출 가능하도록 설정
                 .anyRequest().permitAll()
                 .and()

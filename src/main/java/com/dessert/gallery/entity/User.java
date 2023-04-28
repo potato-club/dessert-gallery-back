@@ -39,18 +39,10 @@ public class User extends BaseTimeEntity {
     private LoginType loginType;
 
     @Column
-    private String storeAddress;
-
-    @Column
-    private String storePhoneNumber;
-
-    @Column
     private boolean deleted;
 
     public void update(UserUpdateRequestDto userDto) {
         this.nickname = userDto.getNickname();
-        this.storeAddress = userDto.getStoreAddress();
-        this.storePhoneNumber = userDto.getStorePhoneNumber();
     }
 
     public void setDeleted(boolean deleted) {

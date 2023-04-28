@@ -1,6 +1,5 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.dto.user.request.OwnerSignUpRequestDto;
 import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
 import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
 import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
@@ -72,27 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void userSignUp(UserSignUpRequestDto requestDto, HttpServletResponse response) {
-        if (userRepository.existsByEmail(requestDto.getEmail())) {
-            throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
-        }
-
-        if (requestDto.getLoginType().equals(LoginType.KAKAO)) {
-            User user = requestDto.toEntity();
-            userRepository.save(user);
-        } else if (requestDto.getLoginType().equals(LoginType.NORMAL)) {
-            requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-            User user = requestDto.toEntity();
-            userRepository.save(user);
-        } else {
-            throw new UnAuthorizedException("401_NOT_ALLOW", ErrorCode.NOT_ALLOW_WRITE_EXCEPTION);
-        }
-
-        this.setJwtTokenInHeader(requestDto.getEmail(), response);
-    }
-
-    @Override
-    public void ownerSignUp(OwnerSignUpRequestDto requestDto, HttpServletResponse response) {
+    public void signUp(UserSignUpRequestDto requestDto, HttpServletResponse response) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
         }
@@ -128,8 +107,6 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.getNickname())
                 .loginType(user.getLoginType())
                 .userRole(user.getUserRole())
-                .storeAddress(user.getStoreAddress())
-                .storePhoneNumber(user.getStorePhoneNumber())
                 .build();
 
         return responseDto;

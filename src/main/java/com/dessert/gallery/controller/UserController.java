@@ -1,6 +1,5 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.dto.user.request.OwnerSignUpRequestDto;
 import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
 import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
 import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
@@ -37,18 +36,11 @@ public class UserController {
         return userService.login(requestDto, response);
     }
 
-    @Operation(summary = "일반 유저 회원가입 API")
+    @Operation(summary = "회원가입 API")
     @PostMapping("/signUp")
     public ResponseEntity<String> userSignUp(@RequestBody UserSignUpRequestDto requestDto, HttpServletResponse response) {
-        userService.userSignUp(requestDto, response);
-        return ResponseEntity.ok("User 회원가입 완료.");
-    }
-
-    @Operation(summary = "가게 사장님 회원가입 API")
-    @PostMapping("/signUp/owner")
-    public ResponseEntity<String> ownerSignUp(@RequestBody OwnerSignUpRequestDto requestDto, HttpServletResponse response) {
-        userService.ownerSignUp(requestDto, response);
-        return ResponseEntity.ok("Owner 회원가입 완료.");
+        userService.signUp(requestDto, response);
+        return ResponseEntity.ok("회원가입 완료.");
     }
 
     @Operation(summary = "내 정보 수정 API")

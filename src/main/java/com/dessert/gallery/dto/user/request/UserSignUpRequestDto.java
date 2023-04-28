@@ -20,11 +20,14 @@ public class UserSignUpRequestDto {
     @ApiModelProperty(value = "Email")
     private String email;
 
-    @ApiModelProperty(value = "일반 로그인 패스워드")
+    @ApiModelProperty(value = "일반 로그인 패스워드", example = "null or password")
     private String password;
 
     @ApiModelProperty(value = "닉네임")
     private String nickname;
+
+    @ApiModelProperty(value = "USER / MANAGER")
+    private UserRole userRole;
 
     @ApiModelProperty(value = "NORMAL / KAKAO")
     private LoginType loginType;
@@ -32,10 +35,10 @@ public class UserSignUpRequestDto {
     public User toEntity() {
         User user = User.builder()
                 .uid(String.valueOf(UUID.randomUUID()))
-                .password(password)
                 .email(email)
+                .password(password)
                 .nickname(nickname)
-                .userRole(UserRole.USER)
+                .userRole(userRole)
                 .loginType(loginType)
                 .deleted(false)
                 .build();

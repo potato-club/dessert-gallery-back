@@ -18,10 +18,4 @@ public class UserProfileResponseDto {
 
     @ApiModelProperty(value = "유저 역할", example = "USER / MANANGER")
     private UserRole userRole;
-
-    @ApiModelProperty(value = "가게 주소")
-    private String storeAddress;
-
-    @ApiModelProperty(value = "가게 전화번호")
-    private String storePhoneNumber;
 }
