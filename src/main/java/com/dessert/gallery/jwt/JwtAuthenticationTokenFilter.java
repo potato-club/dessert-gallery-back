@@ -31,7 +31,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (path.equals("/users/login/**") || path.equals("/users/signup/**")) {
+        if (path.contains("/users/login") || path.contains("/users/signup") || path.contains("/users/mail")) {
             filterChain.doFilter(request, response);
             return;
         }
