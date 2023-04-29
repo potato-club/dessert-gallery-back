@@ -19,13 +19,15 @@ public class MailController {
     private final EmailService emailService;
 
     @PostMapping("/gmail")
-    public String sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
-        return emailService.sendGmail(recipientEmail);
+    public ResponseEntity<String> sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
+        emailService.sendGmail(recipientEmail);
+        return ResponseEntity.ok("인증 메일이 발송되었습니다.");
     }
 
     @PostMapping("/naver")
-    public String sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
-        return emailService.sendNaver(recipientEmail);
+    public ResponseEntity<String> sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
+        emailService.sendNaver(recipientEmail);
+        return ResponseEntity.ok("인증 메일이 발송되었습니다.");
     }
 
     @PostMapping("/verify")

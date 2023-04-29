@@ -54,23 +54,19 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public String sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
+    public void sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = gmailSender.createMimeMessage();
         message = commonMessage(recipientEmail, message, "gmail");
         redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         gmailSender.send(message);
-
-        return ePw;
     }
 
     @Override
-    public String sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
+    public void sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = naverSender.createMimeMessage();
         message = commonMessage(recipientEmail, message, "naver");
         redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         naverSender.send(message);
-
-        return ePw;
     }
 
     @Override
