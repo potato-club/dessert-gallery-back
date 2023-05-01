@@ -1,15 +1,15 @@
 package com.dessert.gallery.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.dessert.gallery.dto.board.BoardRequestDto;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class StoreBoard extends BaseTimeEntity {
 
@@ -24,12 +24,32 @@ public class StoreBoard extends BaseTimeEntity {
     private String content;
 
     @Column
+    private String tags;
+
+    @Column
     private boolean deleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
     @OneToMany(mappedBy = "storeBoard", orphanRemoval = true)
-    private List<File> file;
+    private List<File> file = new ArrayList<>();
+
+    public StoreBoard(BoardRequestDto requestDto, Store store) {
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+        this.tags = requestDto.getTags();
+        this.store = store;
+        this.deleted = false;
+    }
+
+    public void updateBoard(BoardRequestDto requestDto) {
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+    }
+
+    public void deleteBoard() {
+        this.deleted = true;
+    }
 }

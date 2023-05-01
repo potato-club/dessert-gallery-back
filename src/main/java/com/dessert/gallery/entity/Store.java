@@ -1,15 +1,13 @@
 package com.dessert.gallery.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.dessert.gallery.dto.store.StoreRequestDto;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
-@RequiredArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "stores")
 public class Store extends BaseTimeEntity {
 
@@ -24,18 +22,44 @@ public class Store extends BaseTimeEntity {
     private String content;
 
     @Column
-    private String coordinates;
+    private String latitude;
+
+    @Column
+    private String longitude;
 
     @Column(nullable = false)
-    private String storeAddress;
+    private String address;
 
-    @Column(nullable = false)
-    private String storePhoneNumber;
+    @Column
+    private String phoneNumber;
 
     @Column
     private Double score;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users_uid")
+    @JoinColumn(name = "users_uid", nullable = false)
     private User user;
+
+    public Store(StoreRequestDto requestDto, User user) {
+        this.name = requestDto.getName();
+        this.content = requestDto.getContent();
+        this.address = requestDto.getAddress();
+        this.longitude = requestDto.getLongitude();
+        this.latitude = requestDto.getLatitude();
+        this.phoneNumber = requestDto.getPhoneNumber();
+        this.user = user;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
+    }
+
+    public void updateStore(StoreRequestDto updateDto) {
+        this.name = updateDto.getName();
+        this.content = updateDto.getContent();
+        this.address = updateDto.getAddress();
+        this.latitude = updateDto.getLatitude();
+        this.longitude = updateDto.getLongitude();
+        this.phoneNumber = updateDto.getPhoneNumber();
+    }
 }

@@ -121,16 +121,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = findUserByToken(request);
         user.update(requestDto);
     }
 
     @Override
     public UserProfileResponseDto viewProfile(HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = findUserByToken(request);
 
         UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
                 .nickname(user.getNickname())
@@ -149,8 +146,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void withdrawalMembership(HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = findUserByToken(request);
 
         user.setDeleted(true);
         this.logout(request);
@@ -166,5 +162,12 @@ public class UserServiceImpl implements UserService {
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
 
         redisService.setValues(refreshToken, email);
+    }
+
+    @Override
+    public User findUserByToken(HttpServletRequest request) {
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return user;
     }
 }

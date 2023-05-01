@@ -6,6 +6,7 @@ import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
 import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
+import com.dessert.gallery.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,4 +25,6 @@ public interface UserService {
     void logout(HttpServletRequest request);
 
     void withdrawalMembership(HttpServletRequest request);
+
+    User findUserByToken(HttpServletRequest request);
 }

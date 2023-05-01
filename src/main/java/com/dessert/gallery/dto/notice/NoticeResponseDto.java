@@ -1,0 +1,25 @@
+package com.dessert.gallery.dto.notice;
+
+import com.dessert.gallery.entity.File;
+import com.dessert.gallery.entity.NoticeBoard;
+import com.dessert.gallery.enums.NoticeType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Getter
+@NoArgsConstructor
+public class NoticeResponseDto {
+    private String title;
+    private String content;
+    private NoticeType type;
+    private List<File> images;
+
+    public NoticeResponseDto(NoticeBoard noticeBoard) {
+        this.title = noticeBoard.getTitle();
+        this.content = noticeBoard.getContent();
+        this.type = noticeBoard.getType();
+        this.images = noticeBoard.getFile();
+    }
+}
