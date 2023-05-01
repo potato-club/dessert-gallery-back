@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class S3Service {
             InputStream inputStream = file.getInputStream();
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
-            s3Client.putObject(new PutObjectRequest(bucketName, key, inputStream, metadata));
+            s3Client.putObject(new PutObjectRequest(bucketName, UUID.randomUUID() + "-" + key, inputStream, metadata));
         }
     }
 
