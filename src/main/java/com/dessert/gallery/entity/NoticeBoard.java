@@ -38,7 +38,7 @@ public class NoticeBoard extends BaseTimeEntity {
     private Store store;
 
     @OneToMany(mappedBy = "noticeBoard", orphanRemoval = true)
-    private List<File> file = new ArrayList<>();
+    private List<File> images = new ArrayList<>();
 
     public NoticeBoard(NoticeRequestDto requestDto, Store store) {
         this.title = requestDto.getTitle();

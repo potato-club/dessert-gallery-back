@@ -34,7 +34,7 @@ public class StoreBoard extends BaseTimeEntity {
     private Store store;
 
     @OneToMany(mappedBy = "storeBoard", orphanRemoval = true)
-    private List<File> file = new ArrayList<>();
+    private List<File> images = new ArrayList<>();
 
     public StoreBoard(BoardRequestDto requestDto, Store store) {
         this.title = requestDto.getTitle();

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -25,7 +26,7 @@ public class ReviewBoard extends BaseTimeEntity {
     private int score;
 
     @OneToMany(mappedBy = "reviewBoard", orphanRemoval = true)
-    private List<File> file;
+    private List<File> images = new ArrayList<>();
 
     @Formula("(SELECT COUNT(*) FROM likes as l WHERE l.reviewBoard_id = id)")
     private int likeCount;

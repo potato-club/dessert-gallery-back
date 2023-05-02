@@ -32,4 +32,8 @@ public class File extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "storeBoard")
     private StoreBoard storeBoard;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stores")
+    private Store store;
 }

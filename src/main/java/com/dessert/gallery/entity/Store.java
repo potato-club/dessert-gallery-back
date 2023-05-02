@@ -36,6 +36,9 @@ public class Store extends BaseTimeEntity {
     @Column
     private Double score;
 
+    @OneToOne(mappedBy = "store", orphanRemoval = true)
+    private File image;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_uid", nullable = false)
     private User user;
