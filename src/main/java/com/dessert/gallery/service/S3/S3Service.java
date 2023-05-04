@@ -5,6 +5,9 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.File;
+import com.dessert.gallery.entity.NoticeBoard;
+import com.dessert.gallery.entity.ReviewBoard;
+import com.dessert.gallery.entity.StoreBoard;
 import com.dessert.gallery.enums.BoardType;
 import com.dessert.gallery.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +34,32 @@ public class S3Service {
     private String bucketName;
 
 
-    public List<FileDto> uploadImages(List<MultipartFile> files) throws IOException {
-        return this.existsFiles(files);
+    public void uploadImages(List<MultipartFile> files, Object entity) throws IOException {
+        List<FileDto> list = this.existsFiles(files);
+        Class<?> entityType = entity.getClass();
+
+        for (FileDto fileDto : list) {
+            File file = File.builder()
+                    .fileName(fileDto.getFileName())
+                    .fileUrl(fileDto.getFileUrl())
+                    .build();
+            if (entityType.equals(NoticeBoard.class)) {
+                file.setNoticeBoard((NoticeBoard) entity);
+            } else if (entityType.equals(ReviewBoard.class)) {
+                file.setReviewBoard((ReviewBoard) entity);
+            } else if (entityType.equals(StoreBoard.class)) {
+                file.setStoreBoard((StoreBoard) entity);
+            }
+            fileRepository.save(file);
+        }
     }
 
     public List<FileDto> updateFiles(Long id, BoardType boardType, List<MultipartFile> files)
                                                                 throws IOException {
-        // boardType에 따라서 각각의 FK 엔티티와 연결된 File 엔티티 리스트를 가져옴
+
         List<File> fileList;
 
-        switch (boardType) {
+        switch (boardType) {    // boardType 에 따라서 각각의 FK 엔티티와 연결된 File 엔티티 리스트를 가져옴
             case NOTICE_BOARD:
                 fileList = fileRepository.findByNoticeBoardId(id);
                 break;
@@ -86,10 +105,10 @@ public class S3Service {
 
         for (MultipartFile file : files) {
             String key = file.getOriginalFilename();
-            String fileName = UUID.randomUUID() + "-" + key;
             if (s3Client.doesObjectExist(bucketName, key)) {
                 continue;
             }
+            String fileName = UUID.randomUUID() + "-" + key;
             InputStream inputStream = file.getInputStream();
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());

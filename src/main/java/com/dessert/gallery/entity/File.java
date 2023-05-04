@@ -1,14 +1,11 @@
 package com.dessert.gallery.entity;
 
 import com.dessert.gallery.dto.file.FileDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Getter
+@Data
 @Entity
 @Builder
 @NoArgsConstructor

@@ -1,6 +1,7 @@
 package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.file.FileDto;
+import com.dessert.gallery.entity.ReviewBoard;
 import com.dessert.gallery.enums.BoardType;
 import com.dessert.gallery.service.S3.S3Service;
 import io.swagger.annotations.Api;
@@ -24,12 +25,6 @@ import java.util.List;
 public class S3Controller {
 
     private final S3Service s3Service;
-
-    @Operation(summary = "시험용 S3 Upload API")
-    @PostMapping("/upload")
-    public List<FileDto> s3Upload(List<MultipartFile> files) throws IOException {
-        return s3Service.uploadImages(files);
-    }
 
     @Operation(summary = "시험용 S3 Update API")
     @PutMapping("")
