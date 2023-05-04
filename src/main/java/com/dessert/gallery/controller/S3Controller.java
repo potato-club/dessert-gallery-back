@@ -1,5 +1,7 @@
 package com.dessert.gallery.controller;
 
+import com.dessert.gallery.dto.file.FileDto;
+import com.dessert.gallery.enums.BoardType;
 import com.dessert.gallery.service.S3.S3Service;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,11 +25,16 @@ public class S3Controller {
 
     private final S3Service s3Service;
 
-    @Operation(summary = "S3 Upload API")
+    @Operation(summary = "시험용 S3 Upload API")
     @PostMapping("/upload")
-    public ResponseEntity<String> s3Upload(List<MultipartFile> files) throws IOException {
-        s3Service.uploadImages(files);
-        return ResponseEntity.ok("사진이 정상적으로 저장되었습니다.");
+    public List<FileDto> s3Upload(List<MultipartFile> files) throws IOException {
+        return s3Service.uploadImages(files);
+    }
+
+    @Operation(summary = "시험용 S3 Update API")
+    @PutMapping("")
+    public List<FileDto> updateFiles(Long id, BoardType boardType, List<MultipartFile> files) throws IOException {
+        return s3Service.updateFiles(id, boardType, files);
     }
 
     @Operation(summary = "S3 Download API")
