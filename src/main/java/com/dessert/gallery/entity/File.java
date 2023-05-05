@@ -1,13 +1,15 @@
 package com.dessert.gallery.entity;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.dessert.gallery.dto.file.FileDto;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Getter
+@Data
 @Entity
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "files")
 public class File extends BaseTimeEntity {
 
@@ -32,6 +34,11 @@ public class File extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "storeBoard")
     private StoreBoard storeBoard;
+
+    public void update(FileDto requestDto) {
+        this.fileName = requestDto.getFileName();
+        this.fileUrl = requestDto.getFileUrl();
+    }
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stores")
