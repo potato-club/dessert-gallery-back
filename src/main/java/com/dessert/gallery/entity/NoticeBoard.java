@@ -2,9 +2,7 @@ package com.dessert.gallery.entity;
 
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.enums.NoticeType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,8 +10,7 @@ import java.util.List;
 
 @Getter
 @Entity
-@RequiredArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NoticeBoard extends BaseTimeEntity {
 
     @Id

@@ -10,7 +10,6 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class StoreBoard extends BaseTimeEntity {
 
     @Id
@@ -42,6 +41,10 @@ public class StoreBoard extends BaseTimeEntity {
         this.tags = requestDto.getTags();
         this.store = store;
         this.deleted = false;
+    }
+
+    public void setImages(List<File> images) {
+        this.images = images;
     }
 
     public void updateBoard(BoardRequestDto requestDto) {

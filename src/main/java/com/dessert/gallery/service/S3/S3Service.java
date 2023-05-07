@@ -4,10 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.dessert.gallery.dto.file.FileDto;
-import com.dessert.gallery.entity.File;
-import com.dessert.gallery.entity.NoticeBoard;
-import com.dessert.gallery.entity.ReviewBoard;
-import com.dessert.gallery.entity.StoreBoard;
+import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.BoardType;
 import com.dessert.gallery.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +31,10 @@ public class S3Service {
     private String bucketName;
 
 
-    public void uploadImages(List<MultipartFile> files, Object entity) throws IOException {
+    public List<File> uploadImages(List<MultipartFile> files, Object entity) throws IOException {
         List<FileDto> list = this.existsFiles(files);
+        List<File> fileList = new ArrayList<>();
         Class<?> entityType = entity.getClass();
-
         for (FileDto fileDto : list) {
             File file = File.builder()
                     .fileName(fileDto.getFileName())
@@ -49,9 +46,13 @@ public class S3Service {
                 file.setReviewBoard((ReviewBoard) entity);
             } else if (entityType.equals(StoreBoard.class)) {
                 file.setStoreBoard((StoreBoard) entity);
+            } else if (entityType.equals(Store.class)) {
+                file.setStore((Store) entity);
             }
-            fileRepository.save(file);
+            File saveFile = fileRepository.save(file);
+            fileList.add(saveFile);
         }
+        return fileList;
     }
 
     public List<FileDto> updateFiles(Long id, BoardType boardType, List<MultipartFile> files)

@@ -10,13 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/storeBoard")
+@RequestMapping("/boards")
 @Api(tags = {"Store Board Controller"})
 public class StoreBoardController {
     private final StoreBoardService boardService;
@@ -38,9 +39,10 @@ public class StoreBoardController {
     // 가게 게시글 작성
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<String> createStoreBoard(@PathVariable(name = "storeId") Long storeId,
-                                                   @RequestBody BoardRequestDto requestDto,
+                                                   @RequestPart BoardRequestDto boardDto,
+                                                   @RequestPart List<MultipartFile> images,
                                                    HttpServletRequest request) {
-        boardService.createBoard(storeId, requestDto, request);
+        boardService.createBoard(storeId, boardDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 생성 완료");
     }
 
@@ -48,8 +50,9 @@ public class StoreBoardController {
     @PutMapping("/{boardId}")
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
                                                    @RequestBody BoardRequestDto updateDto,
+                                                   @RequestPart List<MultipartFile> images,
                                                    HttpServletRequest request) {
-        boardService.updateBoard(boardId, updateDto, request);
+        boardService.updateBoard(boardId, updateDto, images, request);
         return ResponseEntity.ok("게시글 수정 완료");
     }
 

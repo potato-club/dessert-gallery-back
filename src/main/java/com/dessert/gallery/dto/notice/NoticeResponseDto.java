@@ -1,6 +1,6 @@
 package com.dessert.gallery.dto.notice;
 
-import com.dessert.gallery.dto.file.FileResponseDto;
+import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.NoticeBoard;
 import com.dessert.gallery.enums.NoticeType;
 import lombok.Getter;
@@ -15,14 +15,14 @@ public class NoticeResponseDto {
     private String title;
     private String content;
     private NoticeType type;
-    private List<FileResponseDto> images;
+    private List<FileDto> images;
 
     public NoticeResponseDto(NoticeBoard noticeBoard) {
         this.title = noticeBoard.getTitle();
         this.content = noticeBoard.getContent();
         this.type = noticeBoard.getType();
         this.images = noticeBoard.getImages().isEmpty() ? null : noticeBoard.getImages().stream()
-                .map(FileResponseDto::new)
+                .map(FileDto::new)
                 .collect(Collectors.toList());
     }
 }
