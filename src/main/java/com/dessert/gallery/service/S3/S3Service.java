@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.*;
-import com.dessert.gallery.enums.BoardType;
 import com.dessert.gallery.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,10 +30,10 @@ public class S3Service {
     private String bucketName;
 
 
-    public List<File> uploadImages(List<MultipartFile> files, Object entity) throws IOException {
+    public void uploadImages(List<MultipartFile> files, Object entity) throws IOException {
         List<FileDto> list = this.existsFiles(files);
-        List<File> fileList = new ArrayList<>();
         Class<?> entityType = entity.getClass();
+
         for (FileDto fileDto : list) {
             File file = File.builder()
                     .fileName(fileDto.getFileName())
@@ -48,30 +47,30 @@ public class S3Service {
                 file.setStoreBoard((StoreBoard) entity);
             } else if (entityType.equals(Store.class)) {
                 file.setStore((Store) entity);
+            } else if (entityType.equals(User.class)) {
+                file.setUser((User) entity);
             }
-            File saveFile = fileRepository.save(file);
-            fileList.add(saveFile);
+
+            fileRepository.save(file);
         }
-        return fileList;
     }
 
-    public List<FileDto> updateFiles(Long id, BoardType boardType, List<MultipartFile> files)
+    public List<FileDto> updateFiles(Long id, Object entity, List<MultipartFile> files)
                                                                 throws IOException {
 
-        List<File> fileList;
+        List<File> fileList = new ArrayList<>();
 
-        switch (boardType) {    // boardType 에 따라서 각각의 FK 엔티티와 연결된 File 엔티티 리스트를 가져옴
-            case NOTICE_BOARD:
-                fileList = fileRepository.findByNoticeBoardId(id);
-                break;
-            case REVIEW_BOARD:
-                fileList = fileRepository.findByReviewBoardId(id);
-                break;
-            case STORE_BOARD:
-                fileList = fileRepository.findByStoreBoardId(id);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid board type: " + boardType);
+        // entity 값에 따라서 각각의 FK 엔티티와 연결된 File 엔티티 리스트를 가져옴
+        if (entity.equals(NoticeBoard.class)) {
+            fileList = fileRepository.findByNoticeBoardId(id);
+        } else if (entity.equals(ReviewBoard.class)) {
+            fileList = fileRepository.findByReviewBoardId(id);
+        } else if (entity.equals(StoreBoard.class)) {
+            fileList = fileRepository.findByStoreBoardId(id);
+        } else if (entity.equals(Store.class)) {
+            fileList = fileRepository.findByStoreId(id);
+        } else if (entity.equals(User.class)) {
+            fileList = fileRepository.findByUserId(id);
         }
 
         // 기존 파일 리스트와 새로 업로드한 파일 리스트를 비교하여

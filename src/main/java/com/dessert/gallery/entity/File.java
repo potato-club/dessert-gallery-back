@@ -39,6 +39,14 @@ public class File extends BaseTimeEntity {
     @JoinColumn(name = "stores_id")
     private Store store;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store")
+    private Store store;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "User")
+    private User user;
+
     public void update(FileDto requestDto) {
         this.fileName = requestDto.getFileName();
         this.fileUrl = requestDto.getFileUrl();

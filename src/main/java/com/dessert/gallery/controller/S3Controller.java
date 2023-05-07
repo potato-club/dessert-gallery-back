@@ -1,8 +1,5 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.dto.file.FileDto;
-import com.dessert.gallery.entity.ReviewBoard;
-import com.dessert.gallery.enums.BoardType;
 import com.dessert.gallery.service.S3.S3Service;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,13 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,12 +20,6 @@ import java.util.List;
 public class S3Controller {
 
     private final S3Service s3Service;
-
-    @Operation(summary = "시험용 S3 Update API")
-    @PutMapping("")
-    public List<FileDto> updateFiles(Long id, BoardType boardType, List<MultipartFile> files) throws IOException {
-        return s3Service.updateFiles(id, boardType, files);
-    }
 
     @Operation(summary = "S3 Download API")
     @GetMapping("/download")
