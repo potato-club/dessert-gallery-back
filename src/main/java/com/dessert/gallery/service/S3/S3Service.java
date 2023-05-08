@@ -3,7 +3,6 @@ package com.dessert.gallery.service.S3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
-import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +29,11 @@ public class S3Service {
     private String bucketName;
 
 
-    public void uploadImages(List<MultipartFile> files, Object entity) throws IOException {
-        List<FileDto> list = this.existsFiles(files);
+    public List<File> uploadImages(List<MultipartFile> files, Object entity) throws IOException {
+        List<File> list = this.existsFiles(files);
         Class<?> entityType = entity.getClass();
 
-        for (FileDto fileDto : list) {
-            File file = File.builder()
-                    .fileName(fileDto.getFileName())
-                    .fileUrl(fileDto.getFileUrl())
-                    .build();
+        for (File file : list) {
             if (entityType.equals(NoticeBoard.class)) {
                 file.setNoticeBoard((NoticeBoard) entity);
             } else if (entityType.equals(ReviewBoard.class)) {
@@ -51,31 +46,33 @@ public class S3Service {
                 file.setUser((User) entity);
             }
 
-            fileRepository.save(file);
+            File saveFile = fileRepository.save(file);
+            list.add(saveFile);
         }
+        return list;
     }
 
-    public List<FileDto> updateFiles(Long id, Object entity, List<MultipartFile> files)
+    public List<File> updateFiles(Object entity, List<MultipartFile> files)
                                                                 throws IOException {
 
         List<File> fileList = new ArrayList<>();
 
         // entity 값에 따라서 각각의 FK 엔티티와 연결된 File 엔티티 리스트를 가져옴
         if (entity.equals(NoticeBoard.class)) {
-            fileList = fileRepository.findByNoticeBoardId(id);
+            fileList = fileRepository.findByNoticeBoard((NoticeBoard) entity);
         } else if (entity.equals(ReviewBoard.class)) {
-            fileList = fileRepository.findByReviewBoardId(id);
+            fileList = fileRepository.findByReviewBoard((ReviewBoard) entity);
         } else if (entity.equals(StoreBoard.class)) {
-            fileList = fileRepository.findByStoreBoardId(id);
+            fileList = fileRepository.findByStoreBoard((StoreBoard) entity);
         } else if (entity.equals(Store.class)) {
-            fileList = fileRepository.findByStoreId(id);
+            fileList = fileRepository.findByStore((Store) entity);
         } else if (entity.equals(User.class)) {
-            fileList = fileRepository.findByUserId(id);
+            fileList = fileRepository.findByUser((User) entity);
         }
 
         // 기존 파일 리스트와 새로 업로드한 파일 리스트를 비교하여
         // 바뀐 파일만 업로드하고, 기존 파일 중 사용하지 않는 파일은 삭제
-        List<FileDto> list = this.existsFiles(files);
+        List<File> list = this.existsFiles(files);
 
         for (int i = 0; i < fileList.size(); i++) {
             if (!list.get(i).getFileName().contains(fileList.get(i).getFileName())) {
@@ -100,8 +97,8 @@ public class S3Service {
         return content;
     }
 
-    private List<FileDto> existsFiles(List<MultipartFile> files) throws IOException {
-        List<FileDto> list = new ArrayList<>();
+    private List<File> existsFiles(List<MultipartFile> files) throws IOException {
+        List<File> list = new ArrayList<>();
 
         for (MultipartFile file : files) {
             String key = file.getOriginalFilename();
@@ -113,11 +110,11 @@ public class S3Service {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
             s3Client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
-            FileDto requestDto = FileDto.builder()
+            File image = File.builder()
                     .fileName(fileName)
                     .fileUrl(s3Client.getUrl(bucketName, fileName).toString())
                     .build();
-            list.add(requestDto);
+            list.add(image);
         }
 
         return list;

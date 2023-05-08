@@ -3,13 +3,13 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
-import com.dessert.gallery.entity.NoticeBoard;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -38,18 +38,20 @@ public class NoticeBoardController {
     // 가게 공지사항 작성
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<String> createNoticeBoard(@PathVariable(name = "storeId") Long storeId,
-                                                    @RequestBody NoticeRequestDto requestDto,
+                                                    @RequestPart NoticeRequestDto requestDto,
+                                                    @RequestPart(required = false) List<MultipartFile> images,
                                                     HttpServletRequest request) {
-        noticeService.createNotice(storeId, requestDto, request);
+        noticeService.createNotice(storeId, requestDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("공지사항 생성 완료");
     }
 
     // 가게 공지사항 수정
     @PutMapping("/{noticeId}")
     public ResponseEntity<String> updateNoticeBoard(@PathVariable(name = "noticeId") Long noticeId,
-                                                    @RequestBody NoticeRequestDto updateDto,
+                                                    @RequestPart NoticeRequestDto updateDto,
+                                                    @RequestPart(required = false) List<MultipartFile> images,
                                                     HttpServletRequest request) {
-        noticeService.updateNotice(noticeId, updateDto, request);
+        noticeService.updateNotice(noticeId, updateDto, images, request);
         return ResponseEntity.ok("공지사항 수정 완료");
     }
 

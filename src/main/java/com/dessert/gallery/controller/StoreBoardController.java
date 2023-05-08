@@ -50,7 +50,7 @@ public class StoreBoardController {
     @PutMapping("/{boardId}")
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
                                                    @RequestBody BoardRequestDto updateDto,
-                                                   @RequestPart List<MultipartFile> images,
+                                                   @RequestPart(required = false) List<MultipartFile> images,
                                                    HttpServletRequest request) {
         boardService.updateBoard(boardId, updateDto, images, request);
         return ResponseEntity.ok("게시글 수정 완료");

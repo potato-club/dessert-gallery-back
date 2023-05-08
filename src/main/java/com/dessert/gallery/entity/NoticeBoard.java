@@ -50,6 +50,10 @@ public class NoticeBoard extends BaseTimeEntity {
         this.type = NoticeType.findWithKey(updateDto.getTypeKey());
     }
 
+    public void setImages(List<File> images) {
+        this.images = images;
+    }
+
     public void deleteNotice() {
         this.deleted = true;
     }

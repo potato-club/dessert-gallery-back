@@ -44,4 +44,8 @@ public class ReviewBoard extends BaseTimeEntity {
         this.user = user;
         this.likeCount = 0;
     }
+
+    public void setImages(List<File> images) {
+        this.images = images;
+    }
 }

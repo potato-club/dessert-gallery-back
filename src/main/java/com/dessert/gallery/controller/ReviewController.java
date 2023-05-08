@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -25,12 +26,12 @@ public class ReviewController {
         return ResponseEntity.ok(reviewListDto);
     }
 
-    // 이미지 업로드 로직 추가시 수정
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<String> addReview(@PathVariable(name = "storeId") Long storeId,
                                             @RequestPart ReviewRequestDto requestDto,
+                                            @RequestPart(required = false) List<MultipartFile> images,
                                             HttpServletRequest request) {
-        reviewService.addReview(storeId, requestDto, request);
+        reviewService.addReview(storeId, requestDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("리뷰 등록 완료");
     }
 }

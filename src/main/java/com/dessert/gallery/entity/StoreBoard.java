@@ -50,6 +50,7 @@ public class StoreBoard extends BaseTimeEntity {
     public void updateBoard(BoardRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
+        this.tags = requestDto.getTags();
     }
 
     public void deleteBoard() {

@@ -53,6 +53,10 @@ public class Store extends BaseTimeEntity {
         this.user = user;
     }
 
+    public void setImage(File file) {
+        this.image = file;
+    }
+
     public void setScore(Double score) {
         this.score = score;
     }

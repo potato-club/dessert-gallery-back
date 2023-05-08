@@ -7,22 +7,18 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class StoreResponseDto {
-    private Long id;
+public class StoreListResponseDto {
     private String name;
-    private String introduction;
+    private String content;
     private String address;
-    private String phoneNumber;
     private FileDto storeImage;
-    private int postCount;
+    private Double score;
 
-    public StoreResponseDto(Store store, int postCount) {
-        this.id = store.getId();
+    public StoreListResponseDto(Store store) {
         this.name = store.getName();
-        this.introduction = store.getContent();
+        this.content = store.getContent();
         this.address = store.getAddress();
-        this.phoneNumber = store.getPhoneNumber();
         this.storeImage = store.getImage() == null ? null : new FileDto(store.getImage());
-        this.postCount = postCount;
+        this.score = store.getScore();
     }
 }

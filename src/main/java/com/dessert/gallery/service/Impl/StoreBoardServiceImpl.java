@@ -3,10 +3,7 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
-import com.dessert.gallery.entity.File;
-import com.dessert.gallery.entity.Store;
-import com.dessert.gallery.entity.StoreBoard;
-import com.dessert.gallery.entity.User;
+import com.dessert.gallery.entity.*;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.StoreBoardService;
@@ -43,7 +40,8 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             throw new RuntimeException("401 권한없음");
         }
         StoreBoard board = new StoreBoard(requestDto, store);
-        saveImage(images, board);
+        List<File> files = saveImage(images, board);
+        board.setImages(files);
         boardRepository.save(board);
     }
 
@@ -73,6 +71,10 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         if(board.getStore().getUser() != user) {
             throw new RuntimeException("401 권한없음");
         }
+        if(!images.isEmpty()) {
+            List<File> files = updateImage(board, images);
+            board.setImages(files);
+        }
         board.updateBoard(requestDto);
     }
 
@@ -87,13 +89,19 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         board.deleteBoard();
     }
 
-    private void saveImage(List<MultipartFile> images, StoreBoard board) {
-        List<File> files;
+    private List<File> saveImage(List<MultipartFile> images, StoreBoard board) {
         try {
-            files = s3Service.uploadImages(images, board);
+            return s3Service.uploadImages(images, board);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("이미지 업로드 에러");
         }
-        board.setImages(files);
+    }
+
+    private List<File> updateImage(StoreBoard board, List<MultipartFile> images) {
+        try {
+            return s3Service.updateFiles(board, images);
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 업데이트 에러");
+        }
     }
 }

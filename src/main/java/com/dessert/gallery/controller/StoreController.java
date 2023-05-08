@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,16 +29,20 @@ public class StoreController {
 
     @Operation(summary = "가게 생성 API")
     @PostMapping("")
-    public ResponseEntity<String> createStore(@RequestBody StoreRequestDto requestDto, HttpServletRequest request) {
-        storeService.createStore(requestDto, request);
+    public ResponseEntity<String> createStore(@RequestPart StoreRequestDto requestDto,
+                                              @RequestPart(required = false) List<MultipartFile> images,
+                                              HttpServletRequest request) {
+        storeService.createStore(requestDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("가게 생성 완료");
     }
 
     @Operation(summary = "가게 정보 수정 API")
     @PutMapping("/{storeId}")
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
-                                              @RequestBody StoreRequestDto updateDto, HttpServletRequest request) {
-        storeService.updateStore(id, updateDto, request);
+                                              @RequestPart StoreRequestDto updateDto,
+                                              @RequestPart List<MultipartFile> images,
+                                              HttpServletRequest request) {
+        storeService.updateStore(id, updateDto, images, request);
         return ResponseEntity.ok("가게 정보 수정 완료");
     }
 

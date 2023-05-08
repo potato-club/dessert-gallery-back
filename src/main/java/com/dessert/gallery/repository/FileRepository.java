@@ -1,18 +1,18 @@
 package com.dessert.gallery.repository;
 
-import com.dessert.gallery.entity.File;
+import com.dessert.gallery.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface FileRepository extends JpaRepository<File, Long> {
-    List<File> findByNoticeBoardId(Long id);
+    List<File> findByNoticeBoard(NoticeBoard notice);
 
-    List<File> findByReviewBoardId(Long id);
+    List<File> findByReviewBoard(ReviewBoard review);
 
-    List<File> findByStoreBoardId(Long id);
+    List<File> findByStoreBoard(StoreBoard board);
 
-    List<File> findByStoreId(Long id);
+    List<File> findByStore(Store store);
 
-    List<File> findByUserId(Long id);
+    List<File> findByUser(User user);
 }

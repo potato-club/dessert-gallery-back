@@ -9,4 +9,5 @@ import java.util.List;
 public interface StoreBoardRepository extends JpaRepository<StoreBoard, Long> {
     List<StoreBoard> findByStoreAndDeletedIsFalse(Store store);
     StoreBoard findByIdAndDeletedIsFalse(Long id);
+    Long countAllByStore(Store store);
 }
