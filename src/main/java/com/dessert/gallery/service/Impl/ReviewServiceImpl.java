@@ -1,5 +1,6 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.review.ReviewBoardResponseDto;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
 import com.dessert.gallery.entity.File;
@@ -33,8 +34,18 @@ public class ReviewServiceImpl implements ReviewService {
     private final S3Service s3Service;
 
     @Override
-    public List<ReviewListResponseDto> getReviewList() {
-        List<ReviewBoard> reviews = reviewRepository.findAll();
+    public List<ReviewBoardResponseDto> getTop2Review(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow();
+        List<ReviewBoard> top2Review = reviewRepository.findTop2ByStoreOrderByCreatedDateDesc(store);
+        return top2Review.stream()
+                .map(ReviewBoardResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ReviewListResponseDto> getStoreReviews(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow();
+        List<ReviewBoard> reviews = reviewRepository.findAllByStore(store);
         List<ReviewListResponseDto> reviewListDto = reviews.stream()
                 .map(ReviewListResponseDto::new)
                 .collect(Collectors.toList());

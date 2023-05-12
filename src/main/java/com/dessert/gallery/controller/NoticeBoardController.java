@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
 import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,21 +22,21 @@ import java.util.List;
 public class NoticeBoardController {
     private final NoticeBoardService noticeService;
 
-    // 가게 공지사항 리스트 조회
+    @Operation(summary = "가게의 모든 공지 조회")
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<List<NoticeListDto>> getNoticeBoardByStore(@PathVariable(name = "storeId") Long storeId) {
         List<NoticeListDto> notices = noticeService.getNoticesByStore(storeId);
         return ResponseEntity.ok(notices);
     }
 
-    // 가게 공지사항 조회
+    @Operation(summary = "공지글 조회")
     @GetMapping("/{noticeId}")
     public ResponseEntity<NoticeResponseDto> getNoticeById(@PathVariable(name = "noticeId") Long noticeId) {
         NoticeResponseDto dto = noticeService.getNoticeById(noticeId);
         return ResponseEntity.ok(dto);
     }
 
-    // 가게 공지사항 작성
+    @Operation(summary = "가게 공지글 작성")
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<String> createNoticeBoard(@PathVariable(name = "storeId") Long storeId,
                                                     @RequestPart NoticeRequestDto requestDto,
@@ -45,7 +46,7 @@ public class NoticeBoardController {
         return ResponseEntity.status(HttpStatus.CREATED).body("공지사항 생성 완료");
     }
 
-    // 가게 공지사항 수정
+    @Operation(summary = "가게 공지글 수정")
     @PutMapping("/{noticeId}")
     public ResponseEntity<String> updateNoticeBoard(@PathVariable(name = "noticeId") Long noticeId,
                                                     @RequestPart NoticeRequestDto updateDto,
@@ -55,7 +56,7 @@ public class NoticeBoardController {
         return ResponseEntity.ok("공지사항 수정 완료");
     }
 
-    // 가게 공지사항 삭제
+    @Operation(summary = "가게 공지글 삭제 상태로 변경")
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<String> deleteNoticeBoard(@PathVariable(name = "noticeId") Long noticeId,
                                                     HttpServletRequest request) {

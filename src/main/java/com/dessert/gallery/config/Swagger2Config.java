@@ -47,16 +47,19 @@ public class Swagger2Config {
                 .apiInfo(userApiInfo());
     }
 
-    @Bean(name = "shopApi")
-    public Docket shopApi() {
-        Predicate<String> path = PathSelectors.ant("/shop/**");
+    @Bean(name = "storeApi")
+    public Docket storeApi() {
+        Predicate<String> path = PathSelectors.ant("/stores/**")
+                .or(PathSelectors.ant("/boards/**"))
+                .or(PathSelectors.ant("/notices/**"))
+                .or(PathSelectors.ant("/reviews/**"));
 
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Shop's Functions")
+                .groupName("Store's Functions")
                 .select()
                 .paths(path)
                 .build()
-                .apiInfo(shopApiInfo());
+                .apiInfo(storeApiInfo());
     }
 
     private ApiInfo userApiInfo(){
@@ -67,7 +70,7 @@ public class Swagger2Config {
                 .build();
     }
 
-    private ApiInfo shopApiInfo(){
+    private ApiInfo storeApiInfo(){
         return new ApiInfoBuilder()
                 .title("디저트 갤러리 가게 기능 API")
                 .description("API 상세소개 및 사용법")

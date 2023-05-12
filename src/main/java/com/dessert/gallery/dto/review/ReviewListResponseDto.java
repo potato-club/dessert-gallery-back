@@ -2,6 +2,7 @@ package com.dessert.gallery.dto.review;
 
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.ReviewBoard;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,10 +13,15 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class ReviewListResponseDto {
+    @ApiModelProperty(value = "리뷰 작성자 닉네임")
     private String userName;
+    @ApiModelProperty(value = "리뷰 내용")
     private String content;
+    @ApiModelProperty(value = "리뷰 점수")
     private int score;
+    @ApiModelProperty(value = "리뷰 이미지 파일")
     private List<FileDto> images;
+    @ApiModelProperty(value = "리뷰 작성 일자", example = "2023-05-01")
     private String createDate;
 
     public ReviewListResponseDto(ReviewBoard review) {

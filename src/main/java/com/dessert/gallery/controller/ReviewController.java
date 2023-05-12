@@ -4,6 +4,7 @@ import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
 import com.dessert.gallery.service.Interface.ReviewService;
 import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,20 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @GetMapping("")
-    public ResponseEntity<List<ReviewListResponseDto>> getReviewList() {
-        List<ReviewListResponseDto> reviewListDto = reviewService.getReviewList();
-        return ResponseEntity.ok(reviewListDto);
+//    @Operation(summary = "후기 게시판 리뷰 조회")
+//    @GetMapping("")
+//    public ResponseEntity<List<ReviewListResponseDto>> getReviewList() {
+//
+//    }
+
+    @Operation(summary = "가게 리뷰 조회")
+    @GetMapping("/stores/{storeId}")
+    public ResponseEntity<List<ReviewListResponseDto>> getStoreReviews(@PathVariable(name = "storeId") Long storeId) {
+        List<ReviewListResponseDto> reviewList = reviewService.getStoreReviews(storeId);
+        return ResponseEntity.ok(reviewList);
     }
 
+    @Operation(summary = "가게에 대한 리뷰 등록")
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<String> addReview(@PathVariable(name = "storeId") Long storeId,
                                             @RequestPart ReviewRequestDto requestDto,
