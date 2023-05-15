@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/s3")
-@Api(tags = {"AWS S3 Upload & Download Controller"})
+@Api(tags = {"AWS S3 Download Controller"})
 public class S3Controller {
 
     private final S3Service s3Service;
@@ -28,8 +28,7 @@ public class S3Controller {
             byte[] data = s3Service.downloadImage(key);
             InputStream inputStream = new ByteArrayInputStream(data);
             InputStreamResource resource = new InputStreamResource(inputStream);
-            return ResponseEntity
-                    .ok()
+            return ResponseEntity.ok()
                     .contentLength(data.length)
                     .header("Content-type", "application/octet-stream")
                     .header("Content-Disposition", "attachment; filename=" +
