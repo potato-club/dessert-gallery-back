@@ -9,9 +9,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class StoreListResponseDto {
+
+    @ApiModelProperty(value = "가게 ID")
+    private Long id;
     @ApiModelProperty(value = "가게 이름")
     private String name;
-    @ApiModelProperty(value = "가게 내용")
+    @ApiModelProperty(value = "가게 소개")
     private String content;
     @ApiModelProperty(value = "가게 주소")
     private String address;
@@ -21,6 +24,7 @@ public class StoreListResponseDto {
     private Double score;
 
     public StoreListResponseDto(Store store) {
+        this.id = store.getId();
         this.name = store.getName();
         this.content = store.getContent();
         this.address = store.getAddress();

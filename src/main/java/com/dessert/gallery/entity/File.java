@@ -35,6 +35,10 @@ public class File extends BaseTimeEntity {
     @JoinColumn(name = "reviewBoard_id")
     private ReviewBoard reviewBoard;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id")
+    private Menu menu;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store")
     private Store store;
