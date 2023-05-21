@@ -4,6 +4,8 @@ import com.dessert.gallery.dto.store.StoreRequestDto;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -42,6 +44,12 @@ public class Store extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_uid", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "store", orphanRemoval = true)
+    private List<Menu> menu = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Subscribe> followers = new ArrayList<>();
 
     public Store(StoreRequestDto requestDto, User user) {
         this.name = requestDto.getName();

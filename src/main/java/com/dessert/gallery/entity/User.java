@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -43,6 +45,9 @@ public class User extends BaseTimeEntity {
 
     @Column
     private boolean emailOtp;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Subscribe> subscriptions = new ArrayList<>();
 
     public void update(UserUpdateRequestDto userDto) { this.nickname = userDto.getNickname(); }
 

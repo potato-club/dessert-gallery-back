@@ -26,7 +26,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String ipAddress = request.getRemoteAddr();
 
-        if (path.contains("/swagger") || path.contains("/v2/api-docs")) {   // 추후 ADMIN 권한을 가진 사람만 접근할 수 있도록 변경 예정.
+        if (path.contains("/swagger") || path.contains("/v2/api-docs") || path.contains("/list")) {   // 추후 ADMIN 권한을 가진 사람만 접근할 수 있도록 변경 예정.
             filterChain.doFilter(request, response);
             return;
         }
