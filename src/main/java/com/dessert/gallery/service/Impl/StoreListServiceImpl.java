@@ -36,7 +36,7 @@ public class StoreListServiceImpl implements StoreListService {
 
         JPAQuery<StoreListResponseDto> query = jpaQueryFactory
                 .select(
-                        Projections.fields(
+                        Projections.constructor(
                             StoreListResponseDto.class,
                             QStore.store.id,
                             QStore.store.name,
@@ -64,7 +64,7 @@ public class StoreListServiceImpl implements StoreListService {
 
         JPAQuery<StoreReviewDto> query = jpaQueryFactory
                 .select(
-                        Projections.fields(
+                        Projections.constructor(
                             StoreReviewDto.class,
                             QStore.store.id.as("storeId"),
                             QStore.store.name.as("storeName"),
@@ -98,11 +98,11 @@ public class StoreListServiceImpl implements StoreListService {
         BooleanBuilder whereBuilder = new BooleanBuilder();
 
         if (storeSearchDto.getAddress() != null) {
-            whereBuilder.and(QStore.store.address.containsIgnoreCase(storeSearchDto.getAddress()));
+            whereBuilder.and(QStore.store.address.containsIgnoreCase("%" + storeSearchDto.getAddress() + "%"));
         }
 
         if (storeSearchDto.getSearchType() != null) {
-            whereBuilder.and(QMenu.menu.introduction.containsIgnoreCase(storeSearchDto.getSearchType()));
+            whereBuilder.and(QMenu.menu.introduction.containsIgnoreCase("%" + storeSearchDto.getSearchType() + "%"));
         }
 
         if (storeSearchDto.getDessertType() != null) {
@@ -118,7 +118,7 @@ public class StoreListServiceImpl implements StoreListService {
 
         return JPAExpressions
                 .select(
-                        Projections.fields(
+                        Projections.constructor(
                                 ReviewListDto.class,
                                 user.nickname,
                                 reviewBoard.content,
