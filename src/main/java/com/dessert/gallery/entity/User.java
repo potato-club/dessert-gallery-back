@@ -40,10 +40,10 @@ public class User extends BaseTimeEntity {
     @Column
     private LoginType loginType;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean emailOtp;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

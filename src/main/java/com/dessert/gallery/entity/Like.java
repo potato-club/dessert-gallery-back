@@ -17,7 +17,7 @@ public class Like extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean count;
 
     @ManyToOne(fetch = FetchType.LAZY)

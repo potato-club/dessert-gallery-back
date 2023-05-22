@@ -44,7 +44,8 @@ public class StoreServiceImpl implements StoreService {
     public void createStore(StoreRequestDto requestDto, List<MultipartFile> files,
                             HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        if(user.getUserRole() != UserRole.MANAGER) throw new RuntimeException("401 권한없음");
+        if(user.getUserRole() != UserRole.MANAGER)
+            throw new RuntimeException("401 권한없음");
         Store store = new Store(requestDto, user);
         if(files != null) {
             File file = saveImage(files, store);

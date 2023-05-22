@@ -23,7 +23,7 @@ public class NoticeBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 
     @Column(nullable = false)

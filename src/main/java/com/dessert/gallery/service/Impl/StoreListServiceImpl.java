@@ -7,11 +7,7 @@ import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.service.Interface.StoreListService;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.SubQueryExpression;
-import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -42,14 +38,14 @@ public class StoreListServiceImpl implements StoreListService {
                             QStore.store.name,
                             QStore.store.content,
                             QStore.store.address,
-                            QFile.file.fileName.as("fileName"),
-                            QFile.file.fileUrl.as("fileUrl"),
+                            QFile.file.fileName,
+                            QFile.file.fileUrl,
                             QStore.store.score
                         )
                 )
                 .from(QStore.store)
-                .innerJoin(QFile.file).on(QStore.store.id.eq(QFile.file.store.id))
-                .innerJoin(QMenu.menu).on(QStore.store.id.eq(QMenu.menu.store.id))
+                .leftJoin(QStore.store.image, QFile.file)
+                .leftJoin(QStore.store.menu, QMenu.menu)
                 .where(whereBuilder)
                 .orderBy(storeSearchDto.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
                 .offset((storeSearchDto.getPage() - 1) * pageSize)
@@ -68,14 +64,14 @@ public class StoreListServiceImpl implements StoreListService {
                             StoreReviewDto.class,
                             QStore.store.id.as("storeId"),
                             QStore.store.name.as("storeName"),
-                            QStore.store.content,
-                            QStore.store.image.fileName,
-                            QStore.store.image.fileUrl
+                            QStore.store.content.as("content"),
+                            QStore.store.image.fileName.as("fileName"),
+                            QStore.store.image.fileUrl.as("fileUrl")
                         )
                 )
                 .from(QStore.store)
-                .innerJoin(QFile.file).on(QStore.store.id.eq(QFile.file.store.id))
-                .innerJoin(QMenu.menu).on(QStore.store.id.eq(QMenu.menu.store.id))
+                .leftJoin(QStore.store.image, QFile.file)
+                .leftJoin(QStore.store.menu, QMenu.menu)
                 .where(whereBuilder)
                 .orderBy(QStore.store.score.desc())
                 .offset((storeSearchDto.getPage() - 1) * pageSize)
@@ -84,10 +80,7 @@ public class StoreListServiceImpl implements StoreListService {
         List<StoreReviewDto> storeReviewList = query.fetch();
 
         for (StoreReviewDto storeReview : storeReviewList) {
-            SubQueryExpression<ReviewListDto> subQuery = getRecentReviewsSubQuery(storeReview.getStoreId());
-            List<ReviewListDto> reviewList = jpaQueryFactory
-                    .select(subQuery)
-                    .fetch();
+            List<ReviewListDto> reviewList = getRecentReviewsSubQuery(storeReview.getStoreId());
             storeReview.setReviewList(reviewList);
         }
 
@@ -98,11 +91,11 @@ public class StoreListServiceImpl implements StoreListService {
         BooleanBuilder whereBuilder = new BooleanBuilder();
 
         if (storeSearchDto.getAddress() != null) {
-            whereBuilder.and(QStore.store.address.containsIgnoreCase("%" + storeSearchDto.getAddress() + "%"));
+            whereBuilder.and(QStore.store.address.like("%" + storeSearchDto.getAddress() + "%"));
         }
 
         if (storeSearchDto.getSearchType() != null) {
-            whereBuilder.and(QMenu.menu.introduction.containsIgnoreCase("%" + storeSearchDto.getSearchType() + "%"));
+            whereBuilder.and(QMenu.menu.introduction.like("%" + storeSearchDto.getSearchType() + "%"));
         }
 
         if (storeSearchDto.getDessertType() != null) {
@@ -112,24 +105,24 @@ public class StoreListServiceImpl implements StoreListService {
         return whereBuilder;
     }
 
-    private SubQueryExpression<ReviewListDto> getRecentReviewsSubQuery(Long storeId) {
+    private List<ReviewListDto> getRecentReviewsSubQuery(Long storeId) {
         QReviewBoard reviewBoard = QReviewBoard.reviewBoard;
-        QUser user = QUser.user;
 
-        return JPAExpressions
+        JPAQuery<ReviewListDto> query = jpaQueryFactory
                 .select(
                         Projections.constructor(
                                 ReviewListDto.class,
-                                user.nickname,
+                                reviewBoard.user.nickname,
                                 reviewBoard.content,
                                 reviewBoard.score,
                                 reviewBoard.createdDate
                         )
                 )
                 .from(reviewBoard)
-                .innerJoin(reviewBoard.user, user)
                 .where(reviewBoard.store.id.eq(storeId))
                 .orderBy(reviewBoard.createdDate.desc())
                 .limit(2);
+
+        return query.fetch();
     }
 }

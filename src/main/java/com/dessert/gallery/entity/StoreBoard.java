@@ -25,7 +25,7 @@ public class StoreBoard extends BaseTimeEntity {
     @Column
     private String tags;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 
     @ManyToOne(fetch = FetchType.LAZY)

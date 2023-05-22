@@ -4,10 +4,11 @@ import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.Store;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @AllArgsConstructor
 public class StoreListResponseDto {
 

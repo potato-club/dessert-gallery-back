@@ -17,10 +17,10 @@ public class Subscribe extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean banned;
 
     @ManyToOne(fetch = FetchType.LAZY)
