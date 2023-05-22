@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
+import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.StoreService;
@@ -43,8 +44,9 @@ public class StoreServiceImpl implements StoreService {
     public void createStore(StoreRequestDto requestDto, List<MultipartFile> files,
                             HttpServletRequest request) {
         User user = userService.findUserByToken(request);
+        if(user.getUserRole() != UserRole.MANAGER) throw new RuntimeException("401 권한없음");
         Store store = new Store(requestDto, user);
-        if(!files.isEmpty()) {
+        if(files != null) {
             File file = saveImage(files, store);
             store.setImage(file);
         }
@@ -60,7 +62,7 @@ public class StoreServiceImpl implements StoreService {
         if(store.getUser() != user) {
             throw new RuntimeException("401 권한없음");
         }
-        if(!files.isEmpty()) {
+        if(files != null) {
             File newFile = updateImage(store, files);
             store.setImage(newFile);
         }

@@ -34,15 +34,6 @@ public class ReviewServiceImpl implements ReviewService {
     private final S3Service s3Service;
 
     @Override
-    public List<ReviewBoardResponseDto> getTop2Review(Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow();
-        List<ReviewBoard> top2Review = reviewRepository.findTop2ByStoreOrderByCreatedDateDesc(store);
-        return top2Review.stream()
-                .map(ReviewBoardResponseDto::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<ReviewListResponseDto> getStoreReviews(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow();
         List<ReviewBoard> reviews = reviewRepository.findAllByStore(store);
@@ -58,15 +49,15 @@ public class ReviewServiceImpl implements ReviewService {
         Store store = storeRepository.findById(storeId).orElseThrow();
         User user = userService.findUserByToken(request);
         ReviewBoard review = new ReviewBoard(requestDto, store, user);
-        if(!images.isEmpty()) {
+        if(images != null) {
             List<File> files = saveImage(images, review);
             review.setImages(files);
         }
-        store.setScore(getAvgScore(store, requestDto.getScore()));
+        store.setScore(getAvgScore(store, requestDto.getScore() / 2.0));
         reviewRepository.save(review);
     }
 
-    private Double getAvgScore(Store store, int score) {
+    private Double getAvgScore(Store store, double score) {
         Long reviewCount = reviewRepository.countByStore(store);
         double scoreSum = store.getScore() * reviewCount + score;
         return Math.round((scoreSum / (reviewCount + 1)) * 10) / 10.0;

@@ -9,5 +9,4 @@ import java.util.List;
 public interface ReviewBoardRepository extends JpaRepository<ReviewBoard, Long> {
     Long countByStore(Store store);
     List<ReviewBoard> findAllByStore(Store store);
-    List<ReviewBoard> findTop2ByStoreOrderByCreatedDateDesc(Store store);
 }

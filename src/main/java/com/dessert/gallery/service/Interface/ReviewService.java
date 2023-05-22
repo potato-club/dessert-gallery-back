@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface ReviewService {
-    List<ReviewBoardResponseDto> getTop2Review(Long storeId);
     List<ReviewListResponseDto> getStoreReviews(Long storeId);
     void addReview(Long storeId, ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request);
 }
