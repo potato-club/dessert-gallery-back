@@ -42,7 +42,8 @@ public class StoreListServiceImpl implements StoreListService {
                             QStore.store.name,
                             QStore.store.content,
                             QStore.store.address,
-                            QFile.file.as("image"),
+                            QFile.file.fileName.as("fileName"),
+                            QFile.file.fileUrl.as("fileUrl"),
                             QStore.store.score
                         )
                 )
@@ -126,7 +127,7 @@ public class StoreListServiceImpl implements StoreListService {
                         )
                 )
                 .from(reviewBoard)
-                .join(reviewBoard.user, user)
+                .innerJoin(reviewBoard.user, user)
                 .where(reviewBoard.store.id.eq(storeId))
                 .orderBy(reviewBoard.createdDate.desc())
                 .limit(2);
