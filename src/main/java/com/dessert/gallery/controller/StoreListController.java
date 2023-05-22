@@ -28,7 +28,7 @@ public class StoreListController {
 
     @Operation(summary = "필터 적용/미적용 리뷰 목록 조회 API")
     @GetMapping("/reviews")
-    public List<Tuple> getReviewList(@RequestBody StoreSearchDto storeSearchDto) {
+    public List<StoreReviewDto> getReviewList(@RequestBody StoreSearchDto storeSearchDto) {
         return storeListService.getReviewList(storeSearchDto);
     }
 }

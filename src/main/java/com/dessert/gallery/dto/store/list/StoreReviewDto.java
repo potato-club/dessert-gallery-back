@@ -1,13 +1,11 @@
 package com.dessert.gallery.dto.store.list;
 
-import com.dessert.gallery.dto.file.FileDto;
-import com.dessert.gallery.entity.File;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
+@Data
 @AllArgsConstructor
 public class StoreReviewDto {
     private Long storeId;
@@ -15,4 +13,5 @@ public class StoreReviewDto {
     private String content;
     private String fileName;
     private String fileUrl;
+    private List<ReviewListDto> reviewList;
 }

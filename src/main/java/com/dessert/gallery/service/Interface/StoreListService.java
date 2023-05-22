@@ -11,5 +11,5 @@ public interface StoreListService {
 
     List<StoreListResponseDto> getStoreList(StoreSearchDto storeSearchDto);
 
-    List<Tuple> getReviewList(StoreSearchDto storeSearchDto);
+    List<StoreReviewDto> getReviewList(StoreSearchDto storeSearchDto);
 }

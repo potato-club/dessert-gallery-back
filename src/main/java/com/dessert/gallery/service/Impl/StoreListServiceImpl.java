@@ -57,11 +57,11 @@ public class StoreListServiceImpl implements StoreListService {
         return query.fetch();
     }
 
-    @Override   // 미완성 코드. 에러 남아있음.
-    public List<Tuple> getReviewList(StoreSearchDto storeSearchDto) {
+    @Override
+    public List<StoreReviewDto> getReviewList(StoreSearchDto storeSearchDto) {
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
 
-        JPAQuery<Tuple> query = jpaQueryFactory
+        JPAQuery<StoreReviewDto> query = jpaQueryFactory
                 .select(
                         Projections.fields(
                             StoreReviewDto.class,
@@ -70,20 +70,27 @@ public class StoreListServiceImpl implements StoreListService {
                             QStore.store.content,
                             QStore.store.image.fileName,
                             QStore.store.image.fileUrl
-                        ),
-                        getRecentReviewsSubQuery(QStore.store.id)
+                        )
                 )
                 .from(QStore.store)
                 .innerJoin(QFile.file).on(QStore.store.id.eq(QFile.file.store.id))
                 .innerJoin(QMenu.menu).on(QStore.store.id.eq(QMenu.menu.store.id))
-                .leftJoin(QReviewBoard.reviewBoard)
-                .on(QStore.store.id.eq(QReviewBoard.reviewBoard.store.id))
                 .where(whereBuilder)
                 .orderBy(QStore.store.score.desc())
                 .offset((storeSearchDto.getPage() - 1) * pageSize)
                 .limit(pageSize);
 
-        return query.fetch();
+        List<StoreReviewDto> storeReviewList = query.fetch();
+
+        for (StoreReviewDto storeReview : storeReviewList) {
+            SubQueryExpression<ReviewListDto> subQuery = getRecentReviewsSubQuery(storeReview.getStoreId());
+            List<ReviewListDto> reviewList = jpaQueryFactory
+                    .select(subQuery)
+                    .fetch();
+            storeReview.setReviewList(reviewList);
+        }
+
+        return storeReviewList;
     }
 
     private BooleanBuilder existsFilterOption(StoreSearchDto storeSearchDto) {
@@ -104,7 +111,7 @@ public class StoreListServiceImpl implements StoreListService {
         return whereBuilder;
     }
 
-    private SubQueryExpression<ReviewListDto> getRecentReviewsSubQuery(NumberPath<Long> storeId) {
+    private SubQueryExpression<ReviewListDto> getRecentReviewsSubQuery(Long storeId) {
         QReviewBoard reviewBoard = QReviewBoard.reviewBoard;
         QUser user = QUser.user;
 
