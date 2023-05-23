@@ -59,11 +59,11 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
             throw new RuntimeException("401 권한없음");
         }
         NoticeBoard notice = new NoticeBoard(requestDto, store);
+        NoticeBoard saveNotice = noticeRepository.save(notice);
         if(!images.isEmpty()) {
-            List<File> files = saveImage(images, notice);
-            notice.setImages(files);
+            List<File> files = saveImage(images, saveNotice);
+            saveNotice.setImages(files);
         }
-        noticeRepository.save(notice);
     }
 
     @Override

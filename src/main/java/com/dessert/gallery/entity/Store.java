@@ -58,6 +58,7 @@ public class Store extends BaseTimeEntity {
         this.longitude = requestDto.getLongitude();
         this.latitude = requestDto.getLatitude();
         this.phoneNumber = requestDto.getPhoneNumber();
+        this.score = 0.0;
         this.user = user;
     }
 

@@ -49,12 +49,12 @@ public class ReviewServiceImpl implements ReviewService {
         Store store = storeRepository.findById(storeId).orElseThrow();
         User user = userService.findUserByToken(request);
         ReviewBoard review = new ReviewBoard(requestDto, store, user);
+        store.setScore(getAvgScore(store, requestDto.getScore()));
+        ReviewBoard saveReview = reviewRepository.save(review);
         if(images != null) {
-            List<File> files = saveImage(images, review);
-            review.setImages(files);
+            List<File> files = saveImage(images, saveReview);
+            saveReview.setImages(files);
         }
-        store.setScore(getAvgScore(store, requestDto.getScore() / 2.0));
-        reviewRepository.save(review);
     }
 
     private Double getAvgScore(Store store, double score) {

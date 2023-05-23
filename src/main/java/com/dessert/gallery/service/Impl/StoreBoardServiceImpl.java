@@ -40,9 +40,9 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             throw new RuntimeException("401 권한없음");
         }
         StoreBoard board = new StoreBoard(requestDto, store);
-        List<File> files = saveImage(images, board);
-        board.setImages(files);
-        boardRepository.save(board);
+        StoreBoard saveBoard = boardRepository.save(board);
+        List<File> files = saveImage(images, saveBoard);
+        saveBoard.setImages(files);
     }
 
     @Override

@@ -15,7 +15,7 @@ public class ReviewBoardResponseDto {
     @ApiModelProperty(value = "리뷰 내용")
     private String content;
     @ApiModelProperty(value = "리뷰 점수")
-    private int score;
+    private Double score;
     @ApiModelProperty(value = "리뷰 작성 일자")
     private String createDate;
 

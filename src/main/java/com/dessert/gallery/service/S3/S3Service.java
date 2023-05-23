@@ -33,7 +33,8 @@ public class S3Service {
         List<File> list = this.existsFiles(files);
         Class<?> entityType = entity.getClass();
 
-        for (File file : list) {
+        for (int i = 0; i < list.size(); i++) {
+            File file = list.get(i);
             if (entityType.equals(NoticeBoard.class)) {
                 file.setNoticeBoard((NoticeBoard) entity);
             } else if (entityType.equals(ReviewBoard.class)) {
@@ -47,7 +48,7 @@ public class S3Service {
             }
 
             File saveFile = fileRepository.save(file);
-            list.add(saveFile);
+            list.set(i, saveFile);
         }
         return list;
     }

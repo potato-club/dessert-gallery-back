@@ -21,12 +21,12 @@ public class ReviewBoard extends BaseTimeEntity {
     private String content;
 
     @Column(nullable = false)
-    private int score;
+    private Double score;
 
     @OneToMany(mappedBy = "reviewBoard", orphanRemoval = true)
     private List<File> images = new ArrayList<>();
 
-    @Formula("(SELECT COUNT(*) FROM likes as l WHERE l.reviewBoard_id = id)")
+    @Formula("(SELECT COUNT(*) FROM likes as l WHERE l.review_board_id = id)")
     private int likeCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
