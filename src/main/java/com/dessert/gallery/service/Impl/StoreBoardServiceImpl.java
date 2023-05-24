@@ -4,6 +4,9 @@ import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.error.exception.NotFoundException;
+import com.dessert.gallery.error.exception.S3Exception;
+import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.StoreBoardService;
@@ -17,9 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.dessert.gallery.error.ErrorCode.*;
 
 @Service
 @Slf4j
@@ -37,7 +41,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         Store store = storeRepository.findById(storeId).orElseThrow();
         User user = userService.findUserByToken(request);
         if(store.getUser() != user) {
-            throw new RuntimeException("401 권한없음");
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         StoreBoard board = new StoreBoard(requestDto, store);
         StoreBoard saveBoard = boardRepository.save(board);
@@ -48,16 +52,16 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     @Override
     public List<BoardListResponseDto> getBoardsByStore(Long storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new RuntimeException("store is not exist"));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
         List<StoreBoard> boards = boardRepository.findByStoreAndDeletedIsFalse(store);
-        if(boards == null) throw new RuntimeException("게시물 없음");
+        if(boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         return boards.stream().map(BoardListResponseDto::new).collect(Collectors.toList());
     }
 
     @Override
     public BoardResponseDto getBoardById(Long boardId) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
-        if(board == null) throw new RuntimeException("게시물 없음");
+        if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         BoardResponseDto dto = new BoardResponseDto(board);
         return dto;
     }
@@ -65,12 +69,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     @Override
     public void updateBoard(Long boardId, BoardRequestDto requestDto, List<MultipartFile> images,
                             HttpServletRequest request) {
-        StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
-        User user = userService.findUserByToken(request);
-        if(board == null) throw new RuntimeException("게시물 없음");
-        if(board.getStore().getUser() != user) {
-            throw new RuntimeException("401 권한없음");
-        }
+        StoreBoard board = validateBoard(boardId, request);
         if(!images.isEmpty()) {
             List<File> files = updateImage(board, images);
             board.setImages(files);
@@ -80,20 +79,25 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
     @Override
     public void deleteBoard(Long boardId, HttpServletRequest request) {
+        StoreBoard board = validateBoard(boardId, request);
+        board.deleteBoard();
+    }
+
+    public StoreBoard validateBoard(Long boardId, HttpServletRequest request) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         User user = userService.findUserByToken(request);
-        if(board == null) throw new RuntimeException("게시물 없음");
+        if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         if(board.getStore().getUser() != user) {
-            throw new RuntimeException("401 권한없음");
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
-        board.deleteBoard();
+        return board;
     }
 
     private List<File> saveImage(List<MultipartFile> images, StoreBoard board) {
         try {
             return s3Service.uploadImages(images, board);
         } catch (IOException e) {
-            throw new RuntimeException("이미지 업로드 에러");
+            throw new S3Exception("이미지 업로드 에러", RUNTIME_EXCEPTION);
         }
     }
 
@@ -101,7 +105,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         try {
             return s3Service.updateFiles(board, images);
         } catch (IOException e) {
-            throw new RuntimeException("이미지 업데이트 에러");
+            throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);
         }
     }
 }

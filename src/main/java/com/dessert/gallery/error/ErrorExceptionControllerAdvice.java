@@ -73,4 +73,14 @@ public class ErrorExceptionControllerAdvice {
                         .errorMessage(e.getErrorCode().getMessage())
                         .build());
     }
+
+    @ExceptionHandler({S3Exception.class})
+    public ResponseEntity<ErrorEntity> exceptionHandler(HttpServletRequest request, final S3Exception e) {
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
+    }
 }

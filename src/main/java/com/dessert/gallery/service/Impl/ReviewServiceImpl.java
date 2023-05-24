@@ -1,12 +1,12 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.dto.review.ReviewBoardResponseDto;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
 import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.ReviewBoard;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
+import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.repository.ReviewBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.ReviewService;
@@ -22,6 +22,8 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.dessert.gallery.error.ErrorCode.RUNTIME_EXCEPTION;
 
 @Service
 @Slf4j
@@ -67,7 +69,7 @@ public class ReviewServiceImpl implements ReviewService {
         try {
             return s3Service.uploadImages(images, review);
         } catch (IOException e) {
-            throw new RuntimeException("이미지 업로드 에러");
+            throw new S3Exception("이미지 업로드 에러", RUNTIME_EXCEPTION);
         }
     }
 }

@@ -6,6 +6,9 @@ import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
+import com.dessert.gallery.error.exception.NotFoundException;
+import com.dessert.gallery.error.exception.S3Exception;
+import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.StoreService;
@@ -21,6 +24,8 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 
+import static com.dessert.gallery.error.ErrorCode.*;
+
 @Service
 @Slf4j
 @Transactional
@@ -34,7 +39,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public StoreResponseDto getStore(Long id) {
         Store store = storeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("store is not exist"));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
         int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
         StoreResponseDto dto = new StoreResponseDto(store, postCount);
         return dto;
@@ -45,7 +50,7 @@ public class StoreServiceImpl implements StoreService {
                             HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         if(user.getUserRole() != UserRole.MANAGER)
-            throw new RuntimeException("401 권한없음");
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         Store store = new Store(requestDto, user);
         if(files != null) {
             File file = saveImage(files, store);
@@ -61,7 +66,7 @@ public class StoreServiceImpl implements StoreService {
         Store store = storeRepository.findById(id).orElseThrow();
 
         if(store.getUser() != user) {
-            throw new RuntimeException("401 권한없음");
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         if(files != null) {
             File newFile = updateImage(store, files);
@@ -76,7 +81,7 @@ public class StoreServiceImpl implements StoreService {
         Store store = storeRepository.findById(id).orElseThrow();
 
         if(store.getUser() != user) {
-            throw new RuntimeException("401 권한없음");
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         storeRepository.delete(store);
     }
@@ -86,7 +91,7 @@ public class StoreServiceImpl implements StoreService {
             List<File> files = s3Service.uploadImages(images, store);
             return files.get(0);
         } catch (IOException e) {
-            throw new RuntimeException("이미지 업로드 에러");
+            throw new S3Exception("이미지 업로드 에러", RUNTIME_EXCEPTION);
         }
     }
 
@@ -95,7 +100,7 @@ public class StoreServiceImpl implements StoreService {
             List<File> files = s3Service.updateFiles(store, images);
             return files.get(0);
         } catch (IOException e) {
-            throw new RuntimeException("이미지 업데이트 에러");
+            throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);
         }
     }
 }
