@@ -3,6 +3,7 @@ package com.dessert.gallery.service.S3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class S3Service {
         return list;
     }
 
-    public List<File> updateFiles(Object entity, List<MultipartFile> files)
+    public List<File> updateFiles(Object entity, List<MultipartFile> files, List<FileRequestDto> requestDto)
                                                                 throws IOException {
 
         List<File> fileList = new ArrayList<>();
@@ -76,17 +77,33 @@ public class S3Service {
         List<File> list = this.existsFiles(files);
 
         for (int i = 0; i < fileList.size(); i++) {
-            if (!list.get(i).getFileName().contains(fileList.get(i).getFileName())) {
+            if (requestDto.get(i).isDeleted() && fileList.get(i).getFileName().equals(requestDto.get(i).getFileName())) {
                 s3Client.deleteObject(new DeleteObjectRequest(bucketName, fileList.get(i).getFileName())); // 사용하지 않는 파일 삭제
                 fileRepository.delete(fileList.get(i)); // DB에서도 해당 파일 엔티티 삭제
             }
+        }
+
+        for (File file : list) {
+            if (entity.equals(NoticeBoard.class)) {
+                file.setNoticeBoard((NoticeBoard) entity);
+            } else if (entity.equals(ReviewBoard.class)) {
+                file.setReviewBoard((ReviewBoard) entity);
+            } else if (entity.equals(StoreBoard.class)) {
+                file.setStoreBoard((StoreBoard) entity);
+            } else if (entity.equals(Store.class)) {
+                file.setStore((Store) entity);
+            } else if (entity.equals(User.class)) {
+                file.setUser((User) entity);
+            }
+
+            fileRepository.save(file);
         }
 
         return list;
     }
 
     public byte[] downloadImage(String key) throws IOException {
-        byte[] content = null;
+        byte[] content;
         final S3Object s3Object = s3Client.getObject(bucketName, key);
         final S3ObjectInputStream stream = s3Object.getObjectContent();
         try {

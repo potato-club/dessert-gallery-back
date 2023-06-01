@@ -73,7 +73,7 @@ public class StoreListServiceImpl implements StoreListService {
                 .leftJoin(QStore.store.image, QFile.file)
                 .leftJoin(QStore.store.menu, QMenu.menu)
                 .where(whereBuilder)
-                .orderBy(QStore.store.score.desc())
+                .orderBy(storeSearchDto.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
                 .offset((storeSearchDto.getPage() - 1) * pageSize)
                 .limit(pageSize);
 
