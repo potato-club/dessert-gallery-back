@@ -1,5 +1,6 @@
 package com.dessert.gallery.service.Interface;
 
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
@@ -14,6 +15,6 @@ public interface NoticeBoardService {
     void createNotice(Long storeId, NoticeRequestDto requestDto,
                       List<MultipartFile> files, HttpServletRequest request);
     void updateNotice(Long noticeId, NoticeRequestDto updateDto,
-                      List<MultipartFile> files, HttpServletRequest request);
+                      List<MultipartFile> files, List<FileRequestDto> requestDto, HttpServletRequest request);
     void deleteNotice(Long noticeId, HttpServletRequest request);
 }

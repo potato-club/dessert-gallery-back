@@ -1,5 +1,6 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
@@ -73,10 +74,11 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 
     @Override
     public void updateNotice(Long noticeId, NoticeRequestDto updateDto,
-                             List<MultipartFile> images, HttpServletRequest request) {
+                             List<MultipartFile> images, List<FileRequestDto> requestDto,
+                             HttpServletRequest request) {
         NoticeBoard notice = validateNotice(noticeId, request);
         if(!images.isEmpty()) {
-            List<File> files = updateImage(notice, images);
+            List<File> files = updateImage(notice, images, requestDto);
             notice.setImages(files);
         }
         notice.updateNotice(updateDto);
@@ -107,9 +109,9 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         }
     }
 
-    private List<File> updateImage(NoticeBoard notice, List<MultipartFile> images) {
+    private List<File> updateImage(NoticeBoard notice, List<MultipartFile> images, List<FileRequestDto> requestDto) {
         try {
-            return s3Service.updateFiles(notice, images);
+            return s3Service.updateFiles(notice, images, requestDto);
         } catch (IOException e) {
             throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);
         }

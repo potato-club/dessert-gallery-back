@@ -1,5 +1,6 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.entity.File;
@@ -61,7 +62,8 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public void updateStore(Long id, StoreRequestDto updateDto,
-                            List<MultipartFile> files, HttpServletRequest request) {
+                            List<MultipartFile> files, List<FileRequestDto> requestDto,
+                            HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();
 
@@ -69,10 +71,9 @@ public class StoreServiceImpl implements StoreService {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         if(files != null) {
-            File newFile = updateImage(store, files);
+            File newFile = updateImage(store, files, requestDto);
             store.setImage(newFile);
         }
-        store.updateStore(updateDto);
     }
 
     @Override
@@ -95,9 +96,9 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
-    private File updateImage(Store store, List<MultipartFile> images) {
+    private File updateImage(Store store, List<MultipartFile> images, List<FileRequestDto> requestDto) {
         try {
-            List<File> files = s3Service.updateFiles(store, images);
+            List<File> files = s3Service.updateFiles(store, images, requestDto);
             return files.get(0);
         } catch (IOException e) {
             throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);

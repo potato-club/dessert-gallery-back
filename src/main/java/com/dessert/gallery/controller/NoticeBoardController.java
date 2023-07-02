@@ -1,5 +1,6 @@
 package com.dessert.gallery.controller;
 
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
@@ -51,8 +52,9 @@ public class NoticeBoardController {
     public ResponseEntity<String> updateNoticeBoard(@PathVariable(name = "noticeId") Long noticeId,
                                                     @RequestPart NoticeRequestDto updateDto,
                                                     @RequestPart(required = false) List<MultipartFile> images,
+                                                    @RequestPart List<FileRequestDto> requestDto,
                                                     HttpServletRequest request) {
-        noticeService.updateNotice(noticeId, updateDto, images, request);
+        noticeService.updateNotice(noticeId, updateDto, images, requestDto, request);
         return ResponseEntity.ok("공지사항 수정 완료");
     }
 

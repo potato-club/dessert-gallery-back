@@ -3,6 +3,7 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
@@ -67,14 +68,14 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public void updateBoard(Long boardId, BoardRequestDto requestDto, List<MultipartFile> images,
-                            HttpServletRequest request) {
+    public void updateBoard(Long boardId, BoardRequestDto updateDto, List<MultipartFile> images,
+                            List<FileRequestDto> requestDto, HttpServletRequest request) {
         StoreBoard board = validateBoard(boardId, request);
         if(!images.isEmpty()) {
-            List<File> files = updateImage(board, images);
+            List<File> files = updateImage(board, images, requestDto);
             board.setImages(files);
         }
-        board.updateBoard(requestDto);
+        board.updateBoard(updateDto);
     }
 
     @Override
@@ -101,9 +102,9 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         }
     }
 
-    private List<File> updateImage(StoreBoard board, List<MultipartFile> images) {
+    private List<File> updateImage(StoreBoard board, List<MultipartFile> images, List<FileRequestDto> requestDto) {
         try {
-            return s3Service.updateFiles(board, images);
+            return s3Service.updateFiles(board, images, requestDto);
         } catch (IOException e) {
             throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);
         }

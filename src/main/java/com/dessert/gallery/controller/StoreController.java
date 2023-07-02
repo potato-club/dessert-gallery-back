@@ -1,5 +1,6 @@
 package com.dessert.gallery.controller;
 
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.service.Interface.StoreService;
@@ -41,8 +42,9 @@ public class StoreController {
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
                                               @RequestPart StoreRequestDto updateDto,
                                               @RequestPart List<MultipartFile> images,
+                                              @RequestPart List<FileRequestDto> requestDto,
                                               HttpServletRequest request) {
-        storeService.updateStore(id, updateDto, images, request);
+        storeService.updateStore(id, updateDto, images, requestDto, request);
         return ResponseEntity.ok("가게 정보 수정 완료");
     }
 

@@ -3,6 +3,7 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.StoreBoard;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import io.swagger.annotations.Api;
@@ -52,8 +53,9 @@ public class StoreBoardController {
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
                                                    @RequestBody BoardRequestDto updateDto,
                                                    @RequestPart(required = false) List<MultipartFile> images,
+                                                   @RequestPart List<FileRequestDto> requestDto,
                                                    HttpServletRequest request) {
-        boardService.updateBoard(boardId, updateDto, images, request);
+        boardService.updateBoard(boardId, updateDto, images, requestDto, request);
         return ResponseEntity.ok("게시글 수정 완료");
     }
 
