@@ -1,0 +1,103 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: gallery
+
+  redis:
+    host: redis
+    port: 6379
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  #  rabbitmq:
+  #    host: 127.0.0.1
+  #    port: 5672
+  #    username: guest
+  #    password: guest
+
+  #  h2:
+  #    console:
+  #      enabled: true
+  #      settings:
+  #        web-allow-others: true
+  #      path: /h2-console
+
+  datasource:
+    url: ENC(z0CNo+ESUWi5Ic274JNXVc5QHIRdimZraLV44yqZf0ByKpSQeuSTcvxOTBX8E8eOzDdHlgL38lIfwgilxbSyVrP/oVA+we/LuWF+lAICBucj4mrwte2o4sHvd4tcfBRP0HisHLBku2E=)
+    username: ENC(ptgPiCGfwu1nCmkYDF/6XyGnp2Wcagax)
+    password: ENC(hKqNY48rzmSjIwmtYVsmXZjoMhWw0sIj)
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ENC(RXaEtTItfS679Ihq2CWcSvrnqFd4Rt71jMWTLYoVaXGSIx4QrNoALUc5bBbKJsQA)
+            redirect-uri: ENC(2og82BZ7sJZaU2DYPb/gt5DZ1swOqOOyG8d9uXfRfAgRWIDqc1//vQ==)
+            authorization-grant-type: authorization_code
+            client-authentication-method: POST
+            client-name: Kakao
+            scope:
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+#config:
+#  import: bootstrap.yml
+
+cloud:
+  aws:
+    s3:
+      bucket: ENC(O7O9NN+RIl8p7GO0s/2PJhw3FvYTM/It)
+    region:
+      auto: false
+      static: ap-northeast-2
+    credentials:
+      accessKey: ENC(iR+LYe97Igzp3iiLij3PjEbiyUmWg/R0c2hFRtnMgXk=)
+      secretKey: ENC(OXH6lj/RA4DRFJ8sBXI9siArzUmAAyoafjbcvy99uuROQuDBdor5aP0nTphSofzxhgjvYWRIm08=)
+    stack:
+      auto: false
+
+jwt:
+  secret: ENC(g5q/3DYd3/gKvvn+ObxcQsWdORr6dK6C3Nw/BxjjrNV2Lux+qUfpFgbgX7iOjXCyMqYYfpcw6bJ04gYZVi2renFnGQCAJPRCTDr2EQpUmWJ9j7fmM8jmiQUIorKfZoa65zlMLg7OgJNbA8ZfbyvYA4j+LADRI6XYQWvdXfJctxq9+SYKf17E/Xs1SmcVEHAyBev1uN6DqrK3Z8fGVSDkuY5CzF/ETTG2)
+  accessTokenExpiration: ENC(3WIulzhNyf0kYojbECdk7Q==)
+  refreshTokenExpiration: ENC(obqzP+FtPVU/lZS2X3sMHprSlS31Ou0t)
+
+email:
+  gmail:
+    id: ENC(OkKaQd4UnXslSaKPJ4SwMMYm2lUPmHH9piqwvipdQ7g=)
+    pw: ENC(KlbvlVSus+RvVsHq5EMKuaL+YdEkQ/vxdyI/dn4c6n0=)
+  naver:
+    id: ENC(UQs859awPt7sKp69E/8nSfPC5tYedJlk2NGAT7EYzEY=)
+    pw: ENC(dd8+VY2qXOOt9Lll+wZelyzL3rjIAOyJ)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, beans, refresh, info, metrics, prometheus
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
