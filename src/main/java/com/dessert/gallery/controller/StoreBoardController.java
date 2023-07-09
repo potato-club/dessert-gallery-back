@@ -4,7 +4,7 @@ import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
-import com.dessert.gallery.entity.StoreBoard;
+import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +23,7 @@ import java.util.List;
 @Api(tags = {"Store Board Controller"})
 public class StoreBoardController {
     private final StoreBoardService boardService;
+    private final BookmarkService bookmarkService;
 
     @Operation(summary = "가게의 모든 게시글 조회")
     @GetMapping("/stores/{storeId}")
@@ -46,6 +47,14 @@ public class StoreBoardController {
                                                    HttpServletRequest request) {
         boardService.createBoard(storeId, boardDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 생성 완료");
+    }
+
+    @Operation(summary = "게시글 북마크 토글")
+    @PostMapping("/{boardId}/bookmark")
+    public ResponseEntity<String> bookmarkBoard(@PathVariable(name = "boardId") Long boardId,
+                                                HttpServletRequest request) {
+        String res = bookmarkService.toggleBookmark(boardId, request);
+        return ResponseEntity.ok(res);
     }
 
     @Operation(summary = "가게 게시글 수정")

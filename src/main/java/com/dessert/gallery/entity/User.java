@@ -49,6 +49,9 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscribe> subscriptions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bookmark> bookmarkList = new ArrayList<>();
+
     public void update(UserUpdateRequestDto userDto) { this.nickname = userDto.getNickname(); }
 
     public void setDeleted(boolean deleted) {
@@ -56,4 +59,12 @@ public class User extends BaseTimeEntity {
     }
 
     public void setEmailOtp(boolean emailOtp) { this.emailOtp = emailOtp; }
+
+    public void addBookmark(Bookmark bookmark) {
+        bookmarkList.add(bookmark);
+    }
+
+    public void removeBookmark(Bookmark bookmark) {
+        bookmarkList.removeIf(b -> b == bookmark);
+    }
 }
