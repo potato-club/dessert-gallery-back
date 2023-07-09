@@ -1,6 +1,6 @@
 package com.dessert.gallery.service.S3;
 
-import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.dessert.gallery.dto.file.FileRequestDto;
@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Service {
 
-    private final AmazonS3 s3Client;
+    private final AmazonS3Client s3Client;
     private final FileRepository fileRepository;
 
     @Value("${cloud.aws.s3.bucket}")
