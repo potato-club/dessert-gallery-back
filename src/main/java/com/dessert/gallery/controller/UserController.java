@@ -1,11 +1,13 @@
 package com.dessert.gallery.controller;
 
+import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
 import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
 import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
+import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 public class UserController {
 
     private final UserService userService;
+    private final BookmarkService bookmarkService;
 
     @Operation(summary = "카카오 로그인 API")
     @GetMapping("/login/kakao")
@@ -54,6 +58,12 @@ public class UserController {
     @GetMapping("")
     public UserProfileResponseDto viewProfile(HttpServletRequest request) {
         return userService.viewProfile(request);
+    }
+
+    @Operation(summary = "북마크 게시글 확인 API")
+    @GetMapping("/bookmark")
+    public List<BoardListResponseDto> viewBookmark(HttpServletRequest request) {
+        return bookmarkService.getBookmarks(request);
     }
 
     @Operation(summary = "로그아웃 API")

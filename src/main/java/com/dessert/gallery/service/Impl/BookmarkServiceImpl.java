@@ -1,5 +1,6 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.entity.Bookmark;
 import com.dessert.gallery.entity.StoreBoard;
 import com.dessert.gallery.entity.User;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,5 +42,15 @@ public class BookmarkServiceImpl implements BookmarkService {
             bookmarkRepository.delete(findBookmark);
             return "북마크 삭제";
         }
+    }
+
+    @Override
+    public List<BoardListResponseDto> getBookmarks(HttpServletRequest request) {
+        User user = userService.findUserByToken(request);
+        List<Bookmark> bookmarkList = bookmarkRepository.findByUser(user);
+
+        return bookmarkList.stream()
+                .map(b -> new BoardListResponseDto(b.getBoard()))
+                .collect(Collectors.toList());
     }
 }
