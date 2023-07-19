@@ -15,10 +15,10 @@ public class StoreRequestDto {
     private String content;
 
     @ApiModelProperty(value = "가게 위도")
-    private String latitude;
+    private double latitude;
 
     @ApiModelProperty(value = "가게 경도")
-    private String longitude;
+    private double longitude;
 
     @ApiModelProperty(value = "가게 주소")
     private String address;

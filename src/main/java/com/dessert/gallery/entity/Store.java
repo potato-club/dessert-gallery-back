@@ -24,10 +24,10 @@ public class Store extends BaseTimeEntity {
     private String content;
 
     @Column
-    private String latitude;
+    private double latitude;
 
     @Column
-    private String longitude;
+    private double longitude;
 
     @Column(nullable = false)
     private String address;
@@ -36,7 +36,7 @@ public class Store extends BaseTimeEntity {
     private String phoneNumber;
 
     @Column
-    private Double score;
+    private double score;
 
     @OneToOne(mappedBy = "store", orphanRemoval = true)
     private File image;
