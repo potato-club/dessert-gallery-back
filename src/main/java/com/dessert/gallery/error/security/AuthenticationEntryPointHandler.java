@@ -39,6 +39,9 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
         } else if (rootCause.getClass() == SignatureException.class) {
             errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
             setResponse(response, errorCode);
+        } else {
+            errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;  // Test Code
+            setResponse(response, errorCode);
         }
     }
 

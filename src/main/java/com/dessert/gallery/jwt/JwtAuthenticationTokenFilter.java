@@ -40,13 +40,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         if (accessToken == null) {
             String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-            if (jwtTokenProvider.validateToken(refreshToken, request) && redisService.isRefreshTokenValid(refreshToken, ipAddress)) {
+            if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)) {
                 accessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
                 jwtTokenProvider.setHeaderAccessToken(response, accessToken);
                 this.setAuthentication(accessToken);
             }
         } else {
-            if (jwtTokenProvider.validateToken(accessToken, request) && !redisService.isTokenInBlacklist(accessToken)) {
+            if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
                 this.setAuthentication(accessToken);
             }
         }
