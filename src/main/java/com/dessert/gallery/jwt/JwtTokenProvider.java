@@ -8,7 +8,6 @@ import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Jwt.CustomUserDetailService;
 import com.dessert.gallery.service.Jwt.RedisService;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.SignatureException;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -131,7 +130,7 @@ public class JwtTokenProvider {
     }
 
     // 토큰의 유효성 + 만료일자 확인
-    public boolean validateToken(String jwtToken) {
+    public boolean validateToken(String jwtToken, HttpServletRequest request) {
         try {
             Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
             Jws<Claims> claims = Jwts.parserBuilder()
@@ -141,16 +140,18 @@ public class JwtTokenProvider {
 
             return !claims.getBody().getExpiration().before(new Date());
         } catch (MalformedJwtException e) {
-            throw new MalformedJwtException("Invalid JWT token");
+            request.setAttribute("exception", ErrorJwtCode.INVALID_JWT_TOKEN.getCode());
         } catch (ExpiredJwtException e) {
-            throw new JwtExpiredException("JWT token has expired");
+            request.setAttribute("exception", ErrorJwtCode.JWT_TOKEN_EXPIRED.getCode());
         } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException("JWT token is unsupported");
+            request.setAttribute("exception", ErrorJwtCode.UNSUPPORTED_JWT_TOKEN.getCode());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("JWT claims string is empty");
+            request.setAttribute("exception", ErrorJwtCode.EMPTY_JWT_CLAIMS.getCode());
         } catch (SignatureException e) {
-            throw new SignatureException("JWT signature does not match");
+            request.setAttribute("exception", ErrorJwtCode.JWT_SIGNATURE_MISMATCH.getCode());
         }
+
+        return false;
     }
 
     // 어세스 토큰 헤더 설정

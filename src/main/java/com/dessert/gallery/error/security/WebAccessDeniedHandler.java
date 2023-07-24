@@ -17,7 +17,7 @@ public class WebAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
             throws IOException {
-        ErrorCode errorCode = ErrorCode.ACCESS_DENIED_EXCEPTION;
+        ErrorCode errorCode = ErrorCode.FORBIDDEN_EXCEPTION;
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
