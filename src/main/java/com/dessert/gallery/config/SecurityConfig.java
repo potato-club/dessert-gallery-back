@@ -6,14 +6,12 @@ import com.dessert.gallery.jwt.JwtAuthenticationTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @RequiredArgsConstructor
@@ -50,11 +48,10 @@ public class SecurityConfig {
                 // 나머지 요청에 대해서는 권한 제한 없이 호출 가능하도록 설정
                 .anyRequest().permitAll()
                 .and()
+                .addFilterBefore(jwtAuthenticationTokenFilter, BasicAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPointHandler)
-                .accessDeniedHandler(webAccessDeniedHandler)
-                .and()
-                .addFilterBefore(jwtAuthenticationTokenFilter, BasicAuthenticationFilter.class);
+                .accessDeniedHandler(webAccessDeniedHandler);
 
         return http.build();
     }
