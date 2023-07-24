@@ -140,18 +140,16 @@ public class JwtTokenProvider {
 
             return !claims.getBody().getExpiration().before(new Date());
         } catch (MalformedJwtException e) {
-            request.setAttribute("exception", ErrorJwtCode.INVALID_JWT_TOKEN.getCode());
+            throw new MalformedJwtException("Invalid JWT token");
         } catch (ExpiredJwtException e) {
-            request.setAttribute("exception", ErrorJwtCode.JWT_TOKEN_EXPIRED.getCode());
+            throw new JwtExpiredException("JWT token has expired");
         } catch (UnsupportedJwtException e) {
-            request.setAttribute("exception", ErrorJwtCode.UNSUPPORTED_JWT_TOKEN.getCode());
+            throw new UnsupportedJwtException("JWT token is unsupported");
         } catch (IllegalArgumentException e) {
-            request.setAttribute("exception", ErrorJwtCode.EMPTY_JWT_CLAIMS.getCode());
+            throw new IllegalArgumentException("JWT claims string is empty");
         } catch (SignatureException e) {
-            request.setAttribute("exception", ErrorJwtCode.JWT_SIGNATURE_MISMATCH.getCode());
+            throw new SignatureException("JWT signature does not match");
         }
-
-        return false;
     }
 
     // 어세스 토큰 헤더 설정
