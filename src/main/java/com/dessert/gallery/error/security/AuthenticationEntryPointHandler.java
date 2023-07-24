@@ -4,6 +4,7 @@ import com.dessert.gallery.error.ErrorJwtCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.security.SignatureException;
 
 @Component
+@Slf4j
 public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint {
 
     @Override
@@ -23,6 +25,8 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
 
         ErrorJwtCode errorCode;
         Throwable rootCause = authException.getCause();
+
+        log.info("start error code");
 
         if (rootCause.getClass() == MalformedJwtException.class) {
             errorCode = ErrorJwtCode.INVALID_JWT_TOKEN;
@@ -36,19 +40,25 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
         } else if (rootCause.getClass() == IllegalArgumentException.class) {
             errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;
             setResponse(response, errorCode);
+            log.info("show error code");
         } else if (rootCause.getClass() == SignatureException.class) {
             errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
             setResponse(response, errorCode);
         } else {
             errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;  // Test Code
             setResponse(response, errorCode);
+            log.info("show error code");
         }
+
+        log.info("end error");
     }
 
     private void setResponse(HttpServletResponse response, ErrorJwtCode errorCode) throws IOException {
         JSONObject json = new JSONObject();
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        log.info("into the setResponse");
 
         json.put("code", errorCode.getCode());
         json.put("message", errorCode.getMessage());
