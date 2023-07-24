@@ -24,19 +24,19 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
         ErrorJwtCode errorCode;
         Throwable rootCause = authException.getCause();
 
-        if (rootCause instanceof MalformedJwtException) {
+        if (rootCause.getClass() == MalformedJwtException.class) {
             errorCode = ErrorJwtCode.INVALID_JWT_TOKEN;
             setResponse(response, errorCode);
-        } else if (rootCause instanceof UnsupportedJwtException) {
+        } else if (rootCause.getClass() == UnsupportedJwtException.class) {
             errorCode = ErrorJwtCode.UNSUPPORTED_JWT_TOKEN;
             setResponse(response, errorCode);
-        } else if (rootCause instanceof ExpiredJwtException) {
+        } else if (rootCause.getClass() == ExpiredJwtException.class) {
             errorCode = ErrorJwtCode.JWT_TOKEN_EXPIRED;
             setResponse(response, errorCode);
-        } else if (rootCause instanceof IllegalArgumentException) {
+        } else if (rootCause.getClass() == IllegalArgumentException.class) {
             errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;
             setResponse(response, errorCode);
-        } else if (rootCause instanceof SignatureException) {
+        } else if (rootCause.getClass() == SignatureException.class) {
             errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
             setResponse(response, errorCode);
         }
