@@ -1,5 +1,7 @@
 package com.dessert.gallery.config;
 
+import com.dessert.gallery.error.security.AuthenticationEntryPointHandler;
+import com.dessert.gallery.error.security.WebAccessDeniedHandler;
 import com.dessert.gallery.jwt.JwtAuthenticationTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +22,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class SecurityConfig {
 
     private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+    private final WebAccessDeniedHandler webAccessDeniedHandler;
+    private final AuthenticationEntryPointHandler authenticationEntryPointHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -46,9 +50,11 @@ public class SecurityConfig {
                 // 나머지 요청에 대해서는 권한 제한 없이 호출 가능하도록 설정
                 .anyRequest().permitAll()
                 .and()
-                .addFilterBefore(jwtAuthenticationTokenFilter, BasicAuthenticationFilter.class)
                 .exceptionHandling()
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                .authenticationEntryPoint(authenticationEntryPointHandler)
+                .accessDeniedHandler(webAccessDeniedHandler)
+                .and()
+                .addFilterBefore(jwtAuthenticationTokenFilter, BasicAuthenticationFilter.class);
 
         return http.build();
     }

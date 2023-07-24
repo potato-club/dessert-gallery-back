@@ -1,21 +1,25 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
 import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
 import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
 import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
+import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
+import com.dessert.gallery.repository.FileRepository;
 import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.Jwt.RedisService;
 import com.dessert.gallery.service.KakaoApi;
+import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,10 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 
@@ -32,6 +40,8 @@ import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final FileRepository fileRepository;
+    private final S3Service s3Service;
     private final KakaoApi kakaoApi;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
@@ -120,19 +130,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) {
+    public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException {
         User user = findUserByToken(request);
+
+        if (requestDto.getFile() != null) {
+            List<FileRequestDto> fileList = new ArrayList<>();
+            FileRequestDto fileDto = FileRequestDto.builder()
+                    .fileName(requestDto.getFileName())
+                    .fileUrl(requestDto.getFileUrl())
+                    .deleted(true)
+                    .build();
+
+            fileList.add(fileDto);
+            s3Service.updateFiles(user, requestDto.getFile(), fileList);
+        }
+
         user.update(requestDto);
     }
 
     @Override
     public UserProfileResponseDto viewProfile(HttpServletRequest request) {
         User user = findUserByToken(request);
+        List<File> file = fileRepository.findByUser(user);
 
         UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
                 .nickname(user.getNickname())
                 .loginType(user.getLoginType())
                 .userRole(user.getUserRole())
+                .fileName(file.get(0).getFileName())
+                .fileUrl(file.get(0).getFileUrl())
                 .build();
 
         return responseDto;

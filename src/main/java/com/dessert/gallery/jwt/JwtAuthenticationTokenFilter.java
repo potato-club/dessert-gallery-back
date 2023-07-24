@@ -45,7 +45,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 jwtTokenProvider.setHeaderAccessToken(response, accessToken);
                 this.setAuthentication(accessToken);
             }
-        } else if (accessToken != null) {
+        } else {
             if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
                 this.setAuthentication(accessToken);
             }

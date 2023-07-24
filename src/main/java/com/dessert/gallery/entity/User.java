@@ -52,7 +52,10 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarkList = new ArrayList<>();
 
-    public void update(UserUpdateRequestDto userDto) { this.nickname = userDto.getNickname(); }
+    public void update(UserUpdateRequestDto userDto) {
+        this.nickname = userDto.getNickname();
+        this.userRole = userDto.getUserRole();
+    }
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;

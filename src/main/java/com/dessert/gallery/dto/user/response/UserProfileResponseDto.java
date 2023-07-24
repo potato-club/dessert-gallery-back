@@ -18,4 +18,10 @@ public class UserProfileResponseDto {
 
     @ApiModelProperty(value = "유저 역할", example = "USER / MANAGER")
     private UserRole userRole;
+
+    @ApiModelProperty(value = "사진 이름")
+    private String fileName;
+
+    @ApiModelProperty(value = "사진 URL")
+    private String fileUrl;
 }

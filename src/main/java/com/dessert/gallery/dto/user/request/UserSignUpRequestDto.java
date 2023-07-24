@@ -26,10 +26,10 @@ public class UserSignUpRequestDto {
     @ApiModelProperty(value = "닉네임")
     private String nickname;
 
-    @ApiModelProperty(value = "USER / MANAGER")
+    @ApiModelProperty(value = "USER / MANAGER", example = "USER / MANAGER")
     private UserRole userRole;
 
-    @ApiModelProperty(value = "NORMAL / KAKAO")
+    @ApiModelProperty(value = "NORMAL / KAKAO", example = "NORMAL / KAKAO")
     private LoginType loginType;
 
     public User toEntity() {

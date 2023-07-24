@@ -1,4 +1,4 @@
-package com.dessert.gallery.error.jwt;
+package com.dessert.gallery.error;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

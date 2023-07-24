@@ -10,6 +10,7 @@ import com.dessert.gallery.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public interface UserService {
     UserKakaoResponseDto kakaoLogin(String code, HttpServletResponse response);
@@ -18,7 +19,7 @@ public interface UserService {
 
     void signUp(UserSignUpRequestDto requestDto, HttpServletResponse response);
 
-    void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request);
+    void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException;
 
     UserProfileResponseDto viewProfile(HttpServletRequest request);
 

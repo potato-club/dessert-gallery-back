@@ -3,8 +3,7 @@ package com.dessert.gallery.jwt;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.ForbiddenException;
-import com.dessert.gallery.error.jwt.CustomJwtException;
-import com.dessert.gallery.error.jwt.ErrorJwtCode;
+import com.dessert.gallery.error.ErrorJwtCode;
 import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Jwt.CustomUserDetailService;
 import com.dessert.gallery.service.Jwt.RedisService;
@@ -142,15 +141,15 @@ public class JwtTokenProvider {
 
             return !claims.getBody().getExpiration().before(new Date());
         } catch (MalformedJwtException e) {
-            throw new CustomJwtException(ErrorJwtCode.INVALID_JWT_TOKEN);
+            throw new MalformedJwtException("Invalid JWT token");
         } catch (ExpiredJwtException e) {
-            throw new CustomJwtException(ErrorJwtCode.JWT_TOKEN_EXPIRED);
+            throw new JwtExpiredException("JWT token has expired");
         } catch (UnsupportedJwtException e) {
-            throw new CustomJwtException(ErrorJwtCode.UNSUPPORTED_JWT_TOKEN);
+            throw new UnsupportedJwtException("JWT token is unsupported");
         } catch (IllegalArgumentException e) {
-            throw new CustomJwtException(ErrorJwtCode.EMPTY_JWT_CLAIMS);
+            throw new IllegalArgumentException("JWT claims string is empty");
         } catch (SignatureException e) {
-            throw new CustomJwtException(ErrorJwtCode.JWT_SIGNATURE_MISMATCH);
+            throw new SignatureException("JWT signature does not match");
         }
     }
 
