@@ -84,6 +84,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         json.put("code", errorCode.getCode());
         json.put("message", errorCode.getMessage());
         response.getWriter().print(json);
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private void setAuthentication(String token) {
