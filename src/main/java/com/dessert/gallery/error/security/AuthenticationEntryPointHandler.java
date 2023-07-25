@@ -23,6 +23,8 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
 
+        log.error("test : " + authException.toString());
+
         ErrorJwtCode errorCode;
         Throwable rootCause = authException.getCause();
 
@@ -40,9 +42,6 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
             setResponse(response, errorCode);
         } else if (rootCause.getClass() == SignatureException.class) {
             errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
-            setResponse(response, errorCode);
-        } else {
-            errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;  // Test Code
             setResponse(response, errorCode);
         }
     }
