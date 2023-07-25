@@ -23,8 +23,6 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
 
-        log.error("test : " + authException.toString());
-
         ErrorJwtCode errorCode;
         Throwable rootCause = authException.getCause();
 

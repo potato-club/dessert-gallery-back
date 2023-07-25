@@ -1,7 +1,13 @@
 package com.dessert.gallery.jwt;
 
+import com.dessert.gallery.error.ErrorJwtCode;
 import com.dessert.gallery.service.Jwt.RedisService;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONObject;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -35,21 +41,49 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
 
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        ErrorJwtCode errorCode;
 
-        if (accessToken == null) {
-            String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-            if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)) {
-                accessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
-                jwtTokenProvider.setHeaderAccessToken(response, accessToken);
-                this.setAuthentication(accessToken);
+        try {
+            if (accessToken == null) {
+                String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)) {
+                    accessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
+                    jwtTokenProvider.setHeaderAccessToken(response, accessToken);
+                    this.setAuthentication(accessToken);
+                }
+            } else {
+                if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
+                    this.setAuthentication(accessToken);
+                }
             }
-        } else {
-            if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
-                this.setAuthentication(accessToken);
-            }
+        } catch (MalformedJwtException e) {
+            errorCode = ErrorJwtCode.INVALID_JWT_TOKEN;
+            setResponse(response, errorCode);
+        } catch (ExpiredJwtException e) {
+            errorCode = ErrorJwtCode.UNSUPPORTED_JWT_TOKEN;
+            setResponse(response, errorCode);
+        } catch (UnsupportedJwtException e) {
+            errorCode = ErrorJwtCode.JWT_TOKEN_EXPIRED;
+            setResponse(response, errorCode);
+        } catch (IllegalArgumentException e) {
+            errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;
+            setResponse(response, errorCode);
+        } catch (SignatureException e) {
+            errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
+            setResponse(response, errorCode);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void setResponse(HttpServletResponse response, ErrorJwtCode errorCode) throws IOException {
+        JSONObject json = new JSONObject();
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        json.put("code", errorCode.getCode());
+        json.put("message", errorCode.getMessage());
+        response.getWriter().print(json);
     }
 
     private void setAuthentication(String token) {
