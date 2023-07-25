@@ -34,10 +34,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         if (path.contains("/swagger") || path.contains("/v2/api-docs")) {   // 추후 ADMIN 권한을 가진 사람만 접근할 수 있도록 변경 예정.
             filterChain.doFilter(request, response);
+            return;
         }
 
         if (path.contains("/users/login") || path.contains("/users/signup") || path.contains("/users/mail")) {
             filterChain.doFilter(request, response);
+            return;
         }
 
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
@@ -59,18 +61,23 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         } catch (MalformedJwtException e) {
             errorCode = ErrorJwtCode.INVALID_JWT_TOKEN;
             setResponse(response, errorCode);
+            return;
         } catch (ExpiredJwtException e) {
             errorCode = ErrorJwtCode.UNSUPPORTED_JWT_TOKEN;
             setResponse(response, errorCode);
+            return;
         } catch (UnsupportedJwtException e) {
             errorCode = ErrorJwtCode.JWT_TOKEN_EXPIRED;
             setResponse(response, errorCode);
+            return;
         } catch (IllegalArgumentException e) {
             errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;
             setResponse(response, errorCode);
+            return;
         } catch (SignatureException e) {
             errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
             setResponse(response, errorCode);
+            return;
         }
 
         filterChain.doFilter(request, response);
