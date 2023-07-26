@@ -1,6 +1,6 @@
 package com.dessert.gallery.dto.user.request;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserLoginRequestDto {
 
-    @ApiModelProperty(value = "Email")
+    @Schema(description = "Email")
     private String email;
 
-    @ApiModelProperty(value = "일반 로그인 패스워드")
+    @Schema(description = "일반 로그인 패스워드")
     private String password;
 }

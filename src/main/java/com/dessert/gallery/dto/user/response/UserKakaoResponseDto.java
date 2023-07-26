@@ -1,6 +1,6 @@
 package com.dessert.gallery.dto.user.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,9 +8,9 @@ import lombok.Getter;
 @Builder
 public class UserKakaoResponseDto {
 
-    @ApiModelProperty(value = "Email")
+    @Schema(description = "Email")
     private String email;
 
-    @ApiModelProperty(value = "응답 코드", example = "200_OK / 201_CREATED")
+    @Schema(description = "응답 코드", example = "200_OK / 201_CREATED")
     private String responseCode;
 }

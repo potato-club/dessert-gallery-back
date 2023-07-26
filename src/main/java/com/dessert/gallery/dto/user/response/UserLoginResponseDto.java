@@ -1,6 +1,6 @@
 package com.dessert.gallery.dto.user.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,6 +8,6 @@ import lombok.Getter;
 @Builder
 public class UserLoginResponseDto {
 
-    @ApiModelProperty(value = "응답 코드", example = "200_OK")
+    @Schema(description = "응답 코드", example = "200_OK")
     private String responseCode;
 }

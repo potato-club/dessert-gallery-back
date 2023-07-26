@@ -3,8 +3,8 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
 import com.dessert.gallery.service.Interface.ReviewService;
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
-@Api(tags = {"Review Board Controller"})
+@Tag(name = "Review Board Controller", description = "리뷰 게시판 API")
 public class ReviewController {
     private final ReviewService reviewService;
 

@@ -4,9 +4,8 @@ import com.dessert.gallery.dto.store.StoreListResponseDto;
 import com.dessert.gallery.dto.store.list.StoreReviewDto;
 import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.service.Interface.StoreListService;
-import com.querydsl.core.Tuple;
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/list")
-@Api(tags = {"Store List Controller"})
+@Tag(name = "Store List Controller", description = "가게 리스트 API")
 public class StoreListController {
 
     private final StoreListService storeListService;

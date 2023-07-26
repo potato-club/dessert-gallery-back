@@ -1,6 +1,6 @@
 package com.dessert.gallery.dto.store.map;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +10,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class StoreCoordinate {
 
-    @ApiModelProperty(value = "위도")
+    @Schema(description = "위도")
     private double x;
 
-    @ApiModelProperty(value = "경도")
+    @Schema(description = "경도")
     private double y;
 }

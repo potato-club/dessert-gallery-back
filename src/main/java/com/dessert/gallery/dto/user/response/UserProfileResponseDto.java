@@ -2,7 +2,7 @@ package com.dessert.gallery.dto.user.response;
 
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,18 +10,18 @@ import lombok.Getter;
 @Builder
 public class UserProfileResponseDto {
 
-    @ApiModelProperty(value = "닉네임")
+    @Schema(description = "닉네임")
     private String nickname;
 
-    @ApiModelProperty(value = "로그인 타입", example = "NORMAL / KAKAO")
+    @Schema(description = "로그인 타입", example = "NORMAL / KAKAO")
     private LoginType loginType;
 
-    @ApiModelProperty(value = "유저 역할", example = "USER / MANAGER")
+    @Schema(description = "유저 역할", example = "USER / MANAGER")
     private UserRole userRole;
 
-    @ApiModelProperty(value = "사진 이름")
+    @Schema(description = "사진 이름")
     private String fileName;
 
-    @ApiModelProperty(value = "사진 URL")
+    @Schema(description = "사진 URL")
     private String fileUrl;
 }

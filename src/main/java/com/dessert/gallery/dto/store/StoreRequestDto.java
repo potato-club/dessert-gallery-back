@@ -1,6 +1,6 @@
 package com.dessert.gallery.dto.store;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,21 +8,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StoreRequestDto {
 
-    @ApiModelProperty(value = "가게 이름")
+    @Schema(description = "가게 이름")
     private String name;
 
-    @ApiModelProperty(value = "가게 소개")
+    @Schema(description = "가게 소개")
     private String content;
 
-    @ApiModelProperty(value = "가게 위도")
+    @Schema(description = "가게 위도")
     private double latitude;
 
-    @ApiModelProperty(value = "가게 경도")
+    @Schema(description = "가게 경도")
     private double longitude;
 
-    @ApiModelProperty(value = "가게 주소")
+    @Schema(description = "가게 주소")
     private String address;
 
-    @ApiModelProperty(value = "가게 전화번호")
+    @Schema(description = "가게 전화번호")
     private String phoneNumber;
 }

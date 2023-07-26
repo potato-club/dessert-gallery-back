@@ -3,9 +3,10 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
+import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.StoreService;
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,20 +14,54 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/stores")
-@Api(tags = {"Store Controller"})
+@Tag(name = "Store Controller", description = "가게 API")
 public class StoreController {
     private final StoreService storeService;
+    private final CalendarService calendarService;
 
     @Operation(summary = "가게 정보 조회 API")
     @GetMapping("/{storeId}")
     public StoreResponseDto getStore(@PathVariable(name = "storeId") Long storeId) {
         return storeService.getStore(storeId);
     }
+
+    @Operation(summary = "가게 페이지 캘린더 조회 API")
+    @GetMapping("/{storeId}/calendar")
+    public ResponseEntity<?> getCalendar(
+            @PathVariable(name = "storeId") Long storeId,
+            @RequestParam(required = false, defaultValue = "0", value = "year") int year,
+            @RequestParam(required = false, defaultValue = "0", value = "month") int month) {
+        if(year == 0 && month == 0) {
+            LocalDate now = LocalDate.now();
+            year = now.getYear();
+            month = now.getDayOfMonth();
+        }
+        calendarService.getCalendarByStore(storeId, year, month);
+        return ResponseEntity.ok("ok");
+    }
+
+    @Operation(summary = "사장님 페이지 캘린더 조회 API")
+    @GetMapping("/{storeId}/calendar/owner")
+    public ResponseEntity<?> getOwnerCalendar(
+            @PathVariable(name = "storeId") Long storeId,
+            @RequestParam(required = false, defaultValue = "0", value = "year") int year,
+            @RequestParam(required = false, defaultValue = "0", value = "month") int month,
+            HttpServletRequest request) {
+        if(year == 0 && month == 0) {
+            LocalDate now = LocalDate.now();
+            year = now.getYear();
+            month = now.getDayOfMonth();
+        }
+        calendarService.getOwnerCalendar(storeId, year, month, request);
+        return ResponseEntity.ok("ok");
+    }
+
 
     @Operation(summary = "가게 생성 API")
     @PostMapping("")

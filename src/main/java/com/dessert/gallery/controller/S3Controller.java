@@ -1,8 +1,8 @@
 package com.dessert.gallery.controller;
 
 import com.dessert.gallery.service.S3.S3Service;
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/s3")
-@Api(tags = {"AWS S3 Download Controller"})
+@Tag(name = "AWS S3 Download Controller", description = "S3 다운로드 API")
 public class S3Controller {
 
     private final S3Service s3Service;

@@ -1,80 +1,46 @@
 package com.dessert.gallery.config;
 
+import io.swagger.v3.oas.models.info.Info;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.function.Predicate;
 
 @Configuration
-@EnableSwagger2
-@ComponentScan(basePackages = {"com.dessert"})
-@Import(BeanValidatorPluginsConfiguration.class)
 public class Swagger2Config {
+    @Bean
+    public GroupedOpenApi defaultApi() {
+        Info info = new Info().title("디저트 갤러리 API").version("v0.1");
 
-    @Bean(name = "defaultApi")
-    public Docket defaultApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .ignoredParameterTypes(java.sql.Date.class)
-                .forCodeGeneration(true)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.dessert"))
-                .paths(PathSelectors.any())
-                .build()
-                .apiInfo(userApiInfo())
-                .enable(true)
-                .host("localhost:8080");
-    }
-
-    @Bean(name = "userApi")
-    public Docket userApi() {
-        Predicate<String> path = PathSelectors.ant("/users/**");
-
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Users and Authorization")
-                .select()
-                .paths(path)
-                .build()
-                .apiInfo(userApiInfo());
-    }
-
-    @Bean(name = "storeApi")
-    public Docket storeApi() {
-        Predicate<String> path = PathSelectors.ant("/stores/**")
-                .or(PathSelectors.ant("/boards/**"))
-                .or(PathSelectors.ant("/notices/**"))
-                .or(PathSelectors.ant("/reviews/**"));
-
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Store's Functions")
-                .select()
-                .paths(path)
-                .build()
-                .apiInfo(storeApiInfo());
-    }
-
-    private ApiInfo userApiInfo(){
-        return new ApiInfoBuilder()
-                .title("디저트 갤러리 유저 & 인증/인가 API")
-                .description("API 상세소개 및 사용법")
-                .version("1.0")
+        return GroupedOpenApi.builder()
+                .group("all")
+                .pathsToMatch("/**")
+                .displayName("All API")
+                .addOpenApiCustomiser(api -> api.setInfo(info))
                 .build();
     }
 
-    private ApiInfo storeApiInfo(){
-        return new ApiInfoBuilder()
-                .title("디저트 갤러리 가게 기능 API")
-                .description("API 상세소개 및 사용법")
-                .version("1.0")
+    @Bean
+    public GroupedOpenApi userApi() {
+        Info info = new Info().title("유저 & 인증/인가 API").version("v0.1");
+
+        return GroupedOpenApi.builder()
+                .group("users")
+                .pathsToMatch("/users/**")
+                .displayName("Users and Authorization")
+                .addOpenApiCustomiser(api -> api.setInfo(info))
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi storeApi() {
+        Info info = new Info().title("가게 및 게시판 기능 API").version("v0.1");
+        String[] paths = {"/stores/**", "/boards/**", "/notices/**", "/reviews/**"};
+
+        return GroupedOpenApi.builder()
+                .group("stores")
+                .pathsToMatch(paths)
+                .displayName("Store's API")
+                .addOpenApiCustomiser(api -> api.setInfo(info))
                 .build();
     }
 }

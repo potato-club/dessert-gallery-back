@@ -6,8 +6,8 @@ import com.dessert.gallery.dto.board.BoardResponseDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/boards")
-@Api(tags = {"Store Board Controller"})
+@Tag(name = "Store Board Controller", description = "가게 게시판 API")
 public class StoreBoardController {
     private final StoreBoardService boardService;
     private final BookmarkService bookmarkService;
@@ -60,7 +60,7 @@ public class StoreBoardController {
     @Operation(summary = "가게 게시글 수정")
     @PutMapping("/{boardId}")
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
-                                                   @RequestBody BoardRequestDto updateDto,
+                                                   @RequestPart BoardRequestDto updateDto,
                                                    @RequestPart(required = false) List<MultipartFile> images,
                                                    @RequestPart List<FileRequestDto> requestDto,
                                                    HttpServletRequest request) {

@@ -2,16 +2,16 @@ package com.dessert.gallery.dto.board;
 
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.StoreBoard;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 public class BoardListResponseDto {
-    @ApiModelProperty(value = "게시글 id")
+    @Schema(description = "게시글 id")
     private Long boardId;
-    @ApiModelProperty(value = "썸네일 이미지")
+    @Schema(description = "썸네일 이미지")
     private FileDto thumbnail;
 
     public BoardListResponseDto(StoreBoard board) {

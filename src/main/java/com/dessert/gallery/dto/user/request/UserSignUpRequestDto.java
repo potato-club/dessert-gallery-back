@@ -3,7 +3,7 @@ package com.dessert.gallery.dto.user.request;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,19 +17,19 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UserSignUpRequestDto {
 
-    @ApiModelProperty(value = "Email")
+    @Schema(description = "Email")
     private String email;
 
-    @ApiModelProperty(value = "일반 로그인 패스워드", example = "null or password")
+    @Schema(description = "일반 로그인 패스워드", example = "null or password")
     private String password;
 
-    @ApiModelProperty(value = "닉네임")
+    @Schema(description = "닉네임")
     private String nickname;
 
-    @ApiModelProperty(value = "USER / MANAGER", example = "USER / MANAGER")
+    @Schema(description = "USER / MANAGER", example = "USER / MANAGER")
     private UserRole userRole;
 
-    @ApiModelProperty(value = "NORMAL / KAKAO", example = "NORMAL / KAKAO")
+    @Schema(description = "NORMAL / KAKAO", example = "NORMAL / KAKAO")
     private LoginType loginType;
 
     public User toEntity() {

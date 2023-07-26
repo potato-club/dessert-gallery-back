@@ -5,8 +5,8 @@ import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notices")
-@Api(tags = {"Notice Board Controller"})
+@Tag(name = "Notice Board Controller", description = "공지 게시판 API")
 public class NoticeBoardController {
     private final NoticeBoardService noticeService;
 
