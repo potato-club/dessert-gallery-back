@@ -178,6 +178,13 @@ public class UserServiceImpl implements UserService {
         this.logout(request);
     }
 
+    @Override
+    public User findUserByToken(HttpServletRequest request) {
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return user;
+    }
+
     public void setJwtTokenInHeader(String email, HttpServletResponse response) {
         UserRole userRole = userRepository.findByEmail(email).get().getUserRole();
 
@@ -188,12 +195,5 @@ public class UserServiceImpl implements UserService {
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
 
         redisService.setValues(refreshToken, email);
-    }
-
-    @Override
-    public User findUserByToken(HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        User user = userRepository.findByEmail(email).orElseThrow();
-        return user;
     }
 }

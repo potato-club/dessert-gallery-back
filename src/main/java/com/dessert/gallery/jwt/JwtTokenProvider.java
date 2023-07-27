@@ -100,6 +100,15 @@ public class JwtTokenProvider {
         return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
     }
 
+    public String reissueRefreshToken(String refreshToken) {
+        String email = redisService.getValues(refreshToken).get("email");
+        if (Objects.isNull(email)) {
+            throw new ForbiddenException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
+
+        return createRefreshToken(email, userRepository.findByEmail(email).get().getUserRole());
+    }
+
     // Request의 Header에서 AccessToken 값을 가져옵니다. "authorization" : "token"
     public String resolveAccessToken(HttpServletRequest request) {
         if(request.getHeader("authorization") != null )
