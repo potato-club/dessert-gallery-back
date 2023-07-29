@@ -28,4 +28,6 @@ public interface UserService {
     void withdrawalMembership(HttpServletRequest request);
 
     User findUserByToken(HttpServletRequest request);
+
+    void reissueToken(HttpServletRequest request, HttpServletResponse response);
 }

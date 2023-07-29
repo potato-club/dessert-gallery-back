@@ -185,6 +185,17 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public void reissueToken(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+
+        String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
+        String newRefreshToken = jwtTokenProvider.reissueRefreshToken(refreshToken);
+
+        jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
+        jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
+    }
+
     public void setJwtTokenInHeader(String email, HttpServletResponse response) {
         UserRole userRole = userRepository.findByEmail(email).get().getUserRole();
 

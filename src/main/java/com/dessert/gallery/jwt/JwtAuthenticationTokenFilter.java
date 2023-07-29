@@ -48,16 +48,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         try {
             if (accessToken == null) {
                 String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)) {
-                    String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
-                    String newRefreshToken = jwtTokenProvider.reissueRefreshToken(refreshToken);
-
-                    redisService.delValues(refreshToken);
-
-                    jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
-                    jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
-
-                    this.setAuthentication(newAccessToken);
+                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)
+                    && path.contains("/reissue")) {
+                    filterChain.doFilter(request, response);
                 }
             } else {
                 if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
