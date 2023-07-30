@@ -2,6 +2,7 @@ package com.dessert.gallery.entity;
 
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import lombok.*;
+import org.springframework.data.geo.Point;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -28,6 +29,9 @@ public class Store extends BaseTimeEntity {
 
     @Column
     private double longitude;
+
+    @Column(columnDefinition = "POINT")
+    private Point location;
 
     @Column(nullable = false)
     private String address;
@@ -57,6 +61,7 @@ public class Store extends BaseTimeEntity {
         this.address = requestDto.getAddress();
         this.longitude = requestDto.getLongitude();
         this.latitude = requestDto.getLatitude();
+        this.location = new Point(requestDto.getLatitude(), requestDto.getLongitude());
         this.phoneNumber = requestDto.getPhoneNumber();
         this.score = 0.0;
         this.user = user;
@@ -76,6 +81,7 @@ public class Store extends BaseTimeEntity {
         this.address = updateDto.getAddress();
         this.latitude = updateDto.getLatitude();
         this.longitude = updateDto.getLongitude();
+        this.location = new Point(updateDto.getLatitude(), updateDto.getLongitude());
         this.phoneNumber = updateDto.getPhoneNumber();
     }
 }

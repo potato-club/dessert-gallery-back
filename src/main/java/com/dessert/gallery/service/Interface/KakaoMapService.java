@@ -9,5 +9,7 @@ public interface KakaoMapService {
 
     StoreCoordinate getKakaoCoordinate(String address) throws Exception;
 
-    List<StoreMapList> getKakaoMapStoreList(Long id);
+    List<StoreMapList> getStoreListWithCoordinate(double lat, double lon, int radius);
+
+    List<StoreMapList> getKakaoMapStoreList(Long id, String keyword);
 }

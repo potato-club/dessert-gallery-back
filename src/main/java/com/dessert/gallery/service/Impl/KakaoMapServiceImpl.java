@@ -2,11 +2,16 @@ package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.store.map.StoreCoordinate;
 import com.dessert.gallery.dto.store.map.StoreMapList;
+import com.dessert.gallery.entity.QStore;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.KakaoMapService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +22,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.transaction.Transactional;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,6 +31,7 @@ import java.util.List;
 public class KakaoMapServiceImpl implements KakaoMapService {
 
     private final StoreRepository storeRepository;
+    private final JPAQueryFactory jpaQueryFactory;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String GEOCODE_USER_INFO;
@@ -48,54 +53,72 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         if (response.getStatusCode() == HttpStatus.OK) {
             String responseBody = response.getBody();
 
-            // JSON 파싱을 통해 x, y 좌표 추출
+            // JSON 파싱을 통해 lat, lon 좌표 추출
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode responseJson = objectMapper.readTree(responseBody);
-            double x = responseJson.path("documents").path(0).path("x").asDouble();
-            double y = responseJson.path("documents").path(0).path("y").asDouble();
+            double lat = responseJson.path("documents").path(0).path("lat").asDouble();
+            double lon = responseJson.path("documents").path(0).path("lon").asDouble();
 
-            return StoreCoordinate.builder().x(x).y(y).build();
+            return StoreCoordinate.builder().lat(lat).lon(lon).build();
         } else {
             throw new Exception("Request failed with status code: " + response.getStatusCodeValue());
         }
     }
 
     @Override
-    public List<StoreMapList> getKakaoMapStoreList(Long id) {
+    public List<StoreMapList> getStoreListWithCoordinate(double lat, double lon, int radius) {
+        QStore qStore = QStore.store;
 
-        Store store = storeRepository.findById(id).orElseThrow();
-
-        return null;
+        return jpaQueryFactory.select(
+                        Projections.constructor(
+                                StoreMapList.class,
+                                qStore.latitude.as("latitude"),
+                                qStore.longitude.as("longitude"),
+                                qStore.name.as("storeName"),
+                                qStore.score.as("score"),
+                                qStore.address.as("storeAddress")
+                        )
+        )
+                .from(qStore)
+                .where(calculateDistance(lat, lon, radius))
+                .orderBy(QStore.store.score.desc())
+                .limit(15)
+                .fetch();
     }
 
-    // 반경 내 가게 필터링 메서드
-    private List<Store> filterStoresWithinRadius(List<Store> stores, double latitude, double longitude, int radius) {
-        List<Store> storesWithinRadius = new ArrayList<>();
+    @Override
+    public List<StoreMapList> getKakaoMapStoreList(Long id, String keyword) {
+        Store store = storeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid Store ID"));
 
-        for (Store store : stores) {
-            double distance = calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude());
+        final double lat = store.getLatitude();
+        final double lon = store.getLongitude();
+        final int radius = 1500;
 
-            if (distance <= radius) {
-                storesWithinRadius.add(store);
-            }
-        }
+        QStore qStore = QStore.store;
 
-        return storesWithinRadius;
+        return jpaQueryFactory.select(
+                        Projections.constructor(
+                                StoreMapList.class,
+                                qStore.latitude.as("latitude"),
+                                qStore.longitude.as("longitude"),
+                                qStore.name.as("storeName"),
+                                qStore.score.as("score"),
+                                qStore.address.as("storeAddress")
+                        )
+                )
+                .from(qStore)
+                .where(calculateDistance(lat, lon, radius)
+                        .and(qStore.content.like("%" + keyword + "%"))) // 아직 해시태그가 안 만들어져서 임시로 content 설정
+                .orderBy(QStore.store.score.desc())
+                .limit(15)
+                .fetch();
     }
 
-    // Haversine 공식을 사용하여 두 지점 간 거리 계산
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        final double R = 6371.0; // 지구의 반지름 (단위: km)
+    public BooleanExpression calculateDistance(double lat, double lon, int radius) {
+        QStore qStore = QStore.store;
+        NumberExpression<Double> distance = qStore.latitude.subtract(lon).multiply(qStore.latitude.subtract(lon))
+                .add(qStore.longitude.subtract(lat).multiply(qStore.longitude.subtract(lat))).sqrt();
 
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c;
+        return distance.loe(radius);
     }
 }

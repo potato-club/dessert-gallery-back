@@ -9,7 +9,7 @@ import lombok.Getter;
 public class StoreMapList {
 
     @Schema(description = "가게 이름")
-    private String storedescription;
+    private String storeName;
 
     @Schema(description = "가게 주소")
     private String storeAddress;
