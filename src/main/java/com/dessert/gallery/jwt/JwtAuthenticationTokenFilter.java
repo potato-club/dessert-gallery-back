@@ -62,11 +62,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             setResponse(response, errorCode);
             return;
         } catch (ExpiredJwtException e) {
-            errorCode = ErrorJwtCode.UNSUPPORTED_JWT_TOKEN;
+            errorCode = ErrorJwtCode.JWT_TOKEN_EXPIRED;
             setResponse(response, errorCode);
             return;
         } catch (UnsupportedJwtException e) {
-            errorCode = ErrorJwtCode.JWT_TOKEN_EXPIRED;
+            errorCode = ErrorJwtCode.UNSUPPORTED_JWT_TOKEN;
             setResponse(response, errorCode);
             return;
         } catch (IllegalArgumentException e) {
@@ -90,7 +90,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         json.put("code", errorCode.getCode());
         json.put("message", errorCode.getMessage());
         response.getWriter().print(json);
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().flush();
     }
 
     private void setAuthentication(String token) {
