@@ -72,11 +72,11 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         return jpaQueryFactory.select(
                         Projections.constructor(
                                 StoreMapList.class,
-                                qStore.latitude.as("latitude"),
-                                qStore.longitude.as("longitude"),
                                 qStore.name.as("storeName"),
+                                qStore.address.as("storeAddress"),
                                 qStore.score.as("score"),
-                                qStore.address.as("storeAddress")
+                                qStore.latitude.as("latitude"),
+                                qStore.longitude.as("longitude")
                         )
         )
                 .from(qStore)
@@ -99,11 +99,11 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         return jpaQueryFactory.select(
                         Projections.constructor(
                                 StoreMapList.class,
-                                qStore.latitude.as("latitude"),
-                                qStore.longitude.as("longitude"),
                                 qStore.name.as("storeName"),
+                                qStore.address.as("storeAddress"),
                                 qStore.score.as("score"),
-                                qStore.address.as("storeAddress")
+                                qStore.latitude.as("latitude"),
+                                qStore.longitude.as("longitude")
                         )
                 )
                 .from(qStore)
