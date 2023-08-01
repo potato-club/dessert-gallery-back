@@ -52,5 +52,6 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
         json.put("code", errorCode.getCode());
         json.put("message", errorCode.getMessage());
         response.getWriter().print(json);
+        response.getWriter().flush();
     }
 }

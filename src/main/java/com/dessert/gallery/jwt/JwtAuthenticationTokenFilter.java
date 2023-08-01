@@ -44,57 +44,35 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-        ErrorJwtCode errorCode;
+//        ErrorJwtCode errorCode;
 
-        try {
-            if (accessToken == null && refreshToken != null) {
-                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)
+        if (accessToken == null && refreshToken != null) {
+            if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)
                     && path.contains("/reissue")) {
-                    filterChain.doFilter(request, response);
-                }
-            } else if (accessToken == null && refreshToken == null) {
                 filterChain.doFilter(request, response);
-            } else {
-                if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
-                    this.setAuthentication(accessToken);
-                }
             }
-        } catch (MalformedJwtException e) {
-            errorCode = ErrorJwtCode.INVALID_JWT_TOKEN;
-            setResponse(response, errorCode);
-            return;
-        } catch (ExpiredJwtException e) {
-            errorCode = ErrorJwtCode.JWT_TOKEN_EXPIRED;
-            setResponse(response, errorCode);
-            return;
-        } catch (UnsupportedJwtException e) {
-            errorCode = ErrorJwtCode.UNSUPPORTED_JWT_TOKEN;
-            setResponse(response, errorCode);
-            return;
-        } catch (IllegalArgumentException e) {
-            errorCode = ErrorJwtCode.EMPTY_JWT_CLAIMS;
-            setResponse(response, errorCode);
-            return;
-        } catch (SignatureException e) {
-            errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
-            setResponse(response, errorCode);
-            return;
+        } else if (accessToken == null && refreshToken == null) {
+            filterChain.doFilter(request, response);
+        } else {
+            if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
+                this.setAuthentication(accessToken);
+            }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void setResponse(HttpServletResponse response, ErrorJwtCode errorCode) throws IOException {
-        JSONObject json = new JSONObject();
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-        json.put("code", errorCode.getCode());
-        json.put("message", errorCode.getMessage());
-
-        response.getWriter().print(json);
-        response.getWriter().flush();
-    }
+//    private void setResponse(HttpServletResponse response, ErrorJwtCode errorCode) throws IOException {
+//        JSONObject json = new JSONObject();
+//        response.setContentType("application/json;charset=UTF-8");
+//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//
+//        json.put("code", errorCode.getCode());
+//        json.put("message", errorCode.getMessage());
+//
+//        response.getWriter().print(json);
+//        response.getWriter().flush();
+//    }
 
     private void setAuthentication(String token) {
         // 토큰으로부터 유저 정보를 받아옵니다.
