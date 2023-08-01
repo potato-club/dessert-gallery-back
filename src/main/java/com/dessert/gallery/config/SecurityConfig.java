@@ -1,6 +1,5 @@
 package com.dessert.gallery.config;
 
-import com.dessert.gallery.error.security.AuthenticationEntryPointHandler;
 import com.dessert.gallery.error.security.WebAccessDeniedHandler;
 import com.dessert.gallery.jwt.JwtAuthenticationTokenFilter;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ public class SecurityConfig {
 
     private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
     private final WebAccessDeniedHandler webAccessDeniedHandler;
-    private final AuthenticationEntryPointHandler authenticationEntryPointHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -49,7 +47,6 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
                 .and()
                 .exceptionHandling()
-                .authenticationEntryPoint(authenticationEntryPointHandler)
                 .accessDeniedHandler(webAccessDeniedHandler)
                 .and()
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
