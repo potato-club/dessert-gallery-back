@@ -43,15 +43,17 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
 
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
         ErrorJwtCode errorCode;
 
         try {
-            if (accessToken == null) {
-                String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+            if (accessToken == null && refreshToken != null) {
                 if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)
                     && path.contains("/reissue")) {
                     filterChain.doFilter(request, response);
                 }
+            } else if (accessToken == null && refreshToken == null) {
+                filterChain.doFilter(request, response);
             } else {
                 if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
                     this.setAuthentication(accessToken);
@@ -89,6 +91,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         json.put("code", errorCode.getCode());
         json.put("message", errorCode.getMessage());
+
         response.getWriter().print(json);
         response.getWriter().flush();
     }
