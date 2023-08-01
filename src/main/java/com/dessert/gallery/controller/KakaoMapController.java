@@ -25,15 +25,15 @@ public class KakaoMapController {
         return kakaoMapService.getKakaoCoordinate(address);
     }
 
-    @Operation(summary = "가게의 모든 공지 조회")
-    @GetMapping("/address")
+    @Operation(summary = "좌표 주변 가게 리스트 출력 API")
+    @GetMapping("")
     public List<StoreMapList> getStoreListWithCoordinate(@ModelAttribute MapRequestDto requestDto) {
         return kakaoMapService.getStoreListWithCoordinate(requestDto.getLat(), requestDto.getLon(), requestDto.getRadius());
     }
 
-    @Operation(summary = "가게의 모든 공지 조회")
-    @GetMapping("/address")
-    public List<StoreMapList> getKakaoMapStoreList(@RequestParam Long id, @RequestParam String keyword) {
+    @Operation(summary = "도로명 주소 좌표 변환 API")
+    @GetMapping("/{id}")
+    public List<StoreMapList> getKakaoMapStoreList(@PathVariable Long id, @RequestParam String keyword) {
         return kakaoMapService.getKakaoMapStoreList(id, keyword);
     }
 }
