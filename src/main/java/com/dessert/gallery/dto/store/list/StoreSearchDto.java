@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class StoreSearchDto {
@@ -15,7 +17,7 @@ public class StoreSearchDto {
     private String address;
 
     @Schema(description = "디저트 종류 필터링")
-    private String dessertType;
+    private List<String> dessertType;
 
     @Schema(description = "검색 키워드 필터링")
     private String searchType;

@@ -79,6 +79,10 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             errorCode = ErrorJwtCode.JWT_SIGNATURE_MISMATCH;
             setResponse(response, errorCode);
             return;
+        } catch (RuntimeException e) {
+            errorCode = ErrorJwtCode.JWT_COMPLEX_ERROR;
+            setResponse(response, errorCode);
+            return;
         }
 
         filterChain.doFilter(request, response);

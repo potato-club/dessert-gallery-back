@@ -99,7 +99,9 @@ public class StoreListServiceImpl implements StoreListService {
         }
 
         if (storeSearchDto.getDessertType() != null) {
-            whereBuilder.and(QMenu.menu.dessertType.eq(storeSearchDto.getDessertType()));
+            for (String option : storeSearchDto.getDessertType()) {
+                whereBuilder.and(QMenu.menu.dessertType.eq(option));
+            }
         }
 
         return whereBuilder;
