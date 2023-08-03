@@ -11,5 +11,5 @@ public interface KakaoMapService {
 
     List<StoreMapList> getStoreListWithCoordinate(double lat, double lon, int radius);
 
-    List<StoreMapList> getKakaoMapStoreList(Long id, String keyword);
+    List<StoreMapList> getKakaoMapStoreList(Long id);
 }

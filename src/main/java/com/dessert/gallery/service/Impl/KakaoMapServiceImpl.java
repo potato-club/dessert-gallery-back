@@ -87,7 +87,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
     }
 
     @Override
-    public List<StoreMapList> getKakaoMapStoreList(Long id, String keyword) {
+    public List<StoreMapList> getKakaoMapStoreList(Long id) {
         Store store = storeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid Store ID"));
 
         final double lat = store.getLatitude();
@@ -107,8 +107,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
                         )
                 )
                 .from(qStore)
-                .where(calculateDistance(lat, lon, radius)
-                        .and(qStore.content.like("%" + keyword + "%"))) // 아직 해시태그가 안 만들어져서 임시로 content 설정
+                .where(calculateDistance(lat, lon, radius))
                 .orderBy(QStore.store.score.desc())
                 .limit(15)
                 .fetch();

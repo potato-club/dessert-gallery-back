@@ -31,9 +31,9 @@ public class KakaoMapController {
         return kakaoMapService.getStoreListWithCoordinate(requestDto.getLat(), requestDto.getLon(), requestDto.getRadius());
     }
 
-    @Operation(summary = "도로명 주소 좌표 변환 API")
+    @Operation(summary = "특정 카페 기준 리스트 출력 API")
     @GetMapping("/{id}")
-    public List<StoreMapList> getKakaoMapStoreList(@PathVariable Long id, @RequestParam String keyword) {
-        return kakaoMapService.getKakaoMapStoreList(id, keyword);
+    public List<StoreMapList> getKakaoMapStoreList(@PathVariable Long id) {
+        return kakaoMapService.getKakaoMapStoreList(id);
     }
 }
