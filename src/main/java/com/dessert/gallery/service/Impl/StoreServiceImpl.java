@@ -3,6 +3,7 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
+import com.dessert.gallery.dto.store.map.StoreCoordinate;
 import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
@@ -12,6 +13,7 @@ import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
+import com.dessert.gallery.service.Interface.KakaoMapService;
 import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.S3.S3Service;
@@ -36,6 +38,7 @@ public class StoreServiceImpl implements StoreService {
     private final StoreBoardRepository boardRepository;
     private final UserService userService;
     private final S3Service s3Service;
+    private final KakaoMapService mapService;
 
     @Override
     public StoreResponseDto getStore(Long id) {
@@ -49,15 +52,20 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public void createStore(StoreRequestDto requestDto, List<MultipartFile> files,
                             HttpServletRequest request) {
-        User user = userService.findUserByToken(request);
-        if(user.getUserRole() != UserRole.MANAGER)
-            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
-        Store store = new Store(requestDto, user);
-        if(files != null) {
-            File file = saveImage(files, store);
-            store.setImage(file);
+        try {
+            User user = userService.findUserByToken(request);
+            if(user.getUserRole() != UserRole.MANAGER)
+                throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+            StoreCoordinate coordinate = mapService.getKakaoCoordinate(requestDto.getAddress());
+            Store store = new Store(requestDto, coordinate, user);
+            if(files != null) {
+                File file = saveImage(files, store);
+                store.setImage(file);
+            }
+            storeRepository.save(store);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        storeRepository.save(store);
     }
 
     @Override

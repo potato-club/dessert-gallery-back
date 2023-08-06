@@ -1,6 +1,7 @@
 package com.dessert.gallery.entity;
 
 import com.dessert.gallery.dto.store.StoreRequestDto;
+import com.dessert.gallery.dto.store.map.StoreCoordinate;
 import lombok.*;
 import org.springframework.data.geo.Point;
 
@@ -55,13 +56,13 @@ public class Store extends BaseTimeEntity {
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscribe> followers = new ArrayList<>();
 
-    public Store(StoreRequestDto requestDto, User user) {
+    public Store(StoreRequestDto requestDto, StoreCoordinate coordinate, User user) {
         this.name = requestDto.getName();
         this.content = requestDto.getContent();
         this.address = requestDto.getAddress();
-        this.longitude = requestDto.getLongitude();
-        this.latitude = requestDto.getLatitude();
-        this.location = new Point(requestDto.getLatitude(), requestDto.getLongitude());
+        this.longitude = coordinate.getLon();
+        this.latitude = coordinate.getLat();
+        this.location = new Point(coordinate.getLat(), coordinate.getLon());
         this.phoneNumber = requestDto.getPhoneNumber();
         this.score = 0.0;
         this.user = user;
@@ -75,13 +76,13 @@ public class Store extends BaseTimeEntity {
         this.score = score;
     }
 
-    public void updateStore(StoreRequestDto updateDto) {
+    public void updateStore(StoreRequestDto updateDto, StoreCoordinate coordinate) {
         this.name = updateDto.getName();
         this.content = updateDto.getContent();
         this.address = updateDto.getAddress();
-        this.latitude = updateDto.getLatitude();
-        this.longitude = updateDto.getLongitude();
-        this.location = new Point(updateDto.getLatitude(), updateDto.getLongitude());
+        this.latitude = coordinate.getLat();
+        this.longitude = coordinate.getLon();
+        this.location = new Point(coordinate.getLat(), coordinate.getLon());
         this.phoneNumber = updateDto.getPhoneNumber();
     }
 }

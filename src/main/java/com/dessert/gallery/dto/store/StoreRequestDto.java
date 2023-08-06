@@ -14,12 +14,6 @@ public class StoreRequestDto {
     @Schema(description = "가게 소개")
     private String content;
 
-    @Schema(description = "가게 위도")
-    private double latitude;
-
-    @Schema(description = "가게 경도")
-    private double longitude;
-
     @Schema(description = "가게 주소")
     private String address;
 

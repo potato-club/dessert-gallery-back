@@ -22,7 +22,7 @@ public class StoreBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column
+    @Column(nullable = false)
     private String tags;
 
     @Column(columnDefinition = "TINYINT(1)")

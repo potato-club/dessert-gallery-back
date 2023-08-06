@@ -13,6 +13,7 @@ import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.S3.S3Service;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     private final StoreRepository storeRepository;
     private final UserService userService;
     private final S3Service s3Service;
+    private final JPAQueryFactory jpaQueryFactory;
 
     @Override
     public void createBoard(Long storeId, BoardRequestDto requestDto, List<MultipartFile> images,
@@ -82,6 +84,16 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public void deleteBoard(Long boardId, HttpServletRequest request) {
         StoreBoard board = validateBoard(boardId, request);
         board.deleteBoard();
+    }
+
+    @Override
+    public List<Store> getStoreIdByBoardTags(String tag) {
+        QStoreBoard qStoreBoard = QStoreBoard.storeBoard;
+
+        return jpaQueryFactory.selectDistinct(qStoreBoard.store)
+                .from(qStoreBoard)
+                .where(qStoreBoard.tags.contains(tag))
+                .fetch();
     }
 
     public StoreBoard validateBoard(Long boardId, HttpServletRequest request) {
