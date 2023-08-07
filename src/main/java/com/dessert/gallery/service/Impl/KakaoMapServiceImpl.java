@@ -141,7 +141,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
                 )
                 .from(qStore)
                 .innerJoin(qStoreBoard).on(qStoreBoard.store.eq(qStore))
-                .innerJoin(qFile).on(qStoreBoard.store.eq(qStore))
+                .innerJoin(qFile).on(qFile.store.eq(qStore))
                 .where(whereBuilder)
                 .orderBy(request.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
                 .offset((request.getPage() - 1) * 15L)
