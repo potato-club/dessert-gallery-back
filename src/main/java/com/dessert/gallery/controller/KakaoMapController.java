@@ -1,8 +1,6 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.dto.store.map.MapRequestDto;
-import com.dessert.gallery.dto.store.map.StoreCoordinate;
-import com.dessert.gallery.dto.store.map.StoreMapList;
+import com.dessert.gallery.dto.store.map.*;
 import com.dessert.gallery.service.Interface.KakaoMapService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,5 +33,11 @@ public class KakaoMapController {
     @GetMapping("/{id}")
     public List<StoreMapList> getKakaoMapStoreList(@PathVariable Long id) {
         return kakaoMapService.getKakaoMapStoreList(id);
+    }
+
+    @Operation(summary = "지도 내 키워드 검색 리스트 출력 API")
+    @GetMapping("/search")
+    public List<StoreListInMap> getStoreListByTags(@ModelAttribute MapSearchRequest request) {
+        return kakaoMapService.getStoreListByTags(request);
     }
 }

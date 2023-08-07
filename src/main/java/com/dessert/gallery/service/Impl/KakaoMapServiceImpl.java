@@ -1,13 +1,18 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.store.map.MapSearchRequest;
 import com.dessert.gallery.dto.store.map.StoreCoordinate;
+import com.dessert.gallery.dto.store.map.StoreListInMap;
 import com.dessert.gallery.dto.store.map.StoreMapList;
-import com.dessert.gallery.entity.QStore;
-import com.dessert.gallery.entity.Store;
+import com.dessert.gallery.entity.*;
+import com.dessert.gallery.enums.SearchType;
+import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.KakaoMapService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -113,7 +118,56 @@ public class KakaoMapServiceImpl implements KakaoMapService {
                 .fetch();
     }
 
-    public BooleanExpression calculateDistance(double lat, double lon, int radius) {
+    @Override
+    public List<StoreListInMap> getStoreListByTags(MapSearchRequest request) {
+        BooleanBuilder whereBuilder = this.existsFilterOption(request);
+
+        QStore qStore = QStore.store;
+        QStoreBoard qStoreBoard = QStoreBoard.storeBoard;
+        QFile qFile = QFile.file;
+
+        return jpaQueryFactory.select(
+                        Projections.constructor(
+                                StoreListInMap.class,
+                                qStore.name.as("storeName"),
+                                qStore.address.as("storeAddress"),
+                                qStore.content.as("content"),
+                                qStore.score.as("score"),
+                                qStore.latitude.as("latitude"),
+                                qStore.longitude.as("longitude"),
+                                qFile.fileName.as("fileName"),
+                                qFile.fileUrl.as("fileUrl")
+                        )
+                )
+                .from(qStore)
+                .innerJoin(qStoreBoard).on(qStoreBoard.store.eq(qStore))
+                .innerJoin(qFile).on(qStoreBoard.store.eq(qStore))
+                .where(whereBuilder)
+                .orderBy(request.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
+                .offset((request.getPage() - 1) * 15L)
+                .limit(15)
+                .fetch();
+    }
+
+    private BooleanBuilder existsFilterOption(MapSearchRequest request) {
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+
+        if (request.getAddress() != null) {
+            whereBuilder.and(QStore.store.address.like("%" + request.getAddress() + "%"));
+        }
+
+        if (request.getSearchType().equals(SearchType.NAME)) {
+            whereBuilder.and(QStore.store.name.like("%" + request.getKeyword() + "%"));
+        } else if (request.getSearchType().equals(SearchType.TAGS)) {
+            whereBuilder.and(QStoreBoard.storeBoard.tags.like("%" + request.getKeyword() + "%"));
+        } else {
+            throw new UnAuthorizedException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
+
+        return whereBuilder;
+    }
+
+    private BooleanExpression calculateDistance(double lat, double lon, int radius) {
         QStore qStore = QStore.store;
         NumberExpression<Double> distance = qStore.latitude.subtract(lon).multiply(qStore.latitude.subtract(lon))
                 .add(qStore.longitude.subtract(lat).multiply(qStore.longitude.subtract(lat))).sqrt();
