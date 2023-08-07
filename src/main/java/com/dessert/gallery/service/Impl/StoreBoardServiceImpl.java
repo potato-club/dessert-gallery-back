@@ -9,11 +9,10 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
-import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.StoreBoardService;
+import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.S3.S3Service;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,15 +32,14 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class StoreBoardServiceImpl implements StoreBoardService {
     private final StoreBoardRepository boardRepository;
-    private final StoreRepository storeRepository;
+    private final StoreService storeService;
     private final UserService userService;
     private final S3Service s3Service;
-    private final JPAQueryFactory jpaQueryFactory;
 
     @Override
     public void createBoard(Long storeId, BoardRequestDto requestDto, List<MultipartFile> images,
                             HttpServletRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow();
+        Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
         if(store.getUser() != user) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
@@ -53,16 +51,25 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
+    public StoreBoard getBoard(Long boardId) {
+        return boardRepository.findByIdAndDeletedIsFalse(boardId);
+    }
+
+    @Override
     public List<BoardListResponseDto> getBoardsByStore(Long storeId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
+        Store store = storeService.getStore(storeId);
         List<StoreBoard> boards = boardRepository.findByStoreAndDeletedIsFalse(store);
         if(boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         return boards.stream().map(BoardListResponseDto::new).collect(Collectors.toList());
     }
 
     @Override
-    public BoardResponseDto getBoardById(Long boardId) {
+    public Integer getPostCount(Store store) {
+        return Math.toIntExact(boardRepository.countAllByStore(store));
+    }
+
+    @Override
+    public BoardResponseDto getBoardDto(Long boardId) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         BoardResponseDto dto = new BoardResponseDto(board);
@@ -84,16 +91,6 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public void deleteBoard(Long boardId, HttpServletRequest request) {
         StoreBoard board = validateBoard(boardId, request);
         board.deleteBoard();
-    }
-
-    @Override
-    public List<Store> getStoreIdByBoardTags(String tag) {
-        QStoreBoard qStoreBoard = QStoreBoard.storeBoard;
-
-        return jpaQueryFactory.selectDistinct(qStoreBoard.store)
-                .from(qStoreBoard)
-                .where(qStoreBoard.tags.contains(tag))
-                .fetch();
     }
 
     public StoreBoard validateBoard(Long boardId, HttpServletRequest request) {

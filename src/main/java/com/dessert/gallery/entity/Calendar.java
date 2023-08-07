@@ -22,4 +22,11 @@ public class Calendar {
     @OneToMany(mappedBy = "calendar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedule = new ArrayList<>();
 
+    public Calendar(Store store) {
+        this.store = store;
+    }
+
+    public void addSchedule(Schedule schedule) {
+        this.schedule.add(schedule);
+    }
 }

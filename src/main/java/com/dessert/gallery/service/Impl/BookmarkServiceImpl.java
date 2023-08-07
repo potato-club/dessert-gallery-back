@@ -5,8 +5,8 @@ import com.dessert.gallery.entity.Bookmark;
 import com.dessert.gallery.entity.StoreBoard;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.repository.BookmarkRepository;
-import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.service.Interface.BookmarkService;
+import com.dessert.gallery.service.Interface.StoreBoardService;
 import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 public class BookmarkServiceImpl implements BookmarkService {
     private final BookmarkRepository bookmarkRepository;
     private final UserService userService;
-    private final StoreBoardRepository boardRepository;
+    private final StoreBoardService boardService;
 
     @Override
     public String toggleBookmark(Long boardId, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
+        StoreBoard board = boardService.getBoard(boardId);
         Bookmark findBookmark = bookmarkRepository.findByBoardAndUser(board, user);
 
         if(findBookmark == null) {

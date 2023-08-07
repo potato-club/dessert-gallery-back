@@ -11,11 +11,8 @@ import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
-import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
-import com.dessert.gallery.service.Interface.KakaoMapService;
-import com.dessert.gallery.service.Interface.StoreService;
-import com.dessert.gallery.service.Interface.UserService;
+import com.dessert.gallery.service.Interface.*;
 import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,18 +32,23 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
-    private final StoreBoardRepository boardRepository;
+    private final StoreBoardService boardService;
     private final UserService userService;
+    private final CalendarService calendarService;
     private final S3Service s3Service;
     private final KakaoMapService mapService;
 
     @Override
-    public StoreResponseDto getStore(Long id) {
-        Store store = storeRepository.findById(id)
+    public Store getStore(Long id) {
+        return storeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
-        int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
-        StoreResponseDto dto = new StoreResponseDto(store, postCount);
-        return dto;
+    }
+
+    @Override
+    public StoreResponseDto getStoreDto(Long id) {
+        Store store = getStore(id);
+        Integer postCount = boardService.getPostCount(store);
+        return new StoreResponseDto(store, postCount);
     }
 
     @Override
@@ -62,7 +64,8 @@ public class StoreServiceImpl implements StoreService {
                 File file = saveImage(files, store);
                 store.setImage(file);
             }
-            storeRepository.save(store);
+            Store saveStore = storeRepository.save(store);
+            calendarService.createCalendar(saveStore);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

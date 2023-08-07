@@ -1,11 +1,13 @@
 package com.dessert.gallery.entity;
 
+import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.enums.ScheduleType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Entity
@@ -25,4 +27,10 @@ public class Schedule {
     @Column
     @Enumerated(value = EnumType.STRING)
     private ScheduleType type;
+
+    public Schedule(ScheduleRequestDto requestDto, Calendar calendar) {
+        this.dateTime = LocalDateTime.parse(requestDto.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        this.type = ScheduleType.findWithKey(requestDto.getKey());
+        this.calendar = calendar;
+    }
 }

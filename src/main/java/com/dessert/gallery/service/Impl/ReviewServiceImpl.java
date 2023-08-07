@@ -8,8 +8,8 @@ import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.repository.ReviewBoardRepository;
-import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.ReviewService;
+import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +31,13 @@ import static com.dessert.gallery.error.ErrorCode.RUNTIME_EXCEPTION;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewBoardRepository reviewRepository;
-    private final StoreRepository storeRepository;
+    private final StoreService storeService;
     private final UserService userService;
     private final S3Service s3Service;
 
     @Override
     public List<ReviewListResponseDto> getStoreReviews(Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow();
+        Store store = storeService.getStore(storeId);
         List<ReviewBoard> reviews = reviewRepository.findAllByStore(store);
         List<ReviewListResponseDto> reviewListDto = reviews.stream()
                 .map(ReviewListResponseDto::new)
@@ -48,7 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void addReview(Long storeId, ReviewRequestDto requestDto,
                           List<MultipartFile> images, HttpServletRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow();
+        Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
         ReviewBoard review = new ReviewBoard(requestDto, store, user);
         store.setScore(getAvgScore(store, requestDto.getScore()));

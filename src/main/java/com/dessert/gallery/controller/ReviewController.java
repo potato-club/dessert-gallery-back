@@ -21,12 +21,6 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-//    @Operation(summary = "후기 게시판 리뷰 조회")
-//    @GetMapping("")
-//    public ResponseEntity<List<ReviewListResponseDto>> getReviewList() {
-//
-//    }
-
     @Operation(summary = "가게 리뷰 조회")
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<List<ReviewListResponseDto>> getStoreReviews(@PathVariable(name = "storeId") Long storeId) {

@@ -35,7 +35,7 @@ public class StoreBoardController {
     @Operation(summary = "게시글 조회")
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable(name = "boardId") Long boardId) {
-        BoardResponseDto dto = boardService.getBoardById(boardId);
+        BoardResponseDto dto = boardService.getBoardDto(boardId);
         return ResponseEntity.ok(dto);
     }
 

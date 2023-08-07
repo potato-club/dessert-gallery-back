@@ -12,8 +12,8 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.NoticeBoardRepository;
-import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
+import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class NoticeBoardServiceImpl implements NoticeBoardService {
     private final NoticeBoardRepository noticeRepository;
-    private final StoreRepository storeRepository;
+    private final StoreService storeService;
     private final UserService userService;
     private final S3Service s3Service;
 
@@ -48,8 +48,7 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 
     @Override
     public List<NoticeListDto> getNoticesByStore(Long storeId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
+        Store store = storeService.getStore(storeId);
         List<NoticeBoard> notices = noticeRepository.findByStoreAndDeletedIsFalse(store);
         if(notices == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
@@ -58,7 +57,7 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     @Override
     public void createNotice(Long storeId, NoticeRequestDto requestDto,
                              List<MultipartFile> images, HttpServletRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow();
+        Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
 
         if(store.getUser() != user) {
