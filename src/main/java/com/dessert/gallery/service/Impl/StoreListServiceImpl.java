@@ -7,13 +7,18 @@ import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.service.Interface.StoreListService;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,8 +27,6 @@ import java.util.List;
 public class StoreListServiceImpl implements StoreListService {
 
     private final JPAQueryFactory jpaQueryFactory;
-
-    private final int pageSize = 20;
 
     @Override
     public List<StoreListResponseDto> getStoreList(StoreSearchDto storeSearchDto) {
@@ -45,11 +48,11 @@ public class StoreListServiceImpl implements StoreListService {
                 )
                 .from(QStore.store)
                 .leftJoin(QStore.store.image, QFile.file)
-                .leftJoin(QStore.store.menu, QMenu.menu)
+                .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
-                .orderBy(storeSearchDto.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
-                .offset((storeSearchDto.getPage() - 1) * pageSize)
-                .limit(pageSize);
+                .orderBy(existsOrderByOption(storeSearchDto))
+                .offset((storeSearchDto.getPage() - 1) * 20L)
+                .limit(20);
 
         return query.fetch();
     }
@@ -71,11 +74,11 @@ public class StoreListServiceImpl implements StoreListService {
                 )
                 .from(QStore.store)
                 .leftJoin(QStore.store.image, QFile.file)
-                .leftJoin(QStore.store.menu, QMenu.menu)
+                .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
-                .orderBy(storeSearchDto.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
-                .offset((storeSearchDto.getPage() - 1) * pageSize)
-                .limit(pageSize);
+                .orderBy(existsOrderByOption(storeSearchDto))
+                .offset((storeSearchDto.getPage() - 1) * 20L)
+                .limit(20);
 
         List<StoreReviewDto> storeReviewList = query.fetch();
 
@@ -95,16 +98,28 @@ public class StoreListServiceImpl implements StoreListService {
         }
 
         if (storeSearchDto.getSearchType() != null) {
-            whereBuilder.and(QMenu.menu.introduction.like("%" + storeSearchDto.getSearchType() + "%"));
-        }
-
-        if (storeSearchDto.getDessertType() != null) {
-            for (String option : storeSearchDto.getDessertType()) {
-                whereBuilder.and(QMenu.menu.dessertType.eq(option));
+            for (String option : storeSearchDto.getSearchType()) {
+                whereBuilder.and(QStoreBoard.storeBoard.tags.like("%" + option + "%"));
             }
         }
 
         return whereBuilder;
+    }
+
+    private OrderSpecifier<?> existsOrderByOption(StoreSearchDto storeSearchDto) {
+        switch (storeSearchDto.getSortType()) {
+            case RECENT:
+                DateTimePath<LocalDateTime> dateTimePath = QStore.store.createdDate;
+                return dateTimePath.desc();
+            case FOLLOWER:
+                NumberExpression<Integer> sizePath = QStore.store.followers.size();
+                return sizePath.desc();
+            case SCORE:
+                NumberPath<Double> scorePath = QStore.store.score;
+                return scorePath.desc();
+            default:
+                throw new IllegalArgumentException("Unexpected order type: " + storeSearchDto.getSortType());
+        }
     }
 
     private List<ReviewListDto> getRecentReviewsSubQuery(Long storeId) {

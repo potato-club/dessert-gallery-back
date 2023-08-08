@@ -50,9 +50,6 @@ public class Store extends BaseTimeEntity {
     @JoinColumn(name = "users_uid", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "store", orphanRemoval = true)
-    private List<Menu> menu = new ArrayList<>();
-
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscribe> followers = new ArrayList<>();
 
