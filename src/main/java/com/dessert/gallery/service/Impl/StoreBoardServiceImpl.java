@@ -64,11 +64,6 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public Integer getPostCount(Store store) {
-        return Math.toIntExact(boardRepository.countAllByStore(store));
-    }
-
-    @Override
     public BoardResponseDto getBoardDto(Long boardId) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);

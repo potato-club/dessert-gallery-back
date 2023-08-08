@@ -11,6 +11,7 @@ import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.dessert.gallery.service.S3.S3Service;
@@ -32,7 +33,7 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
-    private final StoreBoardService boardService;
+    private final StoreBoardRepository boardRepository;
     private final UserService userService;
     private final CalendarService calendarService;
     private final S3Service s3Service;
@@ -47,7 +48,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public StoreResponseDto getStoreDto(Long id) {
         Store store = getStore(id);
-        Integer postCount = boardService.getPostCount(store);
+        int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
         return new StoreResponseDto(store, postCount);
     }
 

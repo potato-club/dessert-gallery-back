@@ -7,8 +7,8 @@ import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.ScheduleType;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.repository.CalendarRepository;
 import com.dessert.gallery.repository.ScheduleRepository;
-import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.ScheduleService;
 import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +29,13 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 @Transactional
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
-    private final CalendarService calendarService;
+    private final CalendarRepository calendarRepository;
     private final ScheduleRepository scheduleRepository;
     private final UserService userService;
 
     @Override
     public void addSchedule(Long storeId, ScheduleRequestDto requestDto, HttpServletRequest request) {
-        Calendar calendar = calendarService.findCalendar(storeId);
+        Calendar calendar = calendarRepository.findByStoreId(storeId);
         if(calendar == null) throw new NotFoundException("존재하지 않는 캘린더", NOT_FOUND_EXCEPTION);
         Schedule schedule = new Schedule(requestDto, calendar);
         Schedule saveSchedule = scheduleRepository.save(schedule);
