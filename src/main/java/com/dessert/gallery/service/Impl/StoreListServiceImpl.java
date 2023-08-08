@@ -106,6 +106,7 @@ public class StoreListServiceImpl implements StoreListService {
         return whereBuilder;
     }
 
+    // OrderBy 필터링
     private OrderSpecifier<?> existsOrderByOption(StoreSearchDto storeSearchDto) {
         switch (storeSearchDto.getSortType()) {
             case RECENT:
