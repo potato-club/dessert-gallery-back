@@ -50,6 +50,7 @@ public class StoreListServiceImpl implements StoreListService {
                 .leftJoin(QStore.store.image, QFile.file)
                 .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
+                .distinct()
                 .orderBy(existsOrderByOption(storeSearchDto))
                 .offset((storeSearchDto.getPage() - 1) * 20L)
                 .limit(20);
@@ -76,6 +77,7 @@ public class StoreListServiceImpl implements StoreListService {
                 .leftJoin(QStore.store.image, QFile.file)
                 .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
+                .distinct()
                 .orderBy(existsOrderByOption(storeSearchDto))
                 .offset((storeSearchDto.getPage() - 1) * 20L)
                 .limit(20);
