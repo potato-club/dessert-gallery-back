@@ -7,10 +7,7 @@ import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
-import com.dessert.gallery.repository.ChatMessageRepository;
-import com.dessert.gallery.repository.ChatRoomRepository;
-import com.dessert.gallery.repository.StoreRepository;
-import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.repository.*;
 import com.dessert.gallery.service.Interface.ChatService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -34,6 +31,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
+    private final SubscribeRepository subscribeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -42,6 +40,10 @@ public class ChatServiceImpl implements ChatService {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
         User customer = userRepository.findByEmail(email).orElseThrow();
         Store store = storeRepository.findById(roomCreateDto.getStoreId()).orElseThrow();
+
+        if (!subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(store, customer)) {
+            throw new UnAuthorizedException("Not Following", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .customer(customer)
