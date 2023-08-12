@@ -77,7 +77,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        return chatMessageRepository.findByChatRoomIdAndTimestampAfterOrderByTimestamp(chatRoomId, oneMonthAgo);
+        return chatMessageRepository.findByChatRoomIdAndTimestampAfterOrderByTimestampDesc(chatRoomId, oneMonthAgo);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class ChatController {
     @MessageMapping("/pub/chat")
     public void send(@RequestBody ChatMessageDto chatMessage) {
         chatService.saveChatMessage(chatMessage);
-        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
+        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getId(), chatMessage);
     }
 
     @Operation(summary = "내 채팅 내역 출력 API")

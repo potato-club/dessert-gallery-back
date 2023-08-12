@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ChatMessageDto {
 
     @Schema(description = "채팅 메시지")
-    private Long roomId;
+    private Long id;
 
     @Schema(description = "채팅 메시지")
     private String message;
