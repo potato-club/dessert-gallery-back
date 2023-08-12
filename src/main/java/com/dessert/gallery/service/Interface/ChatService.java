@@ -17,5 +17,7 @@ public interface ChatService {
 
     List<ChatRoomDto> getMyChatRoomsList(int page, HttpServletRequest request);
 
+    void deleteRoom(Long roomId, HttpServletRequest request);
+
     void deleteExpiredChatMessages();
 }

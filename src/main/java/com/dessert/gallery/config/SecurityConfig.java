@@ -38,11 +38,29 @@ public class SecurityConfig {
                 .antMatchers(HttpMethod.POST,"/users/signup").permitAll()
                 .antMatchers(HttpMethod.GET,"/users/login/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/users/mail/**").permitAll()
-                // 정보수정은 USER, MANAGER, ADMIN 권한이 필요하도록 설정
-                .antMatchers(HttpMethod.PUT,"/users/**").hasAnyAuthority("USER", "MANAGER")
-                // 로그아웃, 마이페이지 API 또한 권한이 필요하도록 설정
-                .antMatchers(HttpMethod.GET,"/users/logout").hasAnyAuthority("USER", "MANAGER")
-                .antMatchers(HttpMethod.GET,"/users").hasAnyAuthority("USER", "MANAGER")
+                // 정보수정 및 회원탈퇴는 권한이 필요하도록 설정
+                .antMatchers(HttpMethod.PUT,"/users/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                // 로그아웃, 토큰 재발급, 마이페이지 API 또한 권한이 필요하도록 설정
+                .antMatchers(HttpMethod.GET,"/users/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                // 메일 인증 관련 API 는 권한 없어도 접근할 수 있도록 설정
+                .antMatchers(HttpMethod.POST,"/users/mail/**").permitAll()
+                // 가게 관련 기능
+                .antMatchers(HttpMethod.POST,"/reviews/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.POST,"/stores/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.PUT,"/stores/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/stores/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.GET,"/stores/{storeId}/calendar/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.POST,"/boards/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.PUT,"/boards/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/boards/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.POST,"/notices/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.PUT,"/notices/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/notices/**").hasAnyAuthority("MANAGER", "ADMIN")
+                // 카카오맵, 1대1 채팅과 같은 기능들 권한 설정
+                .antMatchers(HttpMethod.POST,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.GET,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.GET,"/kakaoMap").permitAll()
                 // 나머지 요청에 대해서는 권한 제한 없이 호출 가능하도록 설정
                 .anyRequest().permitAll()
                 .and()

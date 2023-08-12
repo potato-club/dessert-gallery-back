@@ -12,4 +12,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessageDto> findByChatRoomIdAndTimestampAfterOrderByTimestamp(Long chatRoomId, LocalDateTime timestamp);
 
     void deleteByTimestampBefore(LocalDateTime timestamp);
+
+    void deleteByChatRoomId(Long roomId);
 }

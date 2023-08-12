@@ -7,6 +7,7 @@ import com.dessert.gallery.service.Interface.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -35,17 +36,24 @@ public class ChatController {
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
     }
 
-    @Operation(summary = "내 채팅 목록 출력 API")
-    @GetMapping("/mypage/room/{chatRoomId}")
-    public List<ChatMessageDto> getLastChatMessages(@PathVariable Long chatRoomId, HttpServletRequest request) {
-        List<ChatMessageDto> chatMessages = chatService.getLastChatMessages(chatRoomId, request);
+    @Operation(summary = "내 채팅 내역 출력 API")
+    @GetMapping("/mypage/room/{roomId}")
+    public List<ChatMessageDto> getLastChatMessages(@PathVariable Long roomId, HttpServletRequest request) {
+        List<ChatMessageDto> chatMessages = chatService.getLastChatMessages(roomId, request);
         return chatMessages;
     }
 
-    @Operation(summary = "내 채팅 목록 출력 API")
-    @GetMapping("/mypage/chatList")
+    @Operation(summary = "내 채팅방 목록 출력 API")
+    @GetMapping("/mypage/room")
     public List<ChatRoomDto> getMyChatRoomsList(@RequestParam int page, HttpServletRequest request) {
         List<ChatRoomDto> chatRooms = chatService.getMyChatRoomsList(page, request);
         return chatRooms;
+    }
+
+    @Operation(summary = "채팅방 나가기 API")
+    @DeleteMapping("/mypage/room/{roomId}")
+    public ResponseEntity<String> deleteRoom(@PathVariable Long roomId, HttpServletRequest request) {
+        chatService.deleteRoom(roomId, request);
+        return ResponseEntity.ok("채팅방에서 나가셨습니다.");
     }
 }

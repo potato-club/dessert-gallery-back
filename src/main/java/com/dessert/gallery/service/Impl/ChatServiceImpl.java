@@ -68,9 +68,13 @@ public class ChatServiceImpl implements ChatService {
            throw new UnAuthorizedException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
         });
 
-//        if (chatRoom.getCustomer().getEmail().equals(email)) {
-//
-//        }
+        User owner = chatRoom.getOwner();
+        User customer = chatRoom.getCustomer();
+
+        // 요청하는 유저가 해당 채팅방에 참여하고 있는지 확인함.
+        if (!owner.getEmail().equals(email) && !customer.getEmail().equals(email)) {
+            throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
 
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         return chatMessageRepository.findByChatRoomIdAndTimestampAfterOrderByTimestamp(chatRoomId, oneMonthAgo);
@@ -103,6 +107,26 @@ public class ChatServiceImpl implements ChatService {
 
         return query.fetch();
     }
+
+    @Override
+    public void deleteRoom(Long roomId, HttpServletRequest request) {
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        Optional<User> user = userRepository.findByEmail(email);
+        if (!user.isPresent()) {
+            throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() ->
+                new UnAuthorizedException("Not Found User", ErrorCode.ACCESS_DENIED_EXCEPTION));
+
+        if (!chatRoom.getCustomer().getEmail().equals(email) && !chatRoom.getOwner().getEmail().equals(email)) {
+            throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
+
+        chatMessageRepository.deleteByChatRoomId(chatRoom.getId());
+        chatRoomRepository.delete(chatRoom);
+    }
+
 
     @Override
     @Scheduled(cron = "0 0 0 * * ?")
