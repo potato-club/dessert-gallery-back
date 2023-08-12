@@ -67,8 +67,8 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public BoardResponseDto getBoardDto(Long boardId) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
-        BoardResponseDto dto = new BoardResponseDto(board);
-        return dto;
+
+        return new BoardResponseDto(board);
     }
 
     @Override
