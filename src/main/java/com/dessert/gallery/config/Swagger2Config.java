@@ -43,4 +43,17 @@ public class Swagger2Config {
                 .addOpenApiCustomiser(api -> api.setInfo(info))
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi supportApi() {
+        Info info = new Info().title("S3 및 Map API").version("v0.1");
+        String[] paths = {"/kakaoMap/**", "/s3/**", "/mypage/room/**"};
+
+        return GroupedOpenApi.builder()
+                .group("supports")
+                .pathsToMatch(paths)
+                .displayName("Support's API")
+                .addOpenApiCustomiser(api -> api.setInfo(info))
+                .build();
+    }
 }
