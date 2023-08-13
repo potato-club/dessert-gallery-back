@@ -40,7 +40,7 @@ public class File extends BaseTimeEntity {
     private Store store;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "User")
+    @JoinColumn(name = "users_uid")
     private User user;
 
     public void update(FileDto requestDto) {
