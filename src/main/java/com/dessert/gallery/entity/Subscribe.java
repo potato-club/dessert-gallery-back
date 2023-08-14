@@ -1,13 +1,12 @@
 package com.dessert.gallery.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Getter
+@Data
 @Entity
+@Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Table(name = "subscribes")
@@ -17,11 +16,8 @@ public class Subscribe extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
-
-    @Column
-    private boolean banned;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_uid")

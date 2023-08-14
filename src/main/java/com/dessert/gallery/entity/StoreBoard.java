@@ -1,16 +1,15 @@
 package com.dessert.gallery.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.dessert.gallery.dto.board.BoardRequestDto;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
-@RequiredArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreBoard extends BaseTimeEntity {
 
     @Id
@@ -23,13 +22,38 @@ public class StoreBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column
+    @Column(nullable = false)
+    private String tags;
+
+    @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
     @OneToMany(mappedBy = "storeBoard", orphanRemoval = true)
-    private List<File> file;
+    private List<File> images = new ArrayList<>();
+
+    public StoreBoard(BoardRequestDto requestDto, Store store) {
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+        this.tags = requestDto.getTags();
+        this.store = store;
+        this.deleted = false;
+    }
+
+    public void setImages(List<File> images) {
+        this.images = images;
+    }
+
+    public void updateBoard(BoardRequestDto requestDto) {
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+        this.tags = requestDto.getTags();
+    }
+
+    public void deleteBoard() {
+        this.deleted = true;
+    }
 }

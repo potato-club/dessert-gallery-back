@@ -13,8 +13,8 @@ public enum ErrorCode {
     NOT_ALLOW_WRITE_EXCEPTION(HttpStatus.UNAUTHORIZED, "401_NOT_ALLOW", "401 UnAuthorized"),
     FORBIDDEN_EXCEPTION(HttpStatus.FORBIDDEN, "403", "403 Forbidden"),
     NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "404", "404 Not Found"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "500", "500 Internal Server Error"),
-    CONFLICT_EXCEPTION(HttpStatus.CONFLICT, "409", "409 Conflict");
+    CONFLICT_EXCEPTION(HttpStatus.CONFLICT, "409", "409 Conflict"),
+    INVALID_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED, "401_Invalid", "Invalid access: token in blacklist");
 
     private final HttpStatus status;
     private final String code;
