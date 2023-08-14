@@ -14,7 +14,7 @@ public class ScheduleResponseDto {
     private Long id;
     @Schema(description = "스케줄 날짜")
     private String date;
-    @Schema(description = "스케줄 타입", example = "RESERVATION / HOLIDAY / EVENT")
+    @Schema(description = "스케줄 타입 (RESERVATION / HOLIDAY / EVENT)")
     private ScheduleType type;
 
     public ScheduleResponseDto(Schedule schedule) {
@@ -23,7 +23,7 @@ public class ScheduleResponseDto {
         this.type = schedule.getType();
     }
 
-    private static String parsingDateTime(LocalDateTime dateTime) {
+    private String parsingDateTime(LocalDateTime dateTime) {
         return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 }

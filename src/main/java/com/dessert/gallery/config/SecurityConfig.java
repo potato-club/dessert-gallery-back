@@ -56,6 +56,8 @@ public class SecurityConfig {
                 .antMatchers(HttpMethod.POST,"/notices/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.PUT,"/notices/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/notices/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/comments/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/comments/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                 // 카카오맵, 1대1 채팅과 같은 기능들 권한 설정
                 .antMatchers(HttpMethod.POST,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")

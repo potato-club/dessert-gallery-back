@@ -89,7 +89,7 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         notice.deleteNotice();
     }
 
-    public NoticeBoard validateNotice(Long noticeId, HttpServletRequest request) {
+    private NoticeBoard validateNotice(Long noticeId, HttpServletRequest request) {
         NoticeBoard notice = noticeRepository.findByIdAndDeletedIsFalse(noticeId);
         User user = userService.findUserByToken(request);
 
