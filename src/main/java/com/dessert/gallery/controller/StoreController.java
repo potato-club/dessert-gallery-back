@@ -31,8 +31,9 @@ public class StoreController {
 
     @Operation(summary = "가게 정보 조회 API")
     @GetMapping("/{storeId}")
-    public StoreResponseDto getStore(@PathVariable(name = "storeId") Long storeId) {
-        return storeService.getStoreDto(storeId);
+    public StoreResponseDto getStore(@PathVariable(name = "storeId") Long storeId,
+                                     HttpServletRequest request) {
+        return storeService.getStoreDto(storeId, request);
     }
 
     @Operation(summary = "가게 페이지 캘린더 조회 API")
