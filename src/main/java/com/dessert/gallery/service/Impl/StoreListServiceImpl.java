@@ -52,17 +52,22 @@ public class StoreListServiceImpl implements StoreListService {
                                     QFile.file.fileName,
                                     QFile.file.fileUrl,
                                     QStore.store.score,
+                                    QStore.store.createdDate,
                                     QSubscribe.subscribe.id.as("followId"),
-                                    QStoreBoard.storeBoard.modifiedDate.as("storeBoardModifiedDate"),
                                     QBookmark.bookmark.id.as("bookmarkId")
                             )
                     )
                     .from(QStore.store, QUser.user)
                     .leftJoin(QStore.store.image, QFile.file)
-                    .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
-                    .leftJoin(QSubscribe.subscribe).on(QSubscribe.subscribe.deleted.isFalse())
+                    .leftJoin(QStoreBoard.storeBoard)
+                        .on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                    .leftJoin(QSubscribe.subscribe)
+                        .on(QSubscribe.subscribe.deleted.isFalse())
                         .on(QSubscribe.subscribe.user.eq(qUser).and(qUser.email.eq(email)))
-                    .leftJoin(QBookmark.bookmark).on(QBookmark.bookmark.user.eq(qUser).and(qUser.email.eq(email)))
+                        .on(QSubscribe.subscribe.store.eq(QStore.store))
+                    .leftJoin(QBookmark.bookmark)
+                        .on(QBookmark.bookmark.user.eq(qUser).and(qUser.email.eq(email)))
+                        .on(QBookmark.bookmark.board.store.eq(QStore.store))
                     .where(whereBuilder)
                     .orderBy(existsOrderByOption(storeSearchDto))
                     .offset((storeSearchDto.getPage() - 1) * 20L)
@@ -80,7 +85,7 @@ public class StoreListServiceImpl implements StoreListService {
                                     QFile.file.fileName,
                                     QFile.file.fileUrl,
                                     QStore.store.score,
-                                    QStoreBoard.storeBoard.modifiedDate.as("storeBoardModifiedDate")
+                                    QStore.store.createdDate
                             )
                     )
                     .from(QStore.store)
