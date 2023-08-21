@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.store.list.ReviewListDto;
 import com.dessert.gallery.dto.store.list.StoreReviewDto;
 import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.service.Interface.StoreListService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -17,6 +18,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -28,39 +30,71 @@ import java.util.List;
 public class StoreListServiceImpl implements StoreListService {
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public List<StoreListResponseDto> getStoreList(StoreSearchDto storeSearchDto) {
+    public List<StoreListResponseDto> getStoreList(StoreSearchDto storeSearchDto, HttpServletRequest request) {
 
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
 
-        JPAQuery<StoreListResponseDto> query = jpaQueryFactory
-                .select(
-                        Projections.constructor(
-                            StoreListResponseDto.class,
-                            QStore.store.id,
-                            QStore.store.name,
-                            QStore.store.content,
-                            QStore.store.address,
-                            QFile.file.fileName,
-                            QFile.file.fileUrl,
-                            QStore.store.score
-                        )
-                )
-                .from(QStore.store)
-                .leftJoin(QStore.store.image, QFile.file)
-                .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
-                .where(whereBuilder)
-                .distinct()
-                .orderBy(existsOrderByOption(storeSearchDto))
-                .offset((storeSearchDto.getPage() - 1) * 20L)
-                .limit(20);
-
-        return query.fetch();
+        if (accessToken != null) {
+            String email = jwtTokenProvider.getUserEmail(accessToken);
+            return jpaQueryFactory
+                    .select(
+                            Projections.constructor(
+                                    StoreListResponseDto.class,
+                                    QStore.store.id,
+                                    QStore.store.name,
+                                    QStore.store.content,
+                                    QStore.store.address,
+                                    QFile.file.fileName,
+                                    QFile.file.fileUrl,
+                                    QStore.store.score,
+                                    QSubscribe.subscribe.id.as("followId"),
+                                    QStoreBoard.storeBoard.modifiedDate.as("storeBoardModifiedDate")
+                            )
+                    )
+                    .from(QStore.store)
+                    .leftJoin(QStore.store.image, QFile.file)
+                    .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                    .leftJoin(QSubscribe.subscribe).on(QSubscribe.subscribe.user.email.eq(email)
+                            .and(QSubscribe.subscribe.deleted.isFalse()))
+                    .where(whereBuilder)
+                    .distinct()
+                    .orderBy(existsOrderByOption(storeSearchDto))
+                    .offset((storeSearchDto.getPage() - 1) * 20L)
+                    .limit(20)
+                    .fetch();
+        } else {
+            return jpaQueryFactory
+                    .select(
+                            Projections.constructor(
+                                    StoreListResponseDto.class,
+                                    QStore.store.id,
+                                    QStore.store.name,
+                                    QStore.store.content,
+                                    QStore.store.address,
+                                    QFile.file.fileName,
+                                    QFile.file.fileUrl,
+                                    QStore.store.score,
+                                    QStoreBoard.storeBoard.modifiedDate.as("storeBoardModifiedDate")
+                            )
+                    )
+                    .from(QStore.store)
+                    .leftJoin(QStore.store.image, QFile.file)
+                    .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                    .where(whereBuilder)
+                    .distinct()
+                    .orderBy(existsOrderByOption(storeSearchDto))
+                    .offset((storeSearchDto.getPage() - 1) * 20L)
+                    .limit(20)
+                    .fetch();
+        }
     }
 
     @Override
-    public List<StoreReviewDto> getReviewList(StoreSearchDto storeSearchDto) {
+    public List<StoreReviewDto> getReviewList(StoreSearchDto storeSearchDto, HttpServletRequest request) {
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
 
         JPAQuery<StoreReviewDto> query = jpaQueryFactory
