@@ -18,7 +18,7 @@ public class StoreSearchDto {
     private String address;
 
     @Schema(description = "검색 키워드 필터링")
-    private List<String> searchType;
+    private String searchType;
 
     @Schema(description = "최신 순 / 팔로워 순 / 평점 순")
     private SearchType sortType;
