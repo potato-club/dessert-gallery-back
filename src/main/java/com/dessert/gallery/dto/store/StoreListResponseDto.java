@@ -36,4 +36,7 @@ public class StoreListResponseDto {
 
     @Schema(description = "가게 평균 점수")
     private LocalDateTime storeBoardModifiedDate;
+
+    @Schema(description = "북마크한 가게 표시")
+    private Long bookmarkId;
 }
