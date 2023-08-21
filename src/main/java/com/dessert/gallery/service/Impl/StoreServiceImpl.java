@@ -13,6 +13,7 @@ import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
+import com.dessert.gallery.repository.SubscribeRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ import static com.dessert.gallery.error.ErrorCode.*;
 public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
     private final StoreBoardRepository boardRepository;
+    private final SubscribeRepository subscribeRepository;
     private final UserService userService;
     private final CalendarService calendarService;
     private final S3Service s3Service;
@@ -46,10 +48,19 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public StoreResponseDto getStoreDto(Long id) {
+    public StoreResponseDto getStoreDto(Long id, HttpServletRequest request) {
         Store store = getStore(id);
         int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
-        return new StoreResponseDto(store, postCount);
+        int followerCount = Math.toIntExact(subscribeRepository.countAllByStore(store));
+
+        StoreResponseDto responseDto = new StoreResponseDto(store, postCount, followerCount);
+
+        if (request.getHeader("authorization") != null) {
+            User user = userService.findUserByToken(request);
+            boolean followState = subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(store, user);
+            responseDto.setFollow(followState);
+        }
+        return responseDto;
     }
 
     @Override

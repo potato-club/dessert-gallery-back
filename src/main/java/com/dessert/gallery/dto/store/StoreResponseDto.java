@@ -23,8 +23,12 @@ public class StoreResponseDto {
     private FileDto storeImage;
     @Schema(description = "가게 게시글 개수")
     private int postCount;
+    @Schema(description = "가게 팔로워 수")
+    private int followers;
+    @Schema(description = "유저의 팔로우 여부")
+    private boolean follow = false;
 
-    public StoreResponseDto(Store store, int postCount) {
+    public StoreResponseDto(Store store, int postCount, int followerCount) {
         this.id = store.getId();
         this.name = store.getName();
         this.introduction = store.getContent();
@@ -32,5 +36,10 @@ public class StoreResponseDto {
         this.phoneNumber = store.getPhoneNumber();
         this.storeImage = store.getImage() == null ? null : new FileDto(store.getImage());
         this.postCount = postCount;
+        this.followers = followerCount;
+    }
+
+    public void setFollow(boolean followState) {
+        this.follow = followState;
     }
 }
