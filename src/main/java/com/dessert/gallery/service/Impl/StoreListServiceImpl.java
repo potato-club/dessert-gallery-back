@@ -59,8 +59,8 @@ public class StoreListServiceImpl implements StoreListService {
                     .leftJoin(QStore.store.image, QFile.file)
                     .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                     .leftJoin(QSubscribe.subscribe).on(QSubscribe.subscribe.deleted.isFalse())
-                    .where(whereBuilder
-                            .and(QSubscribe.subscribe.user.email.eq(email)))
+                        .on(QSubscribe.subscribe.user.email.eq(email))
+                    .where(whereBuilder)
                     .distinct()
                     .orderBy(existsOrderByOption(storeSearchDto))
                     .offset((storeSearchDto.getPage() - 1) * 20L)
