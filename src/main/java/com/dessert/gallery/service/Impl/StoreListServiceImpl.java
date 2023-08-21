@@ -60,7 +60,7 @@ public class StoreListServiceImpl implements StoreListService {
                     .from(QStore.store, QUser.user)
                     .leftJoin(QStore.store.image, QFile.file)
                     .leftJoin(QStoreBoard.storeBoard)
-                        .on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                        .on(QStoreBoard.storeBoard.store.id.eq(QStore.store.id))
                     .leftJoin(QSubscribe.subscribe)
                         .on(QSubscribe.subscribe.deleted.isFalse())
                         .on(QSubscribe.subscribe.user.eq(qUser).and(qUser.email.eq(email)))
