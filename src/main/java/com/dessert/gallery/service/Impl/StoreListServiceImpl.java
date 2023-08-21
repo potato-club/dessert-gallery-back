@@ -57,7 +57,7 @@ public class StoreListServiceImpl implements StoreListService {
                                     QBookmark.bookmark.id.as("bookmarkId")
                             )
                     )
-                    .from(QStore.store)
+                    .from(QStore.store, QUser.user)
                     .leftJoin(QStore.store.image, QFile.file)
                     .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                     .leftJoin(QSubscribe.subscribe).on(QSubscribe.subscribe.deleted.isFalse())
