@@ -160,7 +160,10 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         if (request.getSearchType().equals(SearchType.NAME)) {
             whereBuilder.and(QStore.store.name.like("%" + request.getKeyword() + "%"));
         } else if (request.getSearchType().equals(SearchType.TAGS)) {
-            whereBuilder.and(QStoreBoard.storeBoard.tags.like("%" + request.getKeyword() + "%"));
+            String[] keywordList = request.getKeyword().split("#");
+            for (String option : keywordList) {
+                whereBuilder.and(QStoreBoard.storeBoard.tags.like("%" + option + "%"));
+            }
         } else {
             throw new UnAuthorizedException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
