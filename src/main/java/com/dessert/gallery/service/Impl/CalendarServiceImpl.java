@@ -5,9 +5,11 @@ import com.dessert.gallery.dto.schedule.ScheduleResponseDto;
 import com.dessert.gallery.entity.Calendar;
 import com.dessert.gallery.entity.Schedule;
 import com.dessert.gallery.entity.Store;
+import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.CalendarRepository;
 import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.ScheduleService;
+import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 
 @Service
 @Slf4j
@@ -25,6 +30,7 @@ import java.util.stream.Collectors;
 public class CalendarServiceImpl implements CalendarService {
     private final CalendarRepository calendarRepository;
     private final ScheduleService scheduleService;
+    private final UserService userService;
 
     @Override
     public void createCalendar(Store store) {
@@ -62,6 +68,9 @@ public class CalendarServiceImpl implements CalendarService {
     public CalendarResponseDto getOwnerCalendar(Long storeId, int year, int month, HttpServletRequest request) {
         Calendar calendar = findCalendar(storeId);
 
+        if(!Objects.equals(calendar.getStore().getUser(), userService.findUserByToken(request))) {
+            throw new UnAuthorizedException("가게 주인만 조회 가능", ACCESS_DENIED_EXCEPTION);
+        }
         // 해당 월의 시작일 지정
         LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
 

@@ -35,8 +35,11 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public void addSchedule(Long storeId, ScheduleRequestDto requestDto, HttpServletRequest request) {
+        User user = userService.findUserByToken(request);
         Calendar calendar = calendarRepository.findByStoreId(storeId);
         if(calendar == null) throw new NotFoundException("존재하지 않는 캘린더", NOT_FOUND_EXCEPTION);
+        if(calendar.getStore().getUser() != user)
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         Schedule schedule = new Schedule(requestDto, calendar);
         Schedule saveSchedule = scheduleRepository.save(schedule);
         calendar.addSchedule(saveSchedule);
