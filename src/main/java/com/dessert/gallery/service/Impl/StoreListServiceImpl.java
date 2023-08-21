@@ -42,7 +42,7 @@ public class StoreListServiceImpl implements StoreListService {
         if (accessToken != null) {
             String email = jwtTokenProvider.getUserEmail(accessToken);
             return jpaQueryFactory
-                    .select(
+                    .selectDistinct(
                             Projections.constructor(
                                     StoreListResponseDto.class,
                                     QStore.store.id,
@@ -64,7 +64,6 @@ public class StoreListServiceImpl implements StoreListService {
                         .on(QSubscribe.subscribe.user.eq(qUser).and(qUser.email.eq(email)))
                     .leftJoin(QBookmark.bookmark).on(QBookmark.bookmark.user.eq(qUser).and(qUser.email.eq(email)))
                     .where(whereBuilder)
-                    .distinct()
                     .orderBy(existsOrderByOption(storeSearchDto))
                     .offset((storeSearchDto.getPage() - 1) * 20L)
                     .limit(20)
@@ -101,7 +100,7 @@ public class StoreListServiceImpl implements StoreListService {
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
 
         JPAQuery<StoreReviewDto> query = jpaQueryFactory
-                .select(
+                .selectDistinct(
                         Projections.constructor(
                             StoreReviewDto.class,
                             QStore.store.id.as("storeId"),
@@ -115,7 +114,6 @@ public class StoreListServiceImpl implements StoreListService {
                 .leftJoin(QStore.store.image, QFile.file)
                 .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
-                .distinct()
                 .orderBy(existsOrderByOption(storeSearchDto))
                 .offset((storeSearchDto.getPage() - 1) * 20L)
                 .limit(20);
