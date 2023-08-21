@@ -38,6 +38,7 @@ public class StoreListServiceImpl implements StoreListService {
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
         String accessToken = jwtTokenProvider.resolveAccessToken(request);
         QUser qUser = QUser.user;
+        QStore qStore = QStore.store;
 
         if (accessToken != null) {
             String email = jwtTokenProvider.getUserEmail(accessToken);
@@ -67,7 +68,7 @@ public class StoreListServiceImpl implements StoreListService {
                         .on(QSubscribe.subscribe.store.eq(QStore.store))
                     .leftJoin(QBookmark.bookmark)
                         .on(QBookmark.bookmark.user.eq(qUser).and(qUser.email.eq(email)))
-                        .on(QBookmark.bookmark.board.store.eq(QStore.store))
+                        .on(QBookmark.bookmark.board.store.eq(qStore))
                     .where(whereBuilder)
                     .orderBy(existsOrderByOption(storeSearchDto))
                     .offset((storeSearchDto.getPage() - 1) * 20L)
