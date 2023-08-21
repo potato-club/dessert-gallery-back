@@ -22,13 +22,13 @@ public class StoreListController {
 
     @Operation(summary = "필터 적용/미적용 가게 목록 조회 API")
     @GetMapping("/stores")
-    public List<StoreListResponseDto> getStoreList(@RequestBody StoreSearchDto storeSearchDto) {
+    public List<StoreListResponseDto> getStoreList(@ModelAttribute StoreSearchDto storeSearchDto) {
         return storeListService.getStoreList(storeSearchDto);
     }
 
     @Operation(summary = "필터 적용/미적용 리뷰 목록 조회 API")
     @GetMapping("/reviews")
-    public List<StoreReviewDto> getReviewList(@RequestBody StoreSearchDto storeSearchDto) {
+    public List<StoreReviewDto> getReviewList(@ModelAttribute StoreSearchDto storeSearchDto) {
         return storeListService.getReviewList(storeSearchDto);
     }
 }
