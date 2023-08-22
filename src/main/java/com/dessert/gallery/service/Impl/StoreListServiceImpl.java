@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.store.list.ReviewListDto;
 import com.dessert.gallery.dto.store.list.StoreReviewDto;
 import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.service.Interface.StoreListService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -17,6 +18,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -28,43 +30,84 @@ import java.util.List;
 public class StoreListServiceImpl implements StoreListService {
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public List<StoreListResponseDto> getStoreList(StoreSearchDto storeSearchDto) {
+    public List<StoreListResponseDto> getStoreList(StoreSearchDto storeSearchDto, HttpServletRequest request) {
 
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
 
-        JPAQuery<StoreListResponseDto> query = jpaQueryFactory
-                .select(
-                        Projections.constructor(
-                            StoreListResponseDto.class,
-                            QStore.store.id,
-                            QStore.store.name,
-                            QStore.store.content,
-                            QStore.store.address,
-                            QFile.file.fileName,
-                            QFile.file.fileUrl,
-                            QStore.store.score
-                        )
-                )
-                .from(QStore.store)
-                .leftJoin(QStore.store.image, QFile.file)
-                .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
-                .where(whereBuilder)
-                .distinct()
-                .orderBy(existsOrderByOption(storeSearchDto))
-                .offset((storeSearchDto.getPage() - 1) * 20L)
-                .limit(20);
-
-        return query.fetch();
+        if (accessToken != null) {
+            String email = jwtTokenProvider.getUserEmail(accessToken);
+            return jpaQueryFactory
+                    .select(
+                            Projections.constructor(
+                                    StoreListResponseDto.class,
+                                    QStore.store.id,
+                                    QStore.store.name,
+                                    QStore.store.content,
+                                    QStore.store.address,
+                                    QFile.file.fileName,
+                                    QFile.file.fileUrl,
+                                    QStore.store.score,
+                                    QStore.store.createdDate,
+                                    QSubscribe.subscribe.id.as("followId"),
+                                    QBookmark.bookmark.id.as("bookmarkId")
+                            )
+                    )
+                    .from(QStore.store)
+                    .leftJoin(QUser.user)
+                        .on(QUser.user.email.eq(email))
+                    .leftJoin(QStore.store.image, QFile.file)
+                    .leftJoin(QStoreBoard.storeBoard)
+                        .on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                    .leftJoin(QSubscribe.subscribe)
+                        .on(QSubscribe.subscribe.deleted.isFalse())
+                        .on(QSubscribe.subscribe.user.eq(QUser.user))
+                        .on(QSubscribe.subscribe.store.eq(QStore.store))
+                    .leftJoin(QBookmark.bookmark)
+                        .on(QBookmark.bookmark.user.eq(QUser.user))
+                        .on(QBookmark.bookmark.storeBoard.eq(QStoreBoard.storeBoard))
+                    .where(whereBuilder)
+                    .distinct()
+                    .orderBy(existsOrderByOption(storeSearchDto))
+                    .offset((storeSearchDto.getPage() - 1) * 20L)
+                    .limit(20)
+                    .fetch();
+        } else {
+            return jpaQueryFactory
+                    .select(
+                            Projections.constructor(
+                                    StoreListResponseDto.class,
+                                    QStore.store.id,
+                                    QStore.store.name,
+                                    QStore.store.content,
+                                    QStore.store.address,
+                                    QFile.file.fileName,
+                                    QFile.file.fileUrl,
+                                    QStore.store.score,
+                                    QStore.store.createdDate
+                            )
+                    )
+                    .from(QStore.store)
+                    .leftJoin(QStore.store.image, QFile.file)
+                    .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                    .where(whereBuilder)
+                    .distinct()
+                    .orderBy(existsOrderByOption(storeSearchDto))
+                    .offset((storeSearchDto.getPage() - 1) * 20L)
+                    .limit(20)
+                    .fetch();
+        }
     }
 
     @Override
-    public List<StoreReviewDto> getReviewList(StoreSearchDto storeSearchDto) {
+    public List<StoreReviewDto> getReviewList(StoreSearchDto storeSearchDto, HttpServletRequest request) {
         BooleanBuilder whereBuilder = this.existsFilterOption(storeSearchDto);
 
         JPAQuery<StoreReviewDto> query = jpaQueryFactory
-                .select(
+                .selectDistinct(
                         Projections.constructor(
                             StoreReviewDto.class,
                             QStore.store.id.as("storeId"),
@@ -78,7 +121,6 @@ public class StoreListServiceImpl implements StoreListService {
                 .leftJoin(QStore.store.image, QFile.file)
                 .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
-                .distinct()
                 .orderBy(existsOrderByOption(storeSearchDto))
                 .offset((storeSearchDto.getPage() - 1) * 20L)
                 .limit(20);

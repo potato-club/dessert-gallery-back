@@ -21,11 +21,11 @@ public class Bookmark extends BaseTimeEntity{
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id", nullable = false)
-    private StoreBoard board;
+    @JoinColumn(name = "storeBoard_id", nullable = false)
+    private StoreBoard storeBoard;
 
     public Bookmark(User user, StoreBoard board) {
         this.user = user;
-        this.board = board;
+        this.storeBoard = board;
     }
 }
