@@ -30,7 +30,7 @@ public class BookmarkServiceImpl implements BookmarkService {
     public String toggleBookmark(Long boardId, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         StoreBoard board = boardService.getBoard(boardId);
-        Bookmark findBookmark = bookmarkRepository.findByBoardAndUser(board, user);
+        Bookmark findBookmark = bookmarkRepository.findByStoreBoardAndUser(board, user);
 
         if(findBookmark == null) {
             Bookmark bookmark = new Bookmark(user, board);
@@ -50,7 +50,7 @@ public class BookmarkServiceImpl implements BookmarkService {
         List<Bookmark> bookmarkList = bookmarkRepository.findByUser(user);
 
         return bookmarkList.stream()
-                .map(b -> new BoardListResponseDto(b.getBoard()))
+                .map(b -> new BoardListResponseDto(b.getStoreBoard()))
                 .collect(Collectors.toList());
     }
 }
