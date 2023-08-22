@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .antMatchers(HttpMethod.POST,"/stores/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.PUT,"/stores/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/stores/**").hasAnyAuthority("MANAGER", "ADMIN")
-                .antMatchers(HttpMethod.GET,"/stores/{storeId}/calendar/**").hasAnyAuthority("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.GET,"/stores/{storeId}/calendar/owner").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.POST,"/boards/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.PUT,"/boards/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.DELETE,"/boards/**").hasAnyAuthority("MANAGER", "ADMIN")
