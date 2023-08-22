@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 public class ScheduleRequestDto {
     @Schema(description = "스케줄 날짜", example = "2024-01-01")
     private String date;
-    @Schema(description = "타입 key", example = "RESERVATION = 1 / HOLIDAY = 2 / EVENT = 3")
+    @Schema(description = "RESERVATION = 1 / HOLIDAY = 2 / EVENT = 3")
     private Integer key;
 }

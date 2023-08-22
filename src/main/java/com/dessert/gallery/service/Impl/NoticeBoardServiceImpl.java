@@ -4,12 +4,10 @@ import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
-import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.NoticeBoard;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.error.exception.NotFoundException;
-import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.NoticeBoardRepository;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
@@ -23,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,11 +61,7 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         NoticeBoard notice = new NoticeBoard(requestDto, store);
-        NoticeBoard saveNotice = noticeRepository.save(notice);
-        if(!images.isEmpty()) {
-            List<File> files = saveImage(images, saveNotice);
-            saveNotice.setImages(files);
-        }
+        noticeRepository.save(notice);
     }
 
     @Override
@@ -76,10 +69,6 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
                              List<MultipartFile> images, List<FileRequestDto> requestDto,
                              HttpServletRequest request) {
         NoticeBoard notice = validateNotice(noticeId, request);
-        if(!images.isEmpty()) {
-            List<File> files = updateImage(notice, images, requestDto);
-            notice.setImages(files);
-        }
         notice.updateNotice(updateDto);
     }
 
@@ -98,21 +87,5 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         return notice;
-    }
-
-    private List<File> saveImage(List<MultipartFile> images, NoticeBoard notice) {
-        try {
-            return s3Service.uploadImages(images, notice);
-        } catch (IOException e) {
-            throw new S3Exception("이미지 업로드 에러", RUNTIME_EXCEPTION);
-        }
-    }
-
-    private List<File> updateImage(NoticeBoard notice, List<MultipartFile> images, List<FileRequestDto> requestDto) {
-        try {
-            return s3Service.updateFiles(notice, images, requestDto);
-        } catch (IOException e) {
-            throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);
-        }
     }
 }
