@@ -79,6 +79,9 @@ email:
     id: ENC(UQs859awPt7sKp69E/8nSfPC5tYedJlk2NGAT7EYzEY=)
     pw: ENC(dd8+VY2qXOOt9Lll+wZelyzL3rjIAOyJ)
 
+github:
+  secret: ENC(4IR5kq9OFnTn1xHoGmJVoe5Gd3X7VbJnSImCh4nuB1RBxQ61fm2tWViNIj//usHSgFvf4mXesYs=)
+
 management:
   endpoints:
     web:
