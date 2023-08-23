@@ -11,6 +11,9 @@ public class StoreRequestDto {
     @Schema(description = "가게 이름")
     private String name;
 
+    @Schema(description = "가게 정보")
+    private String info;
+
     @Schema(description = "가게 소개")
     private String content;
 

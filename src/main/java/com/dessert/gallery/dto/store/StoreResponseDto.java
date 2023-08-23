@@ -13,6 +13,8 @@ public class StoreResponseDto {
     private Long id;
     @Schema(description = "가게 이름")
     private String name;
+    @Schema(description = "가게 정보")
+    private String info;
     @Schema(description = "가게 소개")
     private String introduction;
     @Schema(description = "가게 주소")
@@ -31,6 +33,7 @@ public class StoreResponseDto {
     public StoreResponseDto(Store store, int postCount, int followerCount) {
         this.id = store.getId();
         this.name = store.getName();
+        this.info = store.getInfo();
         this.introduction = store.getContent();
         this.address = store.getAddress();
         this.phoneNumber = store.getPhoneNumber();

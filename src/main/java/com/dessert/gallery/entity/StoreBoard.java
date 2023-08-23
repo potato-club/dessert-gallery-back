@@ -20,9 +20,6 @@ public class StoreBoard extends BaseTimeEntity {
     private String title;
 
     @Column(nullable = false)
-    private String subtitle;
-
-    @Column(nullable = false)
     private String content;
 
     @Column(nullable = false)
@@ -40,7 +37,6 @@ public class StoreBoard extends BaseTimeEntity {
 
     public StoreBoard(BoardRequestDto requestDto, Store store) {
         this.title = requestDto.getTitle();
-        this.subtitle = requestDto.getSubtitle();
         this.content = requestDto.getContent();
         this.tags = requestDto.getTags();
         this.store = store;
@@ -53,7 +49,6 @@ public class StoreBoard extends BaseTimeEntity {
 
     public void updateBoard(BoardRequestDto requestDto) {
         this.title = requestDto.getTitle();
-        this.subtitle = requestDto.getSubtitle();
         this.content = requestDto.getContent();
         this.tags = requestDto.getTags();
     }

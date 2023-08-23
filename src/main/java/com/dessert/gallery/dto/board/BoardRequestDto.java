@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 public class BoardRequestDto {
     @Schema(description = "게시글 제목")
     private String title;
-    @Schema(description = "게시글 부제목")
-    private String subtitle;
     @Schema(description = "게시글 내용")
     private String content;
     @Schema(description = "게시글 해시태그")
