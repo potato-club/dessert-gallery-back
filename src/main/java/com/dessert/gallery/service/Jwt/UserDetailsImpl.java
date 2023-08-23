@@ -54,7 +54,7 @@ public class UserDetailsImpl implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<String> userRole = new ArrayList<>();
         userRole.add(user.getUserRole().toString());
-        String authority = userRole.toString();
+        String authority = userRole.get(0);
 
         SimpleGrantedAuthority simpleAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
