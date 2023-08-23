@@ -39,7 +39,7 @@ public class BoardResponseDto {
 
         Matcher matcher = TAG_PATTERN.matcher(tags);
         while (matcher.find()) {
-            result.add(matcher.group(1));
+            result.add("#" + matcher.group(1));
         }
         return result;
     }
