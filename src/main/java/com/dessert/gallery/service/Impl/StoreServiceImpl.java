@@ -1,5 +1,6 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.config.GithubConfig;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
@@ -8,6 +9,7 @@ import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
+import com.dessert.gallery.error.ErrorEntity;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
@@ -16,9 +18,15 @@ import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.repository.SubscribeRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.dessert.gallery.service.S3.S3Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +48,8 @@ public class StoreServiceImpl implements StoreService {
     private final CalendarService calendarService;
     private final S3Service s3Service;
     private final KakaoMapService mapService;
+    private final GithubConfig githubConfig;
+    private final RestTemplate restTemplate;
 
     @Override
     public Store getStore(Long id) {
