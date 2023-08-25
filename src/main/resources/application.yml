@@ -80,8 +80,13 @@ email:
     pw: ENC(dd8+VY2qXOOt9Lll+wZelyzL3rjIAOyJ)
 
 github:
-  apiUrl: https://api.github.com/repos/potato-club/dessert-gallery-back/issues
-  secret: ENC(4IR5kq9OFnTn1xHoGmJVoe5Gd3X7VbJnSImCh4nuB1RBxQ61fm2tWViNIj//usHSgFvf4mXesYs=)
+  apiUrl_front: https://api.github.com/repos/potato-club/dessert-gallery-front/issues
+  apiUrl_back: https://api.github.com/repos/potato-club/dessert-gallery-back/issues
+  secret:
+    back: ENC(4IR5kq9OFnTn1xHoGmJVoe5Gd3X7VbJnSImCh4nuB1RBxQ61fm2tWViNIj//usHSgFvf4mXesYs=)
+    front_y: ENC(UkT2r01WfATpE8rieOI61aw8kZ/O51h6EeFybzp1F6XvmkU9sH+HJlxahAECXwmc6/mlCN78Yow=)
+    front_d: ENC(NcHnat6lhnoL2Mi7b+zNFeyPz6w5Q8xtQj9JPT3gR3tve5dVIBTne5A/JM4yADIKKqGkuL92R48=)
+    front_j: ENC(eF1XPee8PBNjqEr8UVTDNxAwv4uEFJsB4nZ28j1lUnttj/sNqgNya5QKiJJqVdqDUR58LT01nXU=)
 
 management:
   endpoints:

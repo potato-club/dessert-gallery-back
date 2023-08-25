@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 @Transactional
 @RequiredArgsConstructor
 public class IssueServiceImpl implements IssueService {
-    @Value("${github.apiUrl}")
+    @Value("${github.apiUrl_front}")
     private String apiUrl;
     private final GithubConfig githubConfig;
     private final RestTemplate restTemplate;
@@ -27,7 +27,7 @@ public class IssueServiceImpl implements IssueService {
     @Override
     public ResponseEntity<?> createIssue(Issue issue) throws JsonProcessingException {
         String jsonIssue = new ObjectMapper().writeValueAsString(issue);
-        HttpHeaders headers = githubConfig.githubApiHeaders();
+        HttpHeaders headers = githubConfig.githubApiHeaders(issue.getType());
         HttpEntity<String> httpEntity = new HttpEntity<>(jsonIssue, headers);
 
         return restTemplate.exchange(apiUrl, HttpMethod.POST, httpEntity, String.class);
