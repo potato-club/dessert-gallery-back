@@ -67,19 +67,22 @@ public class ErrorExceptionControllerAdvice {
                         .build());
     }
 
-    @ExceptionHandler({InternerServerException.class})
-    public ResponseEntity<ErrorEntity> exceptionHandler(HttpServletRequest request, final InternerServerException e)
+    @ExceptionHandler({InternalServerException.class})
+    public ResponseEntity<ErrorEntity> exceptionHandler(HttpServletRequest request, final InternalServerException e)
             throws JsonProcessingException {
 
         String errorMessage = "Error code: " + e.getErrorCode().getCode() + "\nError message: " + e.getErrorCode().getMessage();
+
         List<String> labels = new ArrayList<>();
+        List<String> assignees = new ArrayList<>();
         labels.add("bug");
-        labels.add(DeveloperType.B.getTitle());
+        assignees.add(DeveloperType.B.getTitle());
 
         Issue issue = Issue.builder()
                 .title(request.getRequestURI())
                 .body(errorMessage)
                 .labels(labels)
+                .assignees(assignees)
                 .build();
 
         String jsonIssue = new ObjectMapper().writeValueAsString(issue);

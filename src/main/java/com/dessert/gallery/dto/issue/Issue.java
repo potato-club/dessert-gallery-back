@@ -20,8 +20,11 @@ public class Issue implements Serializable {
     @Schema(description = "깃 이슈 내용", example = "Error code: xxxx, Error Message : xxxx")
     private String body;
 
-    @Schema(description = "깃 이슈 라벨", example = "add bug label and my nickname")
+    @Schema(description = "깃 이슈 라벨", example = "bug")
     private List<String> labels;
+
+    @Schema(description = "깃 이슈 assignees", example = "your nickname", hidden = true)
+    private List<String> assignees;
 
     @Schema(description = "깃 이슈 등록자", example = "Y, D, J")
     private DeveloperType type;

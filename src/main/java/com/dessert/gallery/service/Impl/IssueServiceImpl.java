@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -26,6 +29,10 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public ResponseEntity<?> createIssue(Issue issue) throws JsonProcessingException {
+        List<String> assignees = new ArrayList<>();
+        assignees.add(issue.getType().getTitle());
+        issue.setAssignees(assignees);
+
         String jsonIssue = new ObjectMapper().writeValueAsString(issue);
         HttpHeaders headers = githubConfig.githubApiHeaders(issue.getType());
         HttpEntity<String> httpEntity = new HttpEntity<>(jsonIssue, headers);
