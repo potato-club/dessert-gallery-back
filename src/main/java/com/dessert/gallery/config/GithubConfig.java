@@ -1,36 +1,49 @@
 package com.dessert.gallery.config;
 
-import com.dessert.gallery.error.ErrorEntity;
+import com.dessert.gallery.enums.DeveloperType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.MediaType;
 
 @Configuration
 @RequiredArgsConstructor
 public class GithubConfig {
 
-    @Value("${github.secret}")
-    private String secret;
+    @Value("${github.secret.front_y}")
+    private String frontY;
 
-    private final RestTemplate restTemplate;
+    @Value("${github.secret.front_d}")
+    private String frontD;
 
-    public void createGithubIssue(String apiUrl, ErrorEntity errorEntity) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + secret);
+    @Value("${github.secret.front_j}")
+    private String frontJ;
 
-            HttpEntity<ErrorEntity> requestEntity = new HttpEntity<>(errorEntity, headers);
+    @Value("${github.secret.back}")
+    private String back;
 
-            restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+    public HttpHeaders githubApiHeaders(DeveloperType developerType) {
+        HttpHeaders headers = new HttpHeaders();
+
+        switch (developerType) {
+            case Y:
+                headers.setBearerAuth(frontY);
+                break;
+            case D:
+                headers.setBearerAuth(frontD);
+                break;
+            case J:
+                headers.setBearerAuth(frontJ);
+                break;
+            case B:
+                headers.setBearerAuth(back);
+                break;
         }
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Accept-Charset", "UTF-8");
+        return headers;
     }
 }

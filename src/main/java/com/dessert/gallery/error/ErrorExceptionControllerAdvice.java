@@ -1,94 +1,121 @@
 package com.dessert.gallery.error;
 
 import com.dessert.gallery.config.GithubConfig;
+import com.dessert.gallery.dto.issue.Issue;
+import com.dessert.gallery.enums.DeveloperType;
 import com.dessert.gallery.error.exception.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestTemplate;
 
-import javax.persistence.GeneratedValue;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
-@Slf4j
 @RequiredArgsConstructor
 @RestControllerAdvice
 public class ErrorExceptionControllerAdvice {
 
+    @Value("${github.apiUrl_back}")
+    private String apiUrlBack;
+
     private final GithubConfig githubConfig;
+    private final RestTemplate restTemplate;
 
     @ExceptionHandler({BadRequestException.class})
     public ResponseEntity<ErrorEntity> exceptionHandler(final BadRequestException e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
-
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 
     @ExceptionHandler({UnAuthorizedException.class})
     public ResponseEntity<ErrorEntity> exceptionHandler(final UnAuthorizedException e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
-
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 
     @ExceptionHandler({NotFoundException.class})
     public ResponseEntity<ErrorEntity> exceptionHandler(final NotFoundException e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
-
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 
     @ExceptionHandler({DuplicateException.class})
     public ResponseEntity<ErrorEntity> exceptionHandler(final DuplicateException e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
-
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 
-    @ExceptionHandler({InternerServerException.class})
-    public ResponseEntity<ErrorEntity> exceptionHandler(final InternerServerException e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
+    @ExceptionHandler({InternalServerException.class})
+    public ResponseEntity<ErrorEntity> exceptionHandler(HttpServletRequest request, final InternalServerException e)
+            throws JsonProcessingException {
+
+        String errorMessage = "Error code: " + e.getErrorCode().getCode() + "\nError message: " + e.getErrorCode().getMessage();
+
+        List<String> labels = new ArrayList<>();
+        List<String> assignees = new ArrayList<>();
+        labels.add("bug");
+        assignees.add(DeveloperType.B.getTitle());
+
+        Issue issue = Issue.builder()
+                .title(request.getRequestURI())
+                .body(errorMessage)
+                .labels(labels)
+                .assignees(assignees)
+                .build();
+
+        String jsonIssue = new ObjectMapper().writeValueAsString(issue);
+        HttpHeaders headers = githubConfig.githubApiHeaders(DeveloperType.B);
+        HttpEntity<String> httpEntity = new HttpEntity<>(jsonIssue, headers);
+
+        restTemplate.exchange(apiUrlBack, HttpMethod.POST, httpEntity, String.class);
 
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 
     @ExceptionHandler({InvalidTokenException.class})
     public ResponseEntity<ErrorEntity> exceptionHandler(final InvalidTokenException e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
-
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 
     @ExceptionHandler({S3Exception.class})
     public ResponseEntity<ErrorEntity> exceptionHandler(final S3Exception e) {
-        ErrorEntity errorEntity = this.sendGithubIssue(e);
-
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(errorEntity);
-    }
-
-    private ErrorEntity sendGithubIssue(BusinessException e) {
-        ErrorEntity errorEntity = ErrorEntity.builder()
-                .errorCode(e.getErrorCode().getCode())
-                .errorMessage(e.getErrorCode().getMessage())
-                .build();
-
-        githubConfig.createGithubIssue("https://github.com/potato-club/dessert-gallery-back/issues", errorEntity);
-
-        return errorEntity;
+                .body(ErrorEntity.builder()
+                        .errorCode(e.getErrorCode().getCode())
+                        .errorMessage(e.getErrorCode().getMessage())
+                        .build());
     }
 }
