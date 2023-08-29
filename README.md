@@ -182,7 +182,7 @@
 
 <h2>👍 협업한 팀원들 소개</h2>
 
-**협업한 프론트 팀의 깃허브 주소** : [https://github.com/potato-club/meonghae_front](https://github.com/potato-club/meonghae_front)
+**협업한 프론트 팀의 깃허브 주소** : [https://github.com/potato-club/dessert-gallery-front](https://github.com/potato-club/dessert-gallery-front)
 
 
 **디자이너 장보경 님 Figma 주소** : [Figma](https://www.figma.com/file/Q0OF8paagt92QrSjkeYuwZ/%EB%94%94%EC%A0%80%ED%8A%B8-%EA%B0%A4%EB%9F%AC%EB%A6%AC?type=design&node-id=969%3A32&mode=design&t=TmgNGkUGw3Wpb6Ai-1)
