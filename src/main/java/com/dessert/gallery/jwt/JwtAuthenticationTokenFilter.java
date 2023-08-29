@@ -54,6 +54,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 }
             } else if (accessToken == null && refreshToken == null) {
                 filterChain.doFilter(request, response);
+                return;
             } else {
                 if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
                     this.setAuthentication(accessToken);
