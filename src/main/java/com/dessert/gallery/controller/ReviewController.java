@@ -6,6 +6,7 @@ import com.dessert.gallery.service.Interface.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +24,9 @@ public class ReviewController {
 
     @Operation(summary = "가게 리뷰 조회")
     @GetMapping("/stores/{storeId}")
-    public ResponseEntity<List<ReviewListResponseDto>> getStoreReviews(@PathVariable(name = "storeId") Long storeId) {
-        List<ReviewListResponseDto> reviewList = reviewService.getStoreReviews(storeId);
+    public ResponseEntity<Page<ReviewListResponseDto>> getStoreReviews(@PathVariable(name = "storeId") Long storeId,
+                                                                       @RequestParam(value = "page", defaultValue = "1") int page) {
+        Page<ReviewListResponseDto> reviewList = reviewService.getStoreReviews(storeId, page);
         return ResponseEntity.ok(reviewList);
     }
 
