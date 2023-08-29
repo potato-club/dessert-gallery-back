@@ -20,6 +20,6 @@ public class StoreSearchDto {
     @Schema(description = "검색 키워드 필터링")
     private String searchType;
 
-    @Schema(description = "최신 순 / 팔로워 순 / 평점 순")
+    @Schema(description = "최신 순 / 팔로워 순 / 평점 순", example = "RECENT / FOLLOWER / SCORE")
     private SearchType sortType;
 }
