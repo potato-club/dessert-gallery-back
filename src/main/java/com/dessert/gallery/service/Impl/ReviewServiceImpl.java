@@ -14,6 +14,9 @@ import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.dessert.gallery.error.ErrorCode.RUNTIME_EXCEPTION;
 
@@ -36,13 +38,13 @@ public class ReviewServiceImpl implements ReviewService {
     private final S3Service s3Service;
 
     @Override
-    public List<ReviewListResponseDto> getStoreReviews(Long storeId) {
+    public Page<ReviewListResponseDto> getStoreReviews(Long storeId, int page) {
+        PageRequest request = PageRequest.of(page - 1, 4,
+                Sort.by(Sort.Direction.DESC, "createdDate"));
         Store store = storeService.getStore(storeId);
-        List<ReviewBoard> reviews = reviewRepository.findAllByStore(store);
-        List<ReviewListResponseDto> reviewListDto = reviews.stream()
-                .map(ReviewListResponseDto::new)
-                .collect(Collectors.toList());
-        return reviewListDto;
+        Page<ReviewBoard> reviews = reviewRepository.findAllByStore(request, store);
+
+        return reviews.map(ReviewListResponseDto::new);
     }
 
     @Override
