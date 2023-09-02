@@ -34,9 +34,6 @@ public class Store extends BaseTimeEntity {
     @Column
     private double longitude;
 
-    @Column(columnDefinition = "POINT")
-    private Point location;
-
     @Column(nullable = false)
     private String address;
 
@@ -63,7 +60,6 @@ public class Store extends BaseTimeEntity {
         this.address = requestDto.getAddress();
         this.longitude = coordinate.getLon();
         this.latitude = coordinate.getLat();
-        this.location = new Point(coordinate.getLat(), coordinate.getLon());
         this.phoneNumber = requestDto.getPhoneNumber();
         this.score = 0.0;
         this.user = user;
@@ -84,7 +80,6 @@ public class Store extends BaseTimeEntity {
         this.address = updateDto.getAddress();
         this.latitude = coordinate.getLat();
         this.longitude = coordinate.getLon();
-        this.location = new Point(coordinate.getLat(), coordinate.getLon());
         this.phoneNumber = updateDto.getPhoneNumber();
     }
 }
