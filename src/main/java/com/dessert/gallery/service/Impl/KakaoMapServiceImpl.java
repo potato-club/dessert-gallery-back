@@ -45,15 +45,13 @@ public class KakaoMapServiceImpl implements KakaoMapService {
 
     @Override
     public StoreCoordinate getKakaoCoordinate(String address) throws Exception {
-        String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8.toString());
-
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + GEOCODE_USER_INFO);
         headers.set("content-type", "application/json");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(GEOCODE_URL + encodedAddress, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(GEOCODE_URL + address, HttpMethod.GET, entity, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             String responseBody = response.getBody();
@@ -61,8 +59,8 @@ public class KakaoMapServiceImpl implements KakaoMapService {
             // JSON 파싱을 통해 lat, lon 좌표 추출
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode responseJson = objectMapper.readTree(responseBody);
-            double lat = responseJson.path("documents").path(0).path("lat").asDouble();
-            double lon = responseJson.path("documents").path(0).path("lon").asDouble();
+            double lat = responseJson.path("documents").path(0).path("y").asDouble();
+            double lon = responseJson.path("documents").path(0).path("x").asDouble();
 
             return StoreCoordinate.builder().lat(lat).lon(lon).build();
         } else {
