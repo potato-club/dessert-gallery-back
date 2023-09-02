@@ -73,13 +73,21 @@ public class Store extends BaseTimeEntity {
         this.score = score;
     }
 
-    public void updateStore(StoreRequestDto updateDto, StoreCoordinate coordinate) {
-        this.name = updateDto.getName();
-        this.info = updateDto.getInfo();
-        this.content = updateDto.getContent();
-        this.address = updateDto.getAddress();
+    public void updateStore(StoreRequestDto updateDto) {
+        if(updateDto.getName() != null)
+            this.name = updateDto.getName();
+        if(updateDto.getInfo() != null)
+            this.info = updateDto.getInfo();
+        if(updateDto.getContent() != null)
+            this.content = updateDto.getContent();
+        if(updateDto.getAddress() != null)
+            this.address = updateDto.getAddress();
+        if(updateDto.getPhoneNumber() != null)
+            this.phoneNumber = updateDto.getPhoneNumber();
+    }
+
+    public void updateCoordinate(StoreCoordinate coordinate) {
         this.latitude = coordinate.getLat();
         this.longitude = coordinate.getLon();
-        this.phoneNumber = updateDto.getPhoneNumber();
     }
 }

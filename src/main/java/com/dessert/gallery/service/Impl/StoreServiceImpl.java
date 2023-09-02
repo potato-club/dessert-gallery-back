@@ -48,8 +48,6 @@ public class StoreServiceImpl implements StoreService {
     private final CalendarService calendarService;
     private final S3Service s3Service;
     private final KakaoMapService mapService;
-    private final GithubConfig githubConfig;
-    private final RestTemplate restTemplate;
 
     @Override
     public Store getStore(Long id) {
@@ -78,11 +76,11 @@ public class StoreServiceImpl implements StoreService {
                             HttpServletRequest request) {
         try {
             User user = userService.findUserByToken(request);
-            if(user.getUserRole() != UserRole.MANAGER)
+            if (user.getUserRole() != UserRole.MANAGER)
                 throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
             StoreCoordinate coordinate = mapService.getKakaoCoordinate(requestDto.getAddress());
             Store store = new Store(requestDto, coordinate, user);
-            if(files != null) {
+            if (files != null) {
                 File file = saveImage(files, store);
                 store.setImage(file);
             }
@@ -97,16 +95,26 @@ public class StoreServiceImpl implements StoreService {
     public void updateStore(Long id, StoreRequestDto updateDto,
                             List<MultipartFile> files, List<FileRequestDto> requestDto,
                             HttpServletRequest request) {
-        User user = userService.findUserByToken(request);
-        Store store = storeRepository.findById(id).orElseThrow();
+        try {
+            User user = userService.findUserByToken(request);
+            Store store = storeRepository.findById(id).orElseThrow();
 
-        if(store.getUser() != user) {
-            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+            if (store.getUser() != user)
+                throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+
+            if(updateDto.getAddress() != null) {
+                store.updateCoordinate(mapService.getKakaoCoordinate(updateDto.getAddress()));
+            }
+            store.updateStore(updateDto);
+
+            if (files != null) {
+                File newFile = updateImage(store, files, requestDto);
+                store.setImage(newFile);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        if(files != null) {
-            File newFile = updateImage(store, files, requestDto);
-            store.setImage(newFile);
-        }
+
     }
 
     @Override
@@ -114,7 +122,7 @@ public class StoreServiceImpl implements StoreService {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();
 
-        if(store.getUser() != user) {
+        if (store.getUser() != user) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         storeRepository.delete(store);
