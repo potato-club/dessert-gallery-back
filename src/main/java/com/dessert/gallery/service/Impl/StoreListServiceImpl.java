@@ -77,7 +77,7 @@ public class StoreListServiceImpl implements StoreListService {
         } else {
             return jpaQueryFactory
                     .select(
-                            Projections.bean(
+                            Projections.fields(
                                     StoreListResponseDto.class,
                                     QStore.store.id,
                                     QStore.store.name,
