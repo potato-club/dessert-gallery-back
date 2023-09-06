@@ -18,14 +18,17 @@ public class StoreReviewDto {
     private String fileName;
     @Schema(description = "파일 URL")
     private String fileUrl;
+    @Schema(description = "가게 주소")
+    private String address;
     @Schema(description = "등록된 리뷰 리스트")
     private List<ReviewListDto> reviewList;
 
-    public StoreReviewDto(Long storeId, String storeName, String content, String fileName, String fileUrl) {
+    public StoreReviewDto(Long storeId, String storeName, String content, String fileName, String fileUrl, String address) {
         this.storeId = storeId;
         this.storeName = storeName;
         this.content = content;
         this.fileName = fileName;
         this.fileUrl = fileUrl;
+        this.address = address;
     }
 }
