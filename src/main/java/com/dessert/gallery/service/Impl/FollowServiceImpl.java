@@ -44,7 +44,7 @@ public class FollowServiceImpl implements FollowService {
 
         if (subscribeRepository.existsByStoreAndUserAndDeletedIsTrue(store, user)) {
             Subscribe subscribe = subscribeRepository.findByUserAndStore(user, store);
-            subscribe.setDeleted(true);
+            subscribe.setDeleted(false);
             return;
         }
 
@@ -101,10 +101,10 @@ public class FollowServiceImpl implements FollowService {
                         )
                 )
                 .from(QSubscribe.subscribe)
-                .leftJoin(QStore.store).on(QStore.store.user.email.eq(email))
                 .leftJoin(QUser.user).on(QUser.user.email.eq(email))
-                .leftJoin(QFile.file).on(QFile.file.store.user.email.eq(email)
-                        .or(QFile.file.user.email.eq(email)))
+                .leftJoin(QStore.store).on(QStore.store.user.eq(QUser.user))
+                .leftJoin(QFile.file).on(QFile.file.store.eq(QStore.store)
+                        .or(QFile.file.user.eq(QUser.user)))
                 .where(whereBuilder.and(QSubscribe.subscribe.deleted.isFalse()))
                 .orderBy(QSubscribe.subscribe.modifiedDate.desc())
                 .offset((page - 1) * 20L)

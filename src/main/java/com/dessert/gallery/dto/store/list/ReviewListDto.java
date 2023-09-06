@@ -22,4 +22,9 @@ public class ReviewListDto {
     @Schema(description = "리뷰 작성 일자")
     private LocalDateTime createDate;
 
+    @Schema(description = "사진 이름")
+    private String fileName;
+
+    @Schema(description = "사진 URL")
+    private String fileUrl;
 }

@@ -113,7 +113,8 @@ public class StoreListServiceImpl implements StoreListService {
                             QStore.store.name.as("storeName"),
                             QStore.store.content.as("content"),
                             QStore.store.image.fileName.as("fileName"),
-                            QStore.store.image.fileUrl.as("fileUrl")
+                            QStore.store.image.fileUrl.as("fileUrl"),
+                            QStore.store.address.as("address")
                         )
                 )
                 .from(QStore.store)
@@ -171,6 +172,7 @@ public class StoreListServiceImpl implements StoreListService {
 
     private List<ReviewListDto> getRecentReviewsSubQuery(Long storeId) {
         QReviewBoard reviewBoard = QReviewBoard.reviewBoard;
+        QFile file = QFile.file;
 
         JPAQuery<ReviewListDto> query = jpaQueryFactory
                 .select(
@@ -179,10 +181,13 @@ public class StoreListServiceImpl implements StoreListService {
                                 reviewBoard.user.nickname,
                                 reviewBoard.content,
                                 reviewBoard.score,
-                                reviewBoard.createdDate
+                                reviewBoard.createdDate,
+                                file.fileName,
+                                file.fileUrl
                         )
                 )
                 .from(reviewBoard)
+                .leftJoin(file).on(file.reviewBoard.eq(reviewBoard))
                 .where(reviewBoard.store.id.eq(storeId))
                 .orderBy(reviewBoard.createdDate.desc())
                 .limit(2);
