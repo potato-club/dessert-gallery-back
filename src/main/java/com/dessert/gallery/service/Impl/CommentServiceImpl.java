@@ -51,15 +51,18 @@ public class CommentServiceImpl implements CommentService {
         User user = userService.findUserByToken(request);
         StoreBoard board = boardService.getBoard(boardId);
         List<File> files = fileRepository.findByUser(user);
-        File file = files.get(0);
-
-        BoardComment comment = BoardComment.builder()
+        BoardComment comment = !files.isEmpty() ?
+                BoardComment.builder()
                 .comment(requestDto.getComment())
                 .board(board)
-                .userProfile(file)
+                .userProfile(files.get(0))
+                .user(user)
+                .build() :
+                BoardComment.builder()
+                .comment(requestDto.getComment())
+                .board(board)
                 .user(user)
                 .build();
-
         commentRepository.save(comment);
         return "댓글 저장";
     }
@@ -69,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
         BoardComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 댓글", NOT_FOUND_EXCEPTION));
         User findUser = userService.findUserByToken(request);
-        if(!Objects.equals(findUser, comment.getUser())) {
+        if(findUser != comment.getUser()) {
             throw new UnAuthorizedException("작성자만 삭제 가능합니다", NOT_ALLOW_WRITE_EXCEPTION);
         }
         commentRepository.delete(comment);
