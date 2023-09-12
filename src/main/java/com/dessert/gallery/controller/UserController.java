@@ -37,7 +37,7 @@ public class UserController {
     }
 
     @Operation(summary = "일반 로그인 API")
-    @GetMapping("/login")
+    @PostMapping("/login")
     public UserLoginResponseDto login(@RequestBody UserLoginRequestDto requestDto, HttpServletResponse response) {
         return userService.login(requestDto, response);
     }

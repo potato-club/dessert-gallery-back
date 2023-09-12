@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeRequests()
                 // 로그인, 회원가입은 토큰 없이도 호출 가능하도록 permitAll() 설정
                 .antMatchers(HttpMethod.POST,"/users/signup").permitAll()
-                .antMatchers(HttpMethod.GET,"/users/login/**").permitAll()
+                .antMatchers("/users/login/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/users/mail/**").permitAll()
                 // 정보수정 및 회원탈퇴는 권한이 필요하도록 설정
                 .antMatchers(HttpMethod.PUT,"/users/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
