@@ -118,6 +118,7 @@ public class StoreListServiceImpl implements StoreListService {
                         )
                 )
                 .from(QStore.store)
+                .innerJoin(QReviewBoard.reviewBoard).on(QReviewBoard.reviewBoard.store.eq(QStore.store))
                 .leftJoin(QStore.store.image, QFile.file)
                 .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
