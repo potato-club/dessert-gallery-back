@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,7 +43,7 @@ public class StoreBoardController {
     @Operation(summary = "가게 게시글 작성")
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<String> createStoreBoard(@PathVariable(name = "storeId") Long storeId,
-                                                   @RequestPart BoardRequestDto boardDto,
+                                                   @Validated @RequestPart(name = "boardDto") BoardRequestDto boardDto,
                                                    @RequestPart List<MultipartFile> images,
                                                    HttpServletRequest request) {
         boardService.createBoard(storeId, boardDto, images, request);

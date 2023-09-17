@@ -3,11 +3,13 @@ package com.dessert.gallery.dto.schedule;
 import com.dessert.gallery.entity.Schedule;
 import com.dessert.gallery.enums.ScheduleType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Getter
 @NoArgsConstructor
 public class ScheduleResponseDto {
     @Schema(description = "스케줄 id")

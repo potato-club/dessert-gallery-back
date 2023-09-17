@@ -2,10 +2,12 @@ package com.dessert.gallery.dto.calendar;
 
 import com.dessert.gallery.dto.schedule.ScheduleResponseDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Getter
 @NoArgsConstructor
 public class CalendarResponseDto {
     @Schema(description = "캘린더 해당 연도")
@@ -18,6 +20,6 @@ public class CalendarResponseDto {
     public CalendarResponseDto(int year, int month, List<ScheduleResponseDto> scheduleList) {
         this.year = year;
         this.month = month;
-        this.scheduleList = scheduleList;
+        this.scheduleList = scheduleList.isEmpty() ? null : scheduleList;
     }
 }

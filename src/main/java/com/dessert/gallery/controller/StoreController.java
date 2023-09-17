@@ -45,7 +45,7 @@ public class StoreController {
         if(year == 0 && month == 0) {
             LocalDate now = LocalDate.now();
             year = now.getYear();
-            month = now.getDayOfMonth();
+            month = now.getMonthValue();
         }
         CalendarResponseDto responseDto = calendarService.getCalendarByStore(storeId, year, month);
         return ResponseEntity.ok(responseDto);
@@ -53,7 +53,7 @@ public class StoreController {
 
     @Operation(summary = "사장님 페이지 캘린더 조회 API")
     @GetMapping("/{storeId}/calendar/owner")
-    public ResponseEntity<?> getOwnerCalendar(
+    public CalendarResponseDto getOwnerCalendar(
             @PathVariable(name = "storeId") Long storeId,
             @RequestParam(required = false, defaultValue = "0", value = "year") int year,
             @RequestParam(required = false, defaultValue = "0", value = "month") int month,
@@ -61,10 +61,9 @@ public class StoreController {
         if(year == 0 && month == 0) {
             LocalDate now = LocalDate.now();
             year = now.getYear();
-            month = now.getDayOfMonth();
+            month = now.getMonthValue();
         }
-        CalendarResponseDto responseDto = calendarService.getOwnerCalendar(storeId, year, month, request);
-        return ResponseEntity.ok(responseDto);
+        return calendarService.getOwnerCalendar(storeId, year, month, request);
     }
 
 

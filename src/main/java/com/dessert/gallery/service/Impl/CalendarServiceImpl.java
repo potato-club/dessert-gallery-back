@@ -68,7 +68,7 @@ public class CalendarServiceImpl implements CalendarService {
     public CalendarResponseDto getOwnerCalendar(Long storeId, int year, int month, HttpServletRequest request) {
         Calendar calendar = findCalendar(storeId);
 
-        if(!Objects.equals(calendar.getStore().getUser(), userService.findUserByToken(request))) {
+        if(calendar.getStore().getUser() != userService.findUserByToken(request)) {
             throw new UnAuthorizedException("가게 주인만 조회 가능", ACCESS_DENIED_EXCEPTION);
         }
         // 해당 월의 시작일 지정
@@ -82,7 +82,7 @@ public class CalendarServiceImpl implements CalendarService {
         return toCalendarDto(year, month, scheduleList);
     }
 
-    private static CalendarResponseDto toCalendarDto(int year, int month, List<Schedule> scheduleList) {
+    private CalendarResponseDto toCalendarDto(int year, int month, List<Schedule> scheduleList) {
         List<ScheduleResponseDto> scheduleResponseDtoList = scheduleList
                 .stream()
                 .map(ScheduleResponseDto::new)
