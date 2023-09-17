@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -29,7 +30,8 @@ public class Schedule {
     private ScheduleType type;
 
     public Schedule(ScheduleRequestDto requestDto, Calendar calendar) {
-        this.dateTime = LocalDateTime.parse(requestDto.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        this.dateTime = LocalDate.parse(requestDto.getDate(),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay();
         this.type = ScheduleType.findWithKey(requestDto.getKey());
         this.calendar = calendar;
     }
