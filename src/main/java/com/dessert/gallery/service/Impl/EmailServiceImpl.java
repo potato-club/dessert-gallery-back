@@ -2,6 +2,7 @@ package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Interface.EmailService;
@@ -74,11 +75,10 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void verifyEmail(String key, HttpServletResponse response) {
         String email = redisService.getEmailOtpData(key);
-        if (email == null) {
-            throw new UnAuthorizedException("401_NOT_ALLOW", ErrorCode.NOT_ALLOW_WRITE_EXCEPTION);
-        }
 
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> {
+            throw new NotFoundException("Email Not Found", ErrorCode.NOT_FOUND_EXCEPTION);
+        });
         user.setEmailOtp(true);
         user.setDeleted(false);
 

@@ -2,6 +2,7 @@ package com.dessert.gallery.service.Jwt;
 
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.InvalidTokenException;
+import com.dessert.gallery.error.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -66,7 +67,11 @@ public class RedisService {
     // key를 통해 Email OTP value 리턴
     public String getEmailOtpData(String key) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        return valueOperations.get(key);
+        String value = valueOperations.get(key);
+        if (value == null) {
+            throw new NotFoundException("Email OTP not found for key: " + key, ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+        return value;
     }
 
     // 유효 시간 동안 Email OTP(key, value) 저장
