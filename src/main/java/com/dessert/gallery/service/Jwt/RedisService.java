@@ -80,4 +80,11 @@ public class RedisService {
     public void deleteEmailOtpData(String key) {
         redisTemplate.delete(key);
     }
+
+    // 기존의 OTP 코드가 있는지 확인하고 있다면 삭제
+    public void deleteExistingOtp(String email) {
+        if (redisTemplate.hasKey(email)) {
+            redisTemplate.delete(email);
+        }
+    }
 }
