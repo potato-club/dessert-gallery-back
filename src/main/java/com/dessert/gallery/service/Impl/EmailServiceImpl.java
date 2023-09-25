@@ -38,8 +38,6 @@ public class EmailServiceImpl implements EmailService {
     @Value("${email.naver.id}")
     private String naverUsername;
 
-    private final String ePw = createKey();
-
     @Autowired
     public EmailServiceImpl(@Qualifier("gmail") JavaMailSender gmailSender,
                             @Qualifier("naver") JavaMailSender naverSender,
@@ -55,16 +53,20 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
+        redisService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
         MimeMessage message = gmailSender.createMimeMessage();
-        message = commonMessage(recipientEmail, message, "gmail");
+        String ePw = createKey();
+        message = commonMessage(recipientEmail, message, "gmail", ePw);
         redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         gmailSender.send(message);
     }
 
     @Override
     public void sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
+        redisService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
         MimeMessage message = naverSender.createMimeMessage();
-        message = commonMessage(recipientEmail, message, "naver");
+        String ePw = createKey();
+        message = commonMessage(recipientEmail, message, "naver", ePw);
         redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         naverSender.send(message);
     }
@@ -84,7 +86,7 @@ public class EmailServiceImpl implements EmailService {
         userService.setJwtTokenInHeader(email, response);
     }
 
-    public MimeMessage commonMessage(String recipientEmail, MimeMessage message, String type) throws MessagingException, UnsupportedEncodingException {
+    public MimeMessage commonMessage(String recipientEmail, MimeMessage message, String type, String ePw) throws MessagingException, UnsupportedEncodingException {
 
         message.addRecipients(MimeMessage.RecipientType.TO, recipientEmail); // to 보내는 대상
         message.setSubject("디저트 갤러리 인증 코드: "); //메일 제목

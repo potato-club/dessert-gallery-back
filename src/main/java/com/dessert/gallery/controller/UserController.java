@@ -49,6 +49,13 @@ public class UserController {
         return ResponseEntity.ok("회원가입 완료.");
     }
 
+    @Operation(summary = "닉네임 중복 확인 API")
+    @GetMapping("/duplication/nickname")
+    public ResponseEntity<?> isNicknameDuplicated(@RequestParam String nickname) {
+        boolean isDuplicated = userService.isNicknameDuplicated(nickname);
+        return ResponseEntity.ok().body(isDuplicated);
+    }
+
     @Operation(summary = "내 정보 수정 API")
     @PutMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException {

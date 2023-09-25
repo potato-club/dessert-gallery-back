@@ -130,6 +130,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean isNicknameDuplicated(String nickname) {
+        return userRepository.findByNickname(nickname).isPresent();
+    }
+
+    @Override
     public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException {
         User user = findUserByToken(request);
 
