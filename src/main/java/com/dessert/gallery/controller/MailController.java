@@ -26,12 +26,13 @@ public class MailController {
         return ResponseEntity.ok("인증 메일이 발송되었습니다.");
     }
 
-    @Operation(summary = "Naver 인증 메일 발송 API")
-    @PostMapping("/naver")
-    public ResponseEntity<String> sendNaver(String recipientEmail) throws UnsupportedEncodingException, MessagingException {
-        emailService.sendNaver(recipientEmail);
-        return ResponseEntity.ok("인증 메일이 발송되었습니다.");
-    }
+    // OTP 인증 관련 새 토큰 발급이 문제 생김에 따라 해당 기능을 잠시 보류함.
+//    @Operation(summary = "Naver 인증 메일 발송 API")
+//    @PostMapping("/naver")
+//    public ResponseEntity<String> sendNaver(String recipientEmail) throws UnsupportedEncodingException, MessagingException {
+//        emailService.sendNaver(recipientEmail);
+//        return ResponseEntity.ok("인증 메일이 발송되었습니다.");
+//    }
 
     @Operation(summary = "인증 코드 확인 API")
     @PostMapping("/verify")
