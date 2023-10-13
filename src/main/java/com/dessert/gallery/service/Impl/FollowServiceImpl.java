@@ -4,6 +4,7 @@ import com.dessert.gallery.dto.follow.FollowResponseDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.ForbiddenException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.StoreRepository;
@@ -41,6 +42,10 @@ public class FollowServiceImpl implements FollowService {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
             throw new UnAuthorizedException("Not Found", ErrorCode.ACCESS_DENIED_EXCEPTION);
         });
+
+        if (store.getUser().equals(user)) {
+            throw new UnAuthorizedException("Do not subscribe same user.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
 
         if (subscribeRepository.existsByStoreAndUserAndDeletedIsTrue(store, user)) {
             Subscribe subscribe = subscribeRepository.findByUserAndStore(user, store);
@@ -82,16 +87,14 @@ public class FollowServiceImpl implements FollowService {
         BooleanBuilder whereBuilder = new BooleanBuilder();
 
         switch (userRole) {
-            case USER:
+            case USER: case ADMIN:
                 whereBuilder.and(QSubscribe.subscribe.user.email.eq(email));
             case MANAGER:
                 whereBuilder.and(QSubscribe.subscribe.store.user.email.eq(email));
-            case ADMIN:
-                whereBuilder.and(QSubscribe.subscribe.user.email.eq(email));
         }
 
         JPAQuery<FollowResponseDto> query = jpaQueryFactory
-                .select(
+                .selectDistinct(
                         Projections.constructor(
                                 FollowResponseDto.class,
                                 QStore.store.name.as("storeName"),
