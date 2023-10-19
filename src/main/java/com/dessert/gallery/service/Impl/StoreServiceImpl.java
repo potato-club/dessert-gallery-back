@@ -1,6 +1,5 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.config.GithubConfig;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
@@ -9,7 +8,6 @@ import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
-import com.dessert.gallery.error.ErrorEntity;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
@@ -18,15 +16,9 @@ import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.repository.SubscribeRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.dessert.gallery.service.S3.S3Service;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,11 +54,11 @@ public class StoreServiceImpl implements StoreService {
         int followerCount = Math.toIntExact(subscribeRepository.countAllByStore(store));
 
         StoreResponseDto responseDto = new StoreResponseDto(store, postCount, followerCount);
-
-        if (request.getHeader("authorization") != null) {
-            User user = userService.findUserByToken(request);
+        User user = userService.findUserByToken(request);
+        if (user != null) {
+            boolean isOwner = store.checkOwner(user);
             boolean followState = subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(store, user);
-            responseDto.setFollow(followState);
+            responseDto.addSubInfo(isOwner, followState);
         }
         return responseDto;
     }
@@ -102,7 +94,7 @@ public class StoreServiceImpl implements StoreService {
             if (store.getUser() != user)
                 throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
 
-            if(updateDto.getAddress() != null) {
+            if (updateDto.getAddress() != null) {
                 store.updateCoordinate(mapService.getKakaoCoordinate(updateDto.getAddress()));
             }
             store.updateStore(updateDto);

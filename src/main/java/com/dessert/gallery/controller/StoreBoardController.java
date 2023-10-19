@@ -35,8 +35,9 @@ public class StoreBoardController {
 
     @Operation(summary = "게시글 조회")
     @GetMapping("/{boardId}")
-    public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable(name = "boardId") Long boardId) {
-        BoardResponseDto dto = boardService.getBoardDto(boardId);
+    public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable(name = "boardId") Long boardId,
+                                                         HttpServletRequest request) {
+        BoardResponseDto dto = boardService.getBoardDto(boardId, request);
         return ResponseEntity.ok(dto);
     }
 
@@ -54,7 +55,7 @@ public class StoreBoardController {
     @PostMapping("/{boardId}/bookmark")
     public ResponseEntity<String> bookmarkBoard(@PathVariable(name = "boardId") Long boardId,
                                                 HttpServletRequest request) {
-        String res = bookmarkService.toggleBookmark(boardId, request);
+        String res = bookmarkService.toggleBookmark(boardService.getBoard(boardId), request);
         return ResponseEntity.ok(res);
     }
 

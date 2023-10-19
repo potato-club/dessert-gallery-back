@@ -23,6 +23,10 @@ public class BoardResponseDto {
     private List<FileDto> images;
     @Schema(description = "게시글 해시태그")
     private List<String> tags = new ArrayList<>();
+    @Schema(description = "유저의 북마크 여부")
+    private boolean isBookmark = false;
+    @Schema(description = "가게 사장님 여부")
+    private boolean isOwner = false;
 
     public BoardResponseDto(StoreBoard board) {
         this.title = board.getTitle();
@@ -31,6 +35,11 @@ public class BoardResponseDto {
                 .map(FileDto::new)
                 .collect(Collectors.toList());
         this.tags = convertTags(board.getTags());
+    }
+
+    public void addUserInfo(boolean isBookmark, boolean isOwner) {
+        this.isBookmark = isBookmark;
+        this.isOwner = isOwner;
     }
 
     private List<String> convertTags(String tags) {

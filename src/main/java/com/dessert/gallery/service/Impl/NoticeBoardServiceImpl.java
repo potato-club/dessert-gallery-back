@@ -13,7 +13,6 @@ import com.dessert.gallery.repository.NoticeBoardRepository;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
 import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
-import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,6 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     private final NoticeBoardRepository noticeRepository;
     private final StoreService storeService;
     private final UserService userService;
-    private final S3Service s3Service;
 
     @Override
     public NoticeResponseDto getNoticeById(Long noticeId) {

@@ -9,6 +9,7 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
+import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
@@ -35,13 +36,14 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     private final StoreService storeService;
     private final UserService userService;
     private final S3Service s3Service;
+    private final BookmarkService bookmarkService;
 
     @Override
     public void createBoard(Long storeId, BoardRequestDto requestDto, List<MultipartFile> images,
                             HttpServletRequest request) {
         Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
-        if(store.getUser() != user) {
+        if (store.getUser() != user) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         StoreBoard board = new StoreBoard(requestDto, store);
@@ -59,23 +61,30 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public List<BoardListResponseDto> getBoardsByStore(Long storeId) {
         Store store = storeService.getStore(storeId);
         List<StoreBoard> boards = boardRepository.findByStoreAndDeletedIsFalse(store);
-        if(boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         return boards.stream().map(BoardListResponseDto::new).collect(Collectors.toList());
     }
 
     @Override
-    public BoardResponseDto getBoardDto(Long boardId) {
+    public BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
-        if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        BoardResponseDto dto = new BoardResponseDto(board);
 
-        return new BoardResponseDto(board);
+        User user = userService.findUserByToken(request);
+        if (user != null) {
+            boolean bookmarkStatus = bookmarkService.isBookmarkBoard(board, user);
+            boolean isOwner = board.getStore().checkOwner(user);
+            dto.addUserInfo(bookmarkStatus, isOwner);
+        }
+        return dto;
     }
 
     @Override
     public void updateBoard(Long boardId, BoardRequestDto updateDto, List<MultipartFile> images,
                             List<FileRequestDto> requestDto, HttpServletRequest request) {
         StoreBoard board = validateBoard(boardId, request);
-        if(!images.isEmpty()) {
+        if (!images.isEmpty()) {
             List<File> files = updateImage(board, images, requestDto);
             board.setImages(files);
         }
@@ -91,8 +100,8 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public StoreBoard validateBoard(Long boardId, HttpServletRequest request) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         User user = userService.findUserByToken(request);
-        if(board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
-        if(board.getStore().getUser() != user) {
+        if (board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (board.getStore().getUser() != user) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         return board;

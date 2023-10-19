@@ -90,4 +90,8 @@ public class Store extends BaseTimeEntity {
         this.latitude = coordinate.getLat();
         this.longitude = coordinate.getLon();
     }
+
+    public boolean checkOwner(User user) {
+        return this.user == user;
+    }
 }
