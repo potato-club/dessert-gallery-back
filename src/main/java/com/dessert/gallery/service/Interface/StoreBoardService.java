@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface StoreBoardService {
     StoreBoard getBoard(Long boardId);
-    BoardResponseDto getBoardDto(Long boardId);
+    BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request);
     List<BoardListResponseDto> getBoardsByStore(Long storeId);
     void createBoard(Long storeId, BoardRequestDto requestDto,
                      List<MultipartFile> images,HttpServletRequest request);

@@ -29,6 +29,8 @@ public class StoreResponseDto {
     private int followers;
     @Schema(description = "유저의 팔로우 여부")
     private boolean follow = false;
+    @Schema(description = "가게 사장님 여부")
+    private boolean isOwner = false;
 
     public StoreResponseDto(Store store, int postCount, int followerCount) {
         this.id = store.getId();
@@ -42,7 +44,8 @@ public class StoreResponseDto {
         this.followers = followerCount;
     }
 
-    public void setFollow(boolean followState) {
+    public void addSubInfo(boolean isOwner, boolean followState) {
+        this.isOwner = isOwner;
         this.follow = followState;
     }
 }

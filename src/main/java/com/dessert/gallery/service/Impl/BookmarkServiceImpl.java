@@ -24,12 +24,10 @@ import java.util.stream.Collectors;
 public class BookmarkServiceImpl implements BookmarkService {
     private final BookmarkRepository bookmarkRepository;
     private final UserService userService;
-    private final StoreBoardService boardService;
 
     @Override
-    public String toggleBookmark(Long boardId, HttpServletRequest request) {
+    public String toggleBookmark(StoreBoard board, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        StoreBoard board = boardService.getBoard(boardId);
         Bookmark findBookmark = bookmarkRepository.findByStoreBoardAndUser(board, user);
 
         if(findBookmark == null) {
@@ -52,5 +50,10 @@ public class BookmarkServiceImpl implements BookmarkService {
         return bookmarkList.stream()
                 .map(b -> new BoardListResponseDto(b.getStoreBoard()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isBookmarkBoard(StoreBoard board, User user) {
+        return bookmarkRepository.existsByStoreBoardAndUser(board, user);
     }
 }
