@@ -186,7 +186,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findUserByToken(HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        return userRepository.findByEmail(email).orElseThrow();
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     @Override
