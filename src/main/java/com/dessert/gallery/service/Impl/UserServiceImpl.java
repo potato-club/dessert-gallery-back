@@ -31,6 +31,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 
@@ -162,8 +163,8 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.getNickname())
                 .loginType(user.getLoginType())
                 .userRole(user.getUserRole())
-                .fileName(file.get(0).getFileName())
-                .fileUrl(file.get(0).getFileUrl())
+                .fileName(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileName()).orElse(null))
+                .fileUrl(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileUrl()).orElse(null))
                 .build();
 
         return responseDto;
