@@ -8,10 +8,10 @@ import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.repository.ReviewBoardRepository;
+import com.dessert.gallery.service.Interface.ImageService;
 import com.dessert.gallery.service.Interface.ReviewService;
 import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
-import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,7 +35,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewBoardRepository reviewRepository;
     private final StoreService storeService;
     private final UserService userService;
-    private final S3Service s3Service;
+    private final ImageService imageService;
 
     @Override
     public Page<ReviewListResponseDto> getStoreReviews(Long storeId, int page) {
@@ -69,7 +69,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     private List<File> saveImage(List<MultipartFile> images, ReviewBoard review) {
         try {
-            return s3Service.uploadImages(images, review);
+            return imageService.uploadImages(images, review);
         } catch (IOException e) {
             throw new S3Exception("이미지 업로드 에러", RUNTIME_EXCEPTION);
         }
