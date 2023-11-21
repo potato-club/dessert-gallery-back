@@ -16,10 +16,10 @@ import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.FileRepository;
 import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.service.Interface.ImageService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.dessert.gallery.service.Jwt.RedisService;
 import com.dessert.gallery.service.KakaoApi;
-import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
-    private final S3Service s3Service;
+    private final ImageService imageService;
     private final KakaoApi kakaoApi;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
                     .build();
 
             fileList.add(fileDto);
-            s3Service.updateFiles(user, requestDto.getFile(), fileList);
+            imageService.updateImages(user, requestDto.getFile(), fileList);
         }
 
         user.update(requestDto);

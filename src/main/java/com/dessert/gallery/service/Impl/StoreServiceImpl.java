@@ -75,8 +75,8 @@ public class StoreServiceImpl implements StoreService {
             StoreCoordinate coordinate = mapService.getKakaoCoordinate(requestDto.getAddress());
             Store store = new Store(requestDto, coordinate, user);
             if (files != null) {
-                File file = imageService.saveImage(files, store);
-                store.setImage(file);
+                List<File> file = imageService.uploadImages(files, store);
+                store.setImage(file.get(0));
             }
             Store saveStore = storeRepository.save(store);
             calendarService.createCalendar(saveStore);
@@ -102,8 +102,8 @@ public class StoreServiceImpl implements StoreService {
             store.updateStore(updateDto);
 
             if (files != null) {
-                File newFile = imageService.updateImage(store, files, requestDto);
-                store.setImage(newFile);
+                List<File> newFile = imageService.updateImages(store, files, requestDto);
+                store.setImage(newFile.get(0));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

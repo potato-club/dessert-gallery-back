@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
     @Override
     public void createBoard(Long storeId, BoardRequestDto requestDto, List<MultipartFile> images,
-                            HttpServletRequest request) {
+                            HttpServletRequest request) throws IOException {
         Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
         if (store.getUser() != user) {
@@ -42,7 +43,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         }
         StoreBoard board = new StoreBoard(requestDto, store);
         StoreBoard saveBoard = boardRepository.save(board);
-        List<File> files = imageService.saveImage(images, saveBoard);
+        List<File> files = imageService.uploadImages(images, saveBoard);
         saveBoard.updateImages(files);
     }
 
@@ -76,10 +77,10 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
     @Override
     public void updateBoard(Long boardId, BoardRequestDto updateDto, List<MultipartFile> images,
-                            List<FileRequestDto> requestDto, HttpServletRequest request) {
+                            List<FileRequestDto> requestDto, HttpServletRequest request) throws IOException {
         StoreBoard board = validateBoard(boardId, request);
         if (!images.isEmpty()) {
-            List<File> files = imageService.updateImage(board, images, requestDto);
+            List<File> files = imageService.updateImages(board, images, requestDto);
             board.updateImages(files);
         }
         board.updateBoard(updateDto);

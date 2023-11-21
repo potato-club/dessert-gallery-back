@@ -1,6 +1,6 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.service.S3.S3Service;
+import com.dessert.gallery.service.Impl.ImageServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,13 @@ import java.net.URLEncoder;
 @Tag(name = "AWS S3 Download Controller", description = "S3 다운로드 API")
 public class S3Controller {
 
-    private final S3Service s3Service;
+    private final ImageServiceImpl imageServiceImpl;
 
     @Operation(summary = "S3 Download API")
     @GetMapping("/download")
     public ResponseEntity<InputStreamResource> s3Download(@RequestParam String key) {
         try {
-            byte[] data = s3Service.downloadImage(key);
+            byte[] data = imageServiceImpl.downloadImage(key);
             InputStream inputStream = new ByteArrayInputStream(data);
             InputStreamResource resource = new InputStreamResource(inputStream);
             return ResponseEntity.ok()

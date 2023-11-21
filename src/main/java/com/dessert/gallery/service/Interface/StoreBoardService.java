@@ -8,6 +8,7 @@ import com.dessert.gallery.entity.StoreBoard;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 public interface StoreBoardService {
@@ -15,8 +16,8 @@ public interface StoreBoardService {
     BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request);
     List<BoardListResponseDto> getBoardsByStore(Long storeId);
     void createBoard(Long storeId, BoardRequestDto requestDto,
-                     List<MultipartFile> images,HttpServletRequest request);
+                     List<MultipartFile> images,HttpServletRequest request) throws IOException;
     void updateBoard(Long boardId, BoardRequestDto updateDto,
-                     List<MultipartFile> images, List<FileRequestDto> requestDto, HttpServletRequest request);
+                     List<MultipartFile> images, List<FileRequestDto> requestDto, HttpServletRequest request) throws IOException;
     void deleteBoard(Long boardId, HttpServletRequest request);
 }
