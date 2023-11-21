@@ -1,6 +1,5 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
@@ -16,7 +15,6 @@ import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
@@ -34,28 +32,47 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     private final StoreService storeService;
     private final UserService userService;
 
+    // 공지사항 단건 조회
     @Override
     public NoticeResponseDto getNoticeById(Long noticeId) {
         NoticeBoard noticeBoard = noticeRepository.findByIdAndDeletedIsFalse(noticeId);
-        if(noticeBoard == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (noticeBoard == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         return new NoticeResponseDto(noticeBoard);
     }
 
+    // 메인 노출되는 공지사항 리스트 출력
     @Override
     public List<NoticeListDto> getNoticesByStore(Long storeId) {
         Store store = storeService.getStore(storeId);
+
+        List<NoticeBoard> notices = noticeRepository.findByStoreAndDeletedFalseAndExposedTrue(store);
+        if (notices == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+
+        return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
+    }
+
+    // 사장님 마이페이지 공지사항 리스트 출력
+    @Override
+    public List<NoticeListDto> getNoticesByOwner(HttpServletRequest request) {
+        User owner = userService.findUserByToken(request);
+        if (owner == null) throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+
+        Store store = storeService.getStoreByUser(owner);
+        if (store == null) throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
+
         List<NoticeBoard> notices = noticeRepository.findByStoreAndDeletedIsFalse(store);
-        if(notices == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (notices == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+
         return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
     }
 
     @Override
     public void createNotice(Long storeId, NoticeRequestDto requestDto,
-                             List<MultipartFile> images, HttpServletRequest request) {
+                             HttpServletRequest request) {
         Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
 
-        if(store.getUser() != user) {
+        if (store.getUser() != user) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         NoticeBoard notice = new NoticeBoard(requestDto, store);
@@ -64,7 +81,6 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 
     @Override
     public void updateNotice(Long noticeId, NoticeRequestDto updateDto,
-                             List<MultipartFile> images, List<FileRequestDto> requestDto,
                              HttpServletRequest request) {
         NoticeBoard notice = validateNotice(noticeId, request);
         notice.updateNotice(updateDto);
@@ -80,10 +96,10 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         NoticeBoard notice = noticeRepository.findByIdAndDeletedIsFalse(noticeId);
         User user = userService.findUserByToken(request);
 
-        if(notice == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
-        if(notice.getStore().getUser() != user) {
+        if (notice == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (notice.getStore().getUser() != user)
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
-        }
+
         return notice;
     }
 }

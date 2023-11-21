@@ -9,13 +9,11 @@ import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.exception.NotFoundException;
-import com.dessert.gallery.error.exception.S3Exception;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.repository.SubscribeRepository;
 import com.dessert.gallery.service.Interface.*;
-import com.dessert.gallery.service.S3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.util.List;
 
 import static com.dessert.gallery.error.ErrorCode.*;
@@ -38,13 +35,18 @@ public class StoreServiceImpl implements StoreService {
     private final SubscribeRepository subscribeRepository;
     private final UserService userService;
     private final CalendarService calendarService;
-    private final S3Service s3Service;
     private final KakaoMapService mapService;
+    private final ImageService imageService;
 
     @Override
     public Store getStore(Long id) {
         return storeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
+    }
+
+    @Override
+    public Store getStoreByUser(User user) {
+        return storeRepository.findByUser(user);
     }
 
     @Override
@@ -73,7 +75,7 @@ public class StoreServiceImpl implements StoreService {
             StoreCoordinate coordinate = mapService.getKakaoCoordinate(requestDto.getAddress());
             Store store = new Store(requestDto, coordinate, user);
             if (files != null) {
-                File file = saveImage(files, store);
+                File file = imageService.saveImage(files, store);
                 store.setImage(file);
             }
             Store saveStore = storeRepository.save(store);
@@ -100,7 +102,7 @@ public class StoreServiceImpl implements StoreService {
             store.updateStore(updateDto);
 
             if (files != null) {
-                File newFile = updateImage(store, files, requestDto);
+                File newFile = imageService.updateImage(store, files, requestDto);
                 store.setImage(newFile);
             }
         } catch (Exception e) {
@@ -113,28 +115,9 @@ public class StoreServiceImpl implements StoreService {
     public void removeStore(Long id, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();
-
         if (store.getUser() != user) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
         storeRepository.delete(store);
-    }
-
-    private File saveImage(List<MultipartFile> images, Store store) {
-        try {
-            List<File> files = s3Service.uploadImages(images, store);
-            return files.get(0);
-        } catch (IOException e) {
-            throw new S3Exception("이미지 업로드 에러", RUNTIME_EXCEPTION);
-        }
-    }
-
-    private File updateImage(Store store, List<MultipartFile> images, List<FileRequestDto> requestDto) {
-        try {
-            List<File> files = s3Service.updateFiles(store, images, requestDto);
-            return files.get(0);
-        } catch (IOException e) {
-            throw new S3Exception("이미지 업데이트 에러", RUNTIME_EXCEPTION);
-        }
     }
 }

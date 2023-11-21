@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface NoticeBoardRepository extends JpaRepository<NoticeBoard, Long> {
     List<NoticeBoard> findByStoreAndDeletedIsFalse(Store store);
+    List<NoticeBoard> findByStoreAndDeletedFalseAndExposedTrue(Store store);
     NoticeBoard findByIdAndDeletedIsFalse(Long id);
 }
