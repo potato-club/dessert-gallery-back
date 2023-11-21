@@ -7,8 +7,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class NoticeRequestDto {
+    @Schema(description = "공지글 제목")
+    private String title;
     @Schema(description = "공지글 내용")
     private String content;
+    @Schema(description = "메인 노출 여부 (false / true)")
+    private boolean exposed;
     @Schema(description = "공지글 타입 (0 / 1), 0: 공지사항 / 1: 이벤트")
     private int typeKey;
 }
