@@ -13,7 +13,7 @@ public class BoardRequestDto {
     private String title;
     @Schema(description = "게시글 내용")
     private String content;
-    @Schema(description = "게시글 해시태그")
-    @Pattern(regexp = "^#(?:[가-힣a-zA-Z0-9]+)+$", message = "해시태그를 올바르게 입력해주세요.")
+    @Schema(description = "게시글 해시태그 (예시 - \"#태그1#태그2#태그3\")")
+    @Pattern(regexp = "^(#(?:[가-힣a-zA-Z0-9]+))*$", message = "해시태그를 올바르게 입력해주세요.")
     private String tags;
 }
