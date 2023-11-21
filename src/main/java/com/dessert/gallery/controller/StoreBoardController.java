@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -46,7 +47,7 @@ public class StoreBoardController {
     public ResponseEntity<String> createStoreBoard(@PathVariable(name = "storeId") Long storeId,
                                                    @Validated @RequestPart(name = "boardDto") BoardRequestDto boardDto,
                                                    @RequestPart List<MultipartFile> images,
-                                                   HttpServletRequest request) {
+                                                   HttpServletRequest request) throws IOException {
         boardService.createBoard(storeId, boardDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 생성 완료");
     }
@@ -65,7 +66,7 @@ public class StoreBoardController {
                                                    @RequestPart BoardRequestDto updateDto,
                                                    @RequestPart(required = false) List<MultipartFile> images,
                                                    @RequestPart List<FileRequestDto> requestDto,
-                                                   HttpServletRequest request) {
+                                                   HttpServletRequest request) throws IOException {
         boardService.updateBoard(boardId, updateDto, images, requestDto, request);
         return ResponseEntity.ok("게시글 수정 완료");
     }
