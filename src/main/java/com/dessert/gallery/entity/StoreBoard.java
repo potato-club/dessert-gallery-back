@@ -32,7 +32,7 @@ public class StoreBoard extends BaseTimeEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @OneToMany(mappedBy = "storeBoard", orphanRemoval = true)
+    @OneToMany(mappedBy = "storeBoard", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<File> images = new ArrayList<>();
 
     public StoreBoard(BoardRequestDto requestDto, Store store) {
@@ -43,7 +43,7 @@ public class StoreBoard extends BaseTimeEntity {
         this.deleted = false;
     }
 
-    public void setImages(List<File> images) {
+    public void updateImages(List<File> images) {
         this.images = images;
     }
 

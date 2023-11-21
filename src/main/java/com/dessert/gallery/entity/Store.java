@@ -43,10 +43,10 @@ public class Store extends BaseTimeEntity {
     @Column
     private double score;
 
-    @OneToOne(mappedBy = "store", orphanRemoval = true)
+    @OneToOne(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private File image;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_uid", nullable = false)
     private User user;
 
