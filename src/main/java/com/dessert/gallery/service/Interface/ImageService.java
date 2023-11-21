@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-public interface ImageService {
+public interface ImageService { // 기존 S3Service 클래스를 인터페이스와 구현체로 변경함.
 
     List<File> uploadImages(List<MultipartFile> files, Object entity) throws IOException;
 
