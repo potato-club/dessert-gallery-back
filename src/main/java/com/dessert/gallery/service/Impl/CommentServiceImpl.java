@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Objects;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
 import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -47,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public String addComment(Long boardId, CommentRequestDto requestDto, HttpServletRequest request) {
+    public CommentResponseDto addComment(Long boardId, CommentRequestDto requestDto, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         StoreBoard board = boardService.getBoard(boardId);
         List<File> files = fileRepository.findByUser(user);
@@ -63,8 +62,8 @@ public class CommentServiceImpl implements CommentService {
                 .board(board)
                 .user(user)
                 .build();
-        commentRepository.save(comment);
-        return "댓글 저장";
+        BoardComment saveComment = commentRepository.save(comment);
+        return new CommentResponseDto(saveComment);
     }
 
     @Override

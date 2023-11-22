@@ -30,10 +30,10 @@ public class CommentController {
 
     @Operation(summary = "게시글 댓글 작성")
     @PostMapping("/{boardId}")
-    public ResponseEntity<String> addComment(@PathVariable(name = "boardId") Long boardId,
+    public ResponseEntity<CommentResponseDto> addComment(@PathVariable(name = "boardId") Long boardId,
                                              @RequestBody CommentRequestDto requestDto,
                                              HttpServletRequest request) {
-        String res = commentService.addComment(boardId, requestDto, request);
+        CommentResponseDto res = commentService.addComment(boardId, requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
