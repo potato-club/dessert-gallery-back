@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.dto.notice.NoticeResponseDto;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,9 @@ public class NoticeBoardController {
 
     @Operation(summary = "가게의 공지/이벤트 조회 - 사장님용")
     @GetMapping("/myStore")
-    public List<NoticeListDto> getNoticeBoardByOwner(@RequestParam(value = "type", defaultValue = "2") int type,
+    public List<NoticeListDto> getNoticeBoardByOwner(
+            @Parameter(name = "type", description = "공지 타입 (0 : 공지사항 / 1 : 이벤트)")
+            @RequestParam(value = "type", defaultValue = "2") int type,
                                                      HttpServletRequest request) {
         return noticeService.getNoticesByOwner(type, request);
     }
