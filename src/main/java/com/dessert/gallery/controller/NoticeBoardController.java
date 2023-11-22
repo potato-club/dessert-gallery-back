@@ -29,8 +29,9 @@ public class NoticeBoardController {
 
     @Operation(summary = "가게의 공지/이벤트 조회 - 사장님용")
     @GetMapping("/myStore")
-    public List<NoticeListDto> getNoticeBoardByOwner(HttpServletRequest request) {
-        return noticeService.getNoticesByOwner(request);
+    public List<NoticeListDto> getNoticeBoardByOwner(@RequestParam(value = "type", defaultValue = "2") int type,
+                                                     HttpServletRequest request) {
+        return noticeService.getNoticesByOwner(type, request);
     }
 
     @Operation(summary = "공지글 조회")

@@ -91,7 +91,7 @@ public class StoreController {
                                               @RequestPart StoreRequestDto updateDto,
                                               @RequestPart List<MultipartFile> images,
                                               @RequestPart List<FileRequestDto> requestDto,
-                                              HttpServletRequest request) {
+                                              HttpServletRequest request) throws Exception {
         storeService.updateStore(id, updateDto, images, requestDto, request);
         return ResponseEntity.ok("가게 정보 수정 완료");
     }

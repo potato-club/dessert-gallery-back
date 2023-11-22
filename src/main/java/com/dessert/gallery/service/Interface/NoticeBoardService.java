@@ -10,7 +10,7 @@ import java.util.List;
 public interface NoticeBoardService {
     NoticeResponseDto getNoticeById(Long noticeId);
     List<NoticeListDto> getNoticesByStore(Long storeId);
-    List<NoticeListDto> getNoticesByOwner(HttpServletRequest request);
+    List<NoticeListDto> getNoticesByOwner(int type, HttpServletRequest request);
     void createNotice(Long storeId, NoticeRequestDto requestDto, HttpServletRequest request);
     void updateNotice(Long noticeId, NoticeRequestDto updateDto, HttpServletRequest request);
     void deleteNotice(Long noticeId, HttpServletRequest request);

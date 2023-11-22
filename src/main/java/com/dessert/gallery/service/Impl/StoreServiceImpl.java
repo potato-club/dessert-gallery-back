@@ -17,17 +17,17 @@ import com.dessert.gallery.service.Interface.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.List;
 
 import static com.dessert.gallery.error.ErrorCode.*;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
@@ -66,6 +66,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public void createStore(StoreRequestDto requestDto, List<MultipartFile> files,
                             HttpServletRequest request) {
         try {
@@ -86,32 +87,29 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public void updateStore(Long id, StoreRequestDto updateDto,
                             List<MultipartFile> files, List<FileRequestDto> requestDto,
-                            HttpServletRequest request) {
-        try {
-            User user = userService.findUserByToken(request);
-            Store store = storeRepository.findById(id).orElseThrow();
+                            HttpServletRequest request) throws Exception {
+        User user = userService.findUserByToken(request);
+        Store store = storeRepository.findById(id).orElseThrow();
 
-            if (store.getUser() != user)
-                throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+        if (store.getUser() != user)
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
 
-            if (updateDto.getAddress() != null) {
-                store.updateCoordinate(mapService.getKakaoCoordinate(updateDto.getAddress()));
-            }
-            store.updateStore(updateDto);
-
-            if (files != null) {
-                List<File> newFile = imageService.updateImages(store, files, requestDto);
-                store.setImage(newFile.get(0));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (updateDto.getAddress() != null) {
+            store.updateCoordinate(mapService.getKakaoCoordinate(updateDto.getAddress()));
         }
+        store.updateStore(updateDto);
 
+        if (files != null) {
+            List<File> newFile = imageService.updateImages(store, files, requestDto);
+            store.setImage(newFile.get(0));
+        }
     }
 
     @Override
+    @Transactional
     public void removeStore(Long id, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();

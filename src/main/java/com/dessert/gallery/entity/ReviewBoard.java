@@ -23,7 +23,7 @@ public class ReviewBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private Double score;
 
-    @OneToMany(mappedBy = "reviewBoard", orphanRemoval = true)
+    @OneToMany(mappedBy = "reviewBoard", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<File> images = new ArrayList<>();
 
     @Formula("(SELECT COUNT(*) FROM likes as l WHERE l.review_board_id = id)")
@@ -45,7 +45,12 @@ public class ReviewBoard extends BaseTimeEntity {
         this.likeCount = 0;
     }
 
-    public void setImages(List<File> images) {
+    public void updateImages(List<File> images) {
         this.images = images;
+    }
+
+    public void updateReview(ReviewRequestDto updateDto) {
+        this.score = updateDto.getScore();
+        this.content = updateDto.getContent();
     }
 }

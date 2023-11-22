@@ -8,6 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface CommentService {
     Slice<CommentResponseDto> getComments(Long boardId, int page);
-    String addComment(Long boardId, CommentRequestDto requestDto, HttpServletRequest request);
+    CommentResponseDto addComment(Long boardId, CommentRequestDto requestDto, HttpServletRequest request);
     String removeComment(Long commentId, HttpServletRequest request);
 }
