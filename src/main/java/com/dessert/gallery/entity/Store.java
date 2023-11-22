@@ -3,7 +3,6 @@ package com.dessert.gallery.entity;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.map.StoreCoordinate;
 import lombok.*;
-import org.springframework.data.geo.Point;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -69,7 +68,7 @@ public class Store extends BaseTimeEntity {
         this.image = file;
     }
 
-    public void setScore(Double score) {
+    public void updateScore(Double score) {
         this.score = score;
     }
 

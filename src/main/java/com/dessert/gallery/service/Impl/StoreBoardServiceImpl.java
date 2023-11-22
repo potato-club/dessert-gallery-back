@@ -92,7 +92,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         board.deleteBoard();
     }
 
-    public StoreBoard validateBoard(Long boardId, HttpServletRequest request) {
+    private StoreBoard validateBoard(Long boardId, HttpServletRequest request) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         User user = userService.findUserByToken(request);
         if (board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
