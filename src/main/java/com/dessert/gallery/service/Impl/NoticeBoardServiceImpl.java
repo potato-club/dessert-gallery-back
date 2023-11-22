@@ -6,6 +6,7 @@ import com.dessert.gallery.dto.notice.NoticeResponseDto;
 import com.dessert.gallery.entity.NoticeBoard;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
+import com.dessert.gallery.enums.NoticeType;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.NoticeBoardRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.dessert.gallery.error.ErrorCode.*;
@@ -53,14 +55,19 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 
     // 사장님 마이페이지 공지사항 리스트 출력
     @Override
-    public List<NoticeListDto> getNoticesByOwner(HttpServletRequest request) {
+    public List<NoticeListDto> getNoticesByOwner(int typeKey, HttpServletRequest request) {
         User owner = userService.findUserByToken(request);
-        if (owner == null) throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
-
         Store store = storeService.getStoreByUser(owner);
         if (store == null) throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
-
-        List<NoticeBoard> notices = noticeRepository.findByStoreAndDeletedIsFalse(store);
+        if (owner == null || owner != store.getUser())
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+        List<NoticeBoard> notices;
+        NoticeType type = NoticeType.findWithKey(typeKey);
+        if (type == NoticeType.ALL) {
+            notices = noticeRepository.findByStoreAndDeletedIsFalse(store);
+        } else {
+            notices = noticeRepository.findByStoreAndDeletedIsFalseAndType(store, type);
+        }
         if (notices == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
 
         return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
