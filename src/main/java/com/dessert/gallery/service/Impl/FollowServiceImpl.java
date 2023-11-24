@@ -5,6 +5,7 @@ import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.ForbiddenException;
+import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.StoreRepository;
@@ -47,7 +48,7 @@ public class FollowServiceImpl implements FollowService {
             throw new UnAuthorizedException("Do not subscribe same user.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-        if (subscribeRepository.existsByStoreAndUserAndDeletedIsTrue(store, user)) {
+        if (subscribeRepository.existsByStoreAndUser(store, user)) {
             Subscribe subscribe = subscribeRepository.findByUserAndStore(user, store);
             subscribe.setDeleted(false);
             return;
@@ -71,9 +72,15 @@ public class FollowServiceImpl implements FollowService {
             case USER: case ADMIN:
                 User user = userRepository.findByEmail(email).orElseThrow();
                 Subscribe subUser = subscribeRepository.findByUser(user);
+                if (subUser == null) {
+                    throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
+                }
                 subUser.setDeleted(true);
             case MANAGER:
                 Subscribe subStore = subscribeRepository.findByStoreId(storeId);
+                if (subStore == null) {
+                    throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
+                }
                 subStore.setDeleted(true);
         }
     }
