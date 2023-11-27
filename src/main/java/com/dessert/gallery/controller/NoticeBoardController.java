@@ -37,7 +37,7 @@ public class NoticeBoardController {
     }
 
     @Operation(summary = "가게 공지글 작성")
-    @PostMapping("/stores/myStore")
+    @PostMapping("/myStore")
     public ResponseEntity<String> createNoticeBoard(@RequestBody NoticeRequestDto requestDto,
                                                     HttpServletRequest request) {
         noticeService.createNotice(requestDto, request);
