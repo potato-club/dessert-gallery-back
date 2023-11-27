@@ -3,6 +3,7 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
+import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.service.Interface.CalendarService;
@@ -29,14 +30,34 @@ public class StoreController {
     private final CalendarService calendarService;
     private final ScheduleService scheduleService;
 
-    @Operation(summary = "가게 정보 조회 API")
+    @Operation(summary = "가게 정보 조회 API - 사장님 마이페이지")
+    @GetMapping("")
+    public StoreOwnerResponseDto getMyStore(HttpServletRequest request) {
+        return storeService.getStoreDtoByUser(request);
+    }
+
+    @Operation(summary = "가게 정보 조회 API - 회원")
     @GetMapping("/{storeId}")
     public StoreResponseDto getStore(@PathVariable(name = "storeId") Long storeId,
                                      HttpServletRequest request) {
         return storeService.getStoreDto(storeId, request);
     }
 
-    @Operation(summary = "가게 페이지 캘린더 조회 API")
+    @Operation(summary = "가게 캘린더 조회 API - 사장님 마이페이지")
+    @GetMapping("/calendar")
+    public CalendarResponseDto getOwnerCalendar(
+            @RequestParam(required = false, defaultValue = "0", value = "year") int year,
+            @RequestParam(required = false, defaultValue = "0", value = "month") int month,
+            HttpServletRequest request) {
+        if(year == 0 && month == 0) {
+            LocalDate now = LocalDate.now();
+            year = now.getYear();
+            month = now.getMonthValue();
+        }
+        return calendarService.getOwnerCalendar(year, month, request);
+    }
+
+    @Operation(summary = "가게 캘린더 조회 API - 회원")
     @GetMapping("/{storeId}/calendar")
     public ResponseEntity<CalendarResponseDto> getCalendar(
             @PathVariable(name = "storeId") Long storeId,
@@ -51,22 +72,6 @@ public class StoreController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @Operation(summary = "사장님 페이지 캘린더 조회 API")
-    @GetMapping("/{storeId}/calendar/owner")
-    public CalendarResponseDto getOwnerCalendar(
-            @PathVariable(name = "storeId") Long storeId,
-            @RequestParam(required = false, defaultValue = "0", value = "year") int year,
-            @RequestParam(required = false, defaultValue = "0", value = "month") int month,
-            HttpServletRequest request) {
-        if(year == 0 && month == 0) {
-            LocalDate now = LocalDate.now();
-            year = now.getYear();
-            month = now.getMonthValue();
-        }
-        return calendarService.getOwnerCalendar(storeId, year, month, request);
-    }
-
-
     @Operation(summary = "가게 생성 API")
     @PostMapping("")
     public ResponseEntity<String> createStore(@RequestPart StoreRequestDto requestDto,
@@ -77,11 +82,10 @@ public class StoreController {
     }
 
     @Operation(summary = "가게 캘린더 스케줄 등록 API")
-    @PostMapping("/{storeId}/schedule")
-    public ResponseEntity<String> createSchedule(@PathVariable(name = "storeId") Long id,
-                                                 @RequestBody ScheduleRequestDto requestDto,
+    @PostMapping("/schedule")
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequestDto requestDto,
                                                  HttpServletRequest request) {
-        scheduleService.addSchedule(id, requestDto, request);
+        scheduleService.addSchedule(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("등록 완료");
     }
 

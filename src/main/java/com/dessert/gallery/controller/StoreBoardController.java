@@ -27,13 +27,6 @@ public class StoreBoardController {
     private final StoreBoardService boardService;
     private final BookmarkService bookmarkService;
 
-    @Operation(summary = "가게의 모든 게시글 조회")
-    @GetMapping("/stores/{storeId}")
-    public ResponseEntity<List<BoardListResponseDto>> getBoardListByStore(@PathVariable(name = "storeId") Long storeId) {
-        List<BoardListResponseDto> boards = boardService.getBoardsByStore(storeId);
-        return ResponseEntity.ok(boards);
-    }
-
     @Operation(summary = "게시글 조회")
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable(name = "boardId") Long boardId,
@@ -42,13 +35,19 @@ public class StoreBoardController {
         return ResponseEntity.ok(dto);
     }
 
+    @Operation(summary = "가게의 모든 게시글 조회")
+    @GetMapping("/stores/{storeId}")
+    public ResponseEntity<List<BoardListResponseDto>> getBoardListByStore(@PathVariable(name = "storeId") Long storeId) {
+        List<BoardListResponseDto> boards = boardService.getBoardsByStore(storeId);
+        return ResponseEntity.ok(boards);
+    }
+
     @Operation(summary = "가게 게시글 작성")
-    @PostMapping("/stores/{storeId}")
-    public ResponseEntity<String> createStoreBoard(@PathVariable(name = "storeId") Long storeId,
-                                                   @Validated @RequestPart(name = "boardDto") BoardRequestDto boardDto,
+    @PostMapping("")
+    public ResponseEntity<String> createStoreBoard(@Validated @RequestPart(name = "boardDto") BoardRequestDto boardDto,
                                                    @RequestPart List<MultipartFile> images,
                                                    HttpServletRequest request) throws IOException {
-        boardService.createBoard(storeId, boardDto, images, request);
+        boardService.createBoard(boardDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 생성 완료");
     }
 

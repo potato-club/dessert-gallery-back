@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ScheduleService {
-    void addSchedule(Long storeId, ScheduleRequestDto requestDto, HttpServletRequest request);
+    void addSchedule(ScheduleRequestDto requestDto, HttpServletRequest request);
     void removeSchedule(Long scheduleId, HttpServletRequest request);
     List<Schedule> getSchedules(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate);
     List<Schedule> getSchedulesForOwner(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate);

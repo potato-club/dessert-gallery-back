@@ -37,17 +37,16 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final UserService userService;
 
     @Override
-    public void addSchedule(Long storeId, ScheduleRequestDto requestDto, HttpServletRequest request) {
+    public void addSchedule(ScheduleRequestDto requestDto, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        Calendar calendar = calendarRepository.findByStoreId(storeId);
-        if(calendar == null) {
-            Store store = storeRepository.findById(storeId)
-                    .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
+        Store store = storeRepository.findByUser(user);
+        if (store == null) throw new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION);
+
+        Calendar calendar = calendarRepository.findByStoreId(store.getId());
+        if (calendar == null) {
             calendar = new Calendar(store);
             calendarRepository.save(calendar);
         }
-        if(calendar.getStore().getUser() != user)
-            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         Schedule schedule = new Schedule(requestDto, calendar);
         Schedule saveSchedule = scheduleRepository.save(schedule);
         calendar.addSchedule(saveSchedule);
@@ -58,7 +57,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         User user = userService.findUserByToken(request);
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
-        if(schedule.getCalendar().getStore().getUser() != user)
+        if (schedule.getCalendar().getStore().getUser() != user)
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         scheduleRepository.delete(schedule);
     }

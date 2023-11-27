@@ -18,5 +18,5 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
 
     boolean existsByStoreAndUser(Store store, User user);
 
-    Long countAllByStore(Store store);
+    Long countAllByStoreAndDeletedIsFalse(Store store);
 }
