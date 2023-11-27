@@ -2,7 +2,6 @@ package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
-import com.dessert.gallery.dto.notice.NoticeResponseDto;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,19 +36,11 @@ public class NoticeBoardController {
         return noticeService.getNoticesByOwner(type, request);
     }
 
-    @Operation(summary = "공지글 조회")
-    @GetMapping("/{noticeId}")
-    public ResponseEntity<NoticeResponseDto> getNoticeById(@PathVariable(name = "noticeId") Long noticeId) {
-        NoticeResponseDto dto = noticeService.getNoticeById(noticeId);
-        return ResponseEntity.ok(dto);
-    }
-
     @Operation(summary = "가게 공지글 작성")
-    @PostMapping("/stores/{storeId}")
-    public ResponseEntity<String> createNoticeBoard(@PathVariable(name = "storeId") Long storeId,
-                                                    @RequestBody NoticeRequestDto requestDto,
+    @PostMapping("/stores/myStore")
+    public ResponseEntity<String> createNoticeBoard(@RequestBody NoticeRequestDto requestDto,
                                                     HttpServletRequest request) {
-        noticeService.createNotice(storeId, requestDto, request);
+        noticeService.createNotice(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("공지사항 생성 완료");
     }
 

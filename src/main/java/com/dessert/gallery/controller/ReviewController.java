@@ -34,7 +34,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviewList);
     }
 
-    @Operation(summary = "본인 리뷰 조회")
+    @Operation(summary = "본인 리뷰 조회 - 회원")
     @GetMapping("/mine")
     public ResponseEntity<Slice<MyReviewListDto>> getMyReviewList(@RequestParam(value = "p", defaultValue = "1") int page,
                                                                  @RequestParam(value = "m", defaultValue = "1") int month,

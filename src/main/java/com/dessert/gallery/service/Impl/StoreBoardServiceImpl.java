@@ -34,13 +34,12 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     private final ImageService imageService;
 
     @Override
-    public void createBoard(Long storeId, BoardRequestDto requestDto, List<MultipartFile> images,
+    public void createBoard(BoardRequestDto requestDto, List<MultipartFile> images,
                             HttpServletRequest request) throws IOException {
-        Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
-        if (store.getUser() != user) {
-            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
-        }
+        if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
+
+        Store store = storeService.getStoreByUser(user);
         StoreBoard board = new StoreBoard(requestDto, store);
         StoreBoard saveBoard = boardRepository.save(board);
         List<File> files = imageService.uploadImages(images, saveBoard);

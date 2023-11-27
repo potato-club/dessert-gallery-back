@@ -5,7 +5,8 @@ import com.dessert.gallery.dto.schedule.ScheduleResponseDto;
 import com.dessert.gallery.entity.Calendar;
 import com.dessert.gallery.entity.Schedule;
 import com.dessert.gallery.entity.Store;
-import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.entity.User;
+import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.repository.CalendarRepository;
 import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.ScheduleService;
@@ -18,10 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
+import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 
 @Service
 @Slf4j
@@ -39,19 +39,8 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
     @Override
-    public void removeCalendar(Long storeId) {
-        Calendar calendar = findCalendar(storeId);
-        calendarRepository.delete(calendar);
-    }
-
-    @Override
-    public Calendar findCalendar(Long storeId) {
-        return calendarRepository.findByStoreId(storeId);
-    }
-
-    @Override
     public CalendarResponseDto getCalendarByStore(Long storeId, int year, int month) {
-        Calendar calendar = findCalendar(storeId);
+        Calendar calendar = calendarRepository.findByStoreId(storeId);
 
         // 해당 월의 시작일 지정
         LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
@@ -65,12 +54,10 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
     @Override
-    public CalendarResponseDto getOwnerCalendar(Long storeId, int year, int month, HttpServletRequest request) {
-        Calendar calendar = findCalendar(storeId);
-
-        if(calendar.getStore().getUser() != userService.findUserByToken(request)) {
-            throw new UnAuthorizedException("가게 주인만 조회 가능", ACCESS_DENIED_EXCEPTION);
-        }
+    public CalendarResponseDto getOwnerCalendar(int year, int month, HttpServletRequest request) {
+        User user = userService.findUserByToken(request);
+        if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
+        Calendar calendar = calendarRepository.findByStore_User(user);
         // 해당 월의 시작일 지정
         LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
 

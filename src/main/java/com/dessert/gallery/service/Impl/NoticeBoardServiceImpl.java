@@ -2,7 +2,6 @@ package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
-import com.dessert.gallery.dto.notice.NoticeResponseDto;
 import com.dessert.gallery.entity.NoticeBoard;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
@@ -33,14 +32,6 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     private final NoticeBoardRepository noticeRepository;
     private final StoreService storeService;
     private final UserService userService;
-
-    // 공지사항 단건 조회
-    @Override
-    public NoticeResponseDto getNoticeById(Long noticeId) {
-        NoticeBoard noticeBoard = noticeRepository.findByIdAndDeletedIsFalse(noticeId);
-        if (noticeBoard == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
-        return new NoticeResponseDto(noticeBoard);
-    }
 
     // 메인 노출되는 공지사항 리스트 출력
     @Override
@@ -74,14 +65,14 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     }
 
     @Override
-    public void createNotice(Long storeId, NoticeRequestDto requestDto,
+    public void createNotice(NoticeRequestDto requestDto,
                              HttpServletRequest request) {
-        Store store = storeService.getStore(storeId);
         User user = userService.findUserByToken(request);
+        if (user == null) throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
 
-        if (store.getUser() != user) {
-            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
-        }
+        Store store = storeService.getStoreByUser(user);
+        if (store == null) throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
+
         NoticeBoard notice = new NoticeBoard(requestDto, store);
         noticeRepository.save(notice);
     }

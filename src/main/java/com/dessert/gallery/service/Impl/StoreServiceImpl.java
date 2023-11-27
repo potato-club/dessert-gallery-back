@@ -1,6 +1,7 @@
 package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.file.FileRequestDto;
+import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.dto.store.map.StoreCoordinate;
@@ -10,6 +11,7 @@ import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.repository.ReviewBoardRepository;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.repository.SubscribeRepository;
@@ -32,6 +34,7 @@ import static com.dessert.gallery.error.ErrorCode.*;
 public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
     private final StoreBoardRepository boardRepository;
+    private final ReviewBoardRepository reviewRepository;
     private final SubscribeRepository subscribeRepository;
     private final UserService userService;
     private final CalendarService calendarService;
@@ -50,10 +53,24 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    public StoreOwnerResponseDto getStoreDtoByUser(HttpServletRequest request) {
+        User user = userService.findUserByToken(request);
+        if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
+
+        Store store = storeRepository.findByUser(user);
+        if (store == null) throw new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION);
+
+        int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
+        int reviewCount = Math.toIntExact(reviewRepository.countByStore(store));
+
+        return new StoreOwnerResponseDto(store, postCount, reviewCount);
+    }
+
+    @Override
     public StoreResponseDto getStoreDto(Long id, HttpServletRequest request) {
         Store store = getStore(id);
         int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
-        int followerCount = Math.toIntExact(subscribeRepository.countAllByStore(store));
+        int followerCount = Math.toIntExact(subscribeRepository.countAllByStoreAndDeletedIsFalse(store));
 
         StoreResponseDto responseDto = new StoreResponseDto(store, postCount, followerCount);
         User user = userService.findUserByToken(request);
