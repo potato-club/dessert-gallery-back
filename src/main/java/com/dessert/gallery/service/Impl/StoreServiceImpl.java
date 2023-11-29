@@ -11,10 +11,7 @@ import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
-import com.dessert.gallery.repository.ReviewBoardRepository;
-import com.dessert.gallery.repository.StoreBoardRepository;
-import com.dessert.gallery.repository.StoreRepository;
-import com.dessert.gallery.repository.SubscribeRepository;
+import com.dessert.gallery.repository.*;
 import com.dessert.gallery.service.Interface.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.dessert.gallery.error.ErrorCode.*;
@@ -84,7 +82,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public void createStore(StoreRequestDto requestDto, List<MultipartFile> files,
+    public void createStore(StoreRequestDto requestDto, MultipartFile file,
                             HttpServletRequest request) {
         try {
             User user = userService.findUserByToken(request);
@@ -92,9 +90,11 @@ public class StoreServiceImpl implements StoreService {
                 throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
             StoreCoordinate coordinate = mapService.getKakaoCoordinate(requestDto.getAddress());
             Store store = new Store(requestDto, coordinate, user);
-            if (files != null) {
-                List<File> file = imageService.uploadImages(files, store);
-                store.setImage(file.get(0));
+            if (file != null) {
+                List<MultipartFile> files = new ArrayList<>();
+                files.add(file);
+                List<File> image = imageService.uploadImages(files, store);
+                store.setImage(image.get(0));
             }
             Store saveStore = storeRepository.save(store);
             calendarService.createCalendar(saveStore);
@@ -106,7 +106,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public void updateStore(Long id, StoreRequestDto updateDto,
-                            List<MultipartFile> files, List<FileRequestDto> requestDto,
+                            MultipartFile file, FileRequestDto requestDto,
                             HttpServletRequest request) throws Exception {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();
@@ -119,20 +119,50 @@ public class StoreServiceImpl implements StoreService {
         }
         store.updateStore(updateDto);
 
-        if (files != null) {
-            List<File> newFile = imageService.updateImages(store, files, requestDto);
-            store.setImage(newFile.get(0));
+        List<MultipartFile> files = new ArrayList<>();
+        List<FileRequestDto> requestDtoList = new ArrayList<>();
+        List<File> resultImages;
+
+        if (file != null) { // 바꿀 사진 존재
+            files.add(file);
+
+            if (requestDto == null) { // 원본 없음 => 단순 사진 업로드
+                resultImages = imageService.uploadImages(files, store);
+                store.setImage(resultImages.get(0));
+            }
+            if (requestDto != null) { // 원본 있음 => 사진 업데이트
+                requestDtoList.add(requestDto);
+                resultImages = imageService.updateImages(store, files, requestDtoList);
+                log.info(String.valueOf(resultImages.get(0)));
+                store.setImage(resultImages.get(0));
+            }
+        }
+        if (file == null) { // 바꿀 사진 없음
+            if (requestDto != null) { // 원본 있음 -> 삭제 요청
+                requestDtoList.add(requestDto);
+
+                List<File> newFile = imageService.updateImages(store, files, requestDtoList);
+
+                if (newFile.size() != 0) store.setImage(newFile.get(0));
+                else store.setImage(null);
+            }
         }
     }
 
+    // 가게 삭제 로직은 좀 더 생각해보기 => 실수로 삭제했을 때 다 날아가면 망함
+    // 스케줄러로 삭제 유예 기간을 주던가 해야될듯
+    // 현재 FK로 인해 작동 안함
     @Override
     @Transactional
-    public void removeStore(Long id, HttpServletRequest request) {
+    public void removeStore(HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        Store store = storeRepository.findById(id).orElseThrow();
-        if (store.getUser() != user) {
+        if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
+
+        Store store = storeRepository.findByUser(user);
+        if (!store.checkOwner(user)) {
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
         }
+
         storeRepository.delete(store);
     }
 }

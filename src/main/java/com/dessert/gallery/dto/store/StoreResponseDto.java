@@ -16,7 +16,7 @@ public class StoreResponseDto {
     @Schema(description = "가게 정보")
     private String info;
     @Schema(description = "가게 소개")
-    private String introduction;
+    private String content;
     @Schema(description = "가게 주소")
     private String address;
     @Schema(description = "가게 전화번호")
@@ -36,7 +36,7 @@ public class StoreResponseDto {
         this.id = store.getId();
         this.name = store.getName();
         this.info = store.getInfo();
-        this.introduction = store.getContent();
+        this.content = store.getContent();
         this.address = store.getAddress();
         this.phoneNumber = store.getPhoneNumber();
         this.storeImage = store.getImage() == null ? null : new FileDto(store.getImage());

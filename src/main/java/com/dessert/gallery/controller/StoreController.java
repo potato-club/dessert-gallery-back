@@ -10,16 +10,18 @@ import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.ScheduleService;
 import com.dessert.gallery.service.Interface.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class StoreController {
             @RequestParam(required = false, defaultValue = "0", value = "year") int year,
             @RequestParam(required = false, defaultValue = "0", value = "month") int month,
             HttpServletRequest request) {
-        if(year == 0 && month == 0) {
+        if (year == 0 && month == 0) {
             LocalDate now = LocalDate.now();
             year = now.getYear();
             month = now.getMonthValue();
@@ -63,7 +65,7 @@ public class StoreController {
             @PathVariable(name = "storeId") Long storeId,
             @RequestParam(required = false, defaultValue = "0", value = "year") int year,
             @RequestParam(required = false, defaultValue = "0", value = "month") int month) {
-        if(year == 0 && month == 0) {
+        if (year == 0 && month == 0) {
             LocalDate now = LocalDate.now();
             year = now.getYear();
             month = now.getMonthValue();
@@ -73,16 +75,20 @@ public class StoreController {
     }
 
     @Operation(summary = "가게 생성 API")
-    @PostMapping("")
-    public ResponseEntity<String> createStore(@RequestPart StoreRequestDto requestDto,
-                                              @RequestPart(required = false) List<MultipartFile> images,
+    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<String> createStore(@Parameter(description = "가게 정보", content =
+                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                  @RequestPart StoreRequestDto requestDto,
+                                              @Parameter(description = "업로드 할 파일", content =
+                                                @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                    @RequestPart(required = false) MultipartFile image,
                                               HttpServletRequest request) {
-        storeService.createStore(requestDto, images, request);
+        storeService.createStore(requestDto, image, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("가게 생성 완료");
     }
 
     @Operation(summary = "가게 캘린더 스케줄 등록 API")
-    @PostMapping("/schedule")
+    @PostMapping(value = "/schedule")
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequestDto requestDto,
                                                  HttpServletRequest request) {
         scheduleService.addSchedule(requestDto, request);
@@ -90,20 +96,26 @@ public class StoreController {
     }
 
     @Operation(summary = "가게 정보 수정 API")
-    @PutMapping("/{storeId}")
+    @PutMapping(value = "/{storeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
-                                              @RequestPart StoreRequestDto updateDto,
-                                              @RequestPart List<MultipartFile> images,
-                                              @RequestPart List<FileRequestDto> requestDto,
+                                              @Parameter(description = "가게 정보", content =
+                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                    @RequestPart StoreRequestDto updateDto,
+                                              @Parameter(description = "추가할 이미지", content =
+                                                @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                    @RequestPart(required = false) MultipartFile image,
+                                              @Parameter(description = "원본 이미지 추가 / 삭제 여부", content =
+                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                    @RequestPart(required = false) FileRequestDto requestDto,
                                               HttpServletRequest request) throws Exception {
-        storeService.updateStore(id, updateDto, images, requestDto, request);
+        storeService.updateStore(id, updateDto, image, requestDto, request);
         return ResponseEntity.ok("가게 정보 수정 완료");
     }
 
     @Operation(summary = "가게 삭제 API")
-    @DeleteMapping("/{storeId}")
-    public ResponseEntity<String> deleteStore(@PathVariable(name = "storeId") Long id, HttpServletRequest request) {
-        storeService.removeStore(id, request);
+    @DeleteMapping("")
+    public ResponseEntity<String> deleteStore(HttpServletRequest request) {
+        storeService.removeStore(request);
         return ResponseEntity.ok("가게 삭제 완료");
     }
 
