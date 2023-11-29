@@ -56,20 +56,21 @@ public class ImageServiceImpl implements ImageService {
     }
 
     public List<File> updateImages(Object entity, List<MultipartFile> files, List<FileRequestDto> requestDto)
-                                                                throws IOException {
+            throws IOException {
 
         List<File> fileList = new ArrayList<>();
+        Class<?> entityType = entity.getClass();
 
         // entity 값에 따라서 각각의 FK 엔티티와 연결된 File 엔티티 리스트를 가져옴
-        if (entity.equals(NoticeBoard.class)) {
+        if (entityType.equals(NoticeBoard.class)) {
             fileList = fileRepository.findByNoticeBoard((NoticeBoard) entity);
-        } else if (entity.equals(ReviewBoard.class)) {
+        } else if (entityType.equals(ReviewBoard.class)) {
             fileList = fileRepository.findByReviewBoard((ReviewBoard) entity);
-        } else if (entity.equals(StoreBoard.class)) {
+        } else if (entityType.equals(StoreBoard.class)) {
             fileList = fileRepository.findByStoreBoard((StoreBoard) entity);
-        } else if (entity.equals(Store.class)) {
+        } else if (entityType.equals(Store.class)) {
             fileList = fileRepository.findByStore((Store) entity);
-        } else if (entity.equals(User.class)) {
+        } else if (entityType.equals(User.class)) {
             fileList = fileRepository.findByUser((User) entity);
         }
 
@@ -84,23 +85,25 @@ public class ImageServiceImpl implements ImageService {
             }
         }
 
+        List<File> resultList = new ArrayList<>();
         for (File file : list) {
-            if (entity.equals(NoticeBoard.class)) {
+            if (entityType.equals(NoticeBoard.class)) {
                 file.setNoticeBoard((NoticeBoard) entity);
-            } else if (entity.equals(ReviewBoard.class)) {
+            } else if (entityType.equals(ReviewBoard.class)) {
                 file.setReviewBoard((ReviewBoard) entity);
-            } else if (entity.equals(StoreBoard.class)) {
+            } else if (entityType.equals(StoreBoard.class)) {
                 file.setStoreBoard((StoreBoard) entity);
-            } else if (entity.equals(Store.class)) {
+            } else if (entityType.equals(Store.class)) {
                 file.setStore((Store) entity);
-            } else if (entity.equals(User.class)) {
+            } else if (entityType.equals(User.class)) {
                 file.setUser((User) entity);
             }
 
-            fileRepository.save(file);
+            File saveFile = fileRepository.save(file);
+            resultList.add(saveFile);
         }
 
-        return list;
+        return resultList;
     }
 
     public byte[] downloadImage(String key) throws IOException {
@@ -110,7 +113,7 @@ public class ImageServiceImpl implements ImageService {
         try {
             content = IOUtils.toByteArray(stream);
             s3Object.close();
-        } catch(final IOException ex) {
+        } catch (final IOException ex) {
             throw new IOException("IO Error Message= " + ex.getMessage());
         }
         return content;
