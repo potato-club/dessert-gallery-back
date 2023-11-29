@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,8 +43,11 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         Store store = storeService.getStoreByUser(user);
         StoreBoard board = new StoreBoard(requestDto, store);
         StoreBoard saveBoard = boardRepository.save(board);
-        List<File> files = imageService.uploadImages(images, saveBoard);
-        saveBoard.updateImages(files);
+
+        if (images != null) {
+            List<File> files = imageService.uploadImages(images, saveBoard);
+            saveBoard.updateImages(files);
+        }
     }
 
     @Override
@@ -78,11 +82,20 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public void updateBoard(Long boardId, BoardRequestDto updateDto, List<MultipartFile> images,
                             List<FileRequestDto> requestDto, HttpServletRequest request) throws IOException {
         StoreBoard board = validateBoard(boardId, request);
-        if (!images.isEmpty()) {
-            List<File> files = imageService.updateImages(board, images, requestDto);
-            board.updateImages(files);
-        }
         board.updateBoard(updateDto);
+
+        // images 가 null 이면 빈 배열 생성
+        if (images == null) images = new ArrayList<>();
+
+        List<File> files;
+        // requestDto 가 null 이고 images 가 있다면 이미지 업로드와 같음
+        if (requestDto == null && images.size() != 0) {
+            files = imageService.uploadImages(images, board);
+        } else {
+            files = imageService.updateImages(board, images, requestDto);
+        }
+        board.imageClear();
+        board.updateImages(files);
     }
 
     @Override

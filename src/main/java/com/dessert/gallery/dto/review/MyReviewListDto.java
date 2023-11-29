@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 public class MyReviewListDto {
+    @Schema(description = "리뷰 id")
+    private Long id;
     @Schema(description = "리뷰 내용")
     private String content;
     @Schema(description = "리뷰 점수")
@@ -23,6 +25,7 @@ public class MyReviewListDto {
     private String createDate;
 
     public MyReviewListDto(ReviewBoard review) {
+        this.id = review.getId();
         this.content = review.getContent();
         this.score = review.getScore();
         this.images = review.getImages().isEmpty() ? null : review.getImages()

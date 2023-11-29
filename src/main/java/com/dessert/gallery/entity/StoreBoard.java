@@ -44,7 +44,14 @@ public class StoreBoard extends BaseTimeEntity {
     }
 
     public void updateImages(List<File> images) {
-        this.images = images;
+        for (File image : images) {
+            image.setStoreBoard(this);
+            this.images.add(image);
+        }
+    }
+
+    public void imageClear() {
+        this.images.clear();
     }
 
     public void updateBoard(BoardRequestDto requestDto) {

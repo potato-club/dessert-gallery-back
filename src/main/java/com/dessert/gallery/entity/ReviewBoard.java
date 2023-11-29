@@ -46,7 +46,14 @@ public class ReviewBoard extends BaseTimeEntity {
     }
 
     public void updateImages(List<File> images) {
-        this.images = images;
+        for (File image : images) {
+            image.setReviewBoard(this);
+            this.images.add(image);
+        }
+    }
+
+    public void imageClear() {
+        this.images.clear();
     }
 
     public void updateReview(ReviewRequestDto updateDto) {

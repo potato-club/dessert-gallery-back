@@ -9,15 +9,14 @@ import com.dessert.gallery.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 public interface StoreService {
     Store getStore(Long id);
     Store getStoreByUser(User user);
     StoreOwnerResponseDto getStoreDtoByUser(HttpServletRequest request);
     StoreResponseDto getStoreDto(Long id, HttpServletRequest request);
-    void createStore(StoreRequestDto requestDto, List<MultipartFile> files, HttpServletRequest request);
-    void updateStore(Long id, StoreRequestDto updateDto, List<MultipartFile> files,
-                     List<FileRequestDto> requestDto, HttpServletRequest request) throws Exception;
-    void removeStore(Long id, HttpServletRequest request);
+    void createStore(StoreRequestDto requestDto, MultipartFile files, HttpServletRequest request);
+    void updateStore(Long id, StoreRequestDto updateDto, MultipartFile files,
+                     FileRequestDto requestDto, HttpServletRequest request) throws Exception;
+    void removeStore(HttpServletRequest request);
 }
