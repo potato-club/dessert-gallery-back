@@ -78,14 +78,18 @@ public class ImageServiceImpl implements ImageService {
         // 바뀐 파일만 업로드하고, 기존 파일 중 사용하지 않는 파일은 삭제
         List<File> list = this.existsFiles(files);
 
+        // 결과 저장할 리스트 별도 생성
+        List<File> resultList = new ArrayList<>();
+
         for (int i = 0; i < fileList.size(); i++) {
             if (requestDto.get(i).isDeleted() && fileList.get(i).getFileName().equals(requestDto.get(i).getFileName())) {
                 s3Client.deleteObject(new DeleteObjectRequest(bucketName, fileList.get(i).getFileName())); // 사용하지 않는 파일 삭제
                 fileRepository.delete(fileList.get(i)); // DB에서도 해당 파일 엔티티 삭제
+            } else { // 삭제 조건 만족 안한다면 resultList 에 추가
+                resultList.add(fileList.get(i));
             }
         }
 
-        List<File> resultList = new ArrayList<>();
         for (File file : list) {
             if (entityType.equals(NoticeBoard.class)) {
                 file.setNoticeBoard((NoticeBoard) entity);

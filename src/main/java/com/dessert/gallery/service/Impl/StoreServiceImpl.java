@@ -133,7 +133,6 @@ public class StoreServiceImpl implements StoreService {
             if (requestDto != null) { // 원본 있음 => 사진 업데이트
                 requestDtoList.add(requestDto);
                 resultImages = imageService.updateImages(store, files, requestDtoList);
-                log.info(String.valueOf(resultImages.get(0)));
                 store.setImage(resultImages.get(0));
             }
         }

@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
@@ -86,28 +87,42 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void updateReview(Long reviewId, ReviewRequestDto updateDto,
                              List<MultipartFile> images,
-                             List<FileRequestDto> requestDto, HttpServletRequest request) throws IOException {
-        ReviewBoard review = reviewRepository.findById(reviewId).orElse(null);
-        User reviewUser = userService.findUserByToken(request);
-        if (review == null) throw new NotFoundException("존재하지 않는 리뷰", NOT_FOUND_EXCEPTION);
-        if (reviewUser != review.getUser()) throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
-
+                             List<FileRequestDto> requestDto,
+                             HttpServletRequest request) throws IOException {
+        ReviewBoard review = validateReview(reviewId, request);
         double scoreGap = review.getScore() - updateDto.getScore();
-        if (images != null) {
-            List<File> files = imageService.updateImages(review, images, requestDto);
-            review.updateImages(files);
-        }
         review.updateReview(updateDto);
         updateScore(review.getStore(), scoreGap);
+
+        // images == null 이면 빈 배열 생성
+        if (images == null) images = new ArrayList<>();
+        List<File> fileList;
+
+        // requestDto 가 null 이고 images 가 있다면 이미지 업로드와 같음
+        if (requestDto == null && images.size() != 0) {
+            fileList = imageService.uploadImages(images, review);
+        } else {
+            fileList = imageService.updateImages(review, images, requestDto);
+        }
+        review.imageClear();
+        review.updateImages(fileList);
+
     }
 
     @Override
     public void removeReview(Long reviewId, HttpServletRequest request) {
-        ReviewBoard review = reviewRepository.findById(reviewId).orElse(null);
-        if (review == null) throw new NotFoundException("존재하지 않는 리뷰", NOT_FOUND_EXCEPTION);
+        ReviewBoard review = validateReview(reviewId, request);
         Store store = review.getStore();
         deleteScore(store, review.getScore());
         reviewRepository.delete(review);
+    }
+
+    private ReviewBoard validateReview(Long reviewId, HttpServletRequest request) {
+        ReviewBoard review = reviewRepository.findById(reviewId).orElse(null);
+        User reviewUser = userService.findUserByToken(request);
+        if (review == null) throw new NotFoundException("존재하지 않는 리뷰", NOT_FOUND_EXCEPTION);
+        if (reviewUser != review.getUser()) throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+        return review;
     }
 
     private void addScore(Store store, double score) { // 리뷰 카운트 + 1 로 계산
