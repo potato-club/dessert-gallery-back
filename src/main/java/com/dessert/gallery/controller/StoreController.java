@@ -76,10 +76,10 @@ public class StoreController {
 
     @Operation(summary = "가게 생성 API")
     @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> createStore(@Parameter(description = "가게 정보", content =
+    public ResponseEntity<String> createStore(@Parameter(description = "가게 정보 - StoreRequestDto", content =
                                                 @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                   @RequestPart StoreRequestDto requestDto,
-                                              @Parameter(description = "업로드 할 파일", content =
+                                              @Parameter(description = "업로드 할 이미지", content =
                                                 @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                     @RequestPart(required = false) MultipartFile image,
                                               HttpServletRequest request) {
@@ -98,7 +98,7 @@ public class StoreController {
     @Operation(summary = "가게 정보 수정 API")
     @PutMapping(value = "/{storeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
-                                              @Parameter(description = "가게 정보", content =
+                                              @Parameter(description = "가게 정보 - StoreRequestDto", content =
                                                 @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                     @RequestPart StoreRequestDto updateDto,
                                               @Parameter(description = "추가할 이미지", content =

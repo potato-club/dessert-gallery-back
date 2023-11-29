@@ -7,9 +7,12 @@ import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -43,9 +46,14 @@ public class StoreBoardController {
     }
 
     @Operation(summary = "가게 게시글 작성")
-    @PostMapping("")
-    public ResponseEntity<String> createStoreBoard(@Validated @RequestPart(name = "boardDto") BoardRequestDto boardDto,
-                                                   @RequestPart List<MultipartFile> images,
+    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<String> createStoreBoard(@Parameter(description = "게시글 정보 - BoardRequestDto", content =
+                                                    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                        @Validated
+                                                            @RequestPart(required = false) BoardRequestDto boardDto,
+                                                   @Parameter(description = "업로드 이미지 리스트", content =
+                                                    @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                        @RequestPart(required = false) List<MultipartFile> images,
                                                    HttpServletRequest request) throws IOException {
         boardService.createBoard(boardDto, images, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 생성 완료");
@@ -60,11 +68,18 @@ public class StoreBoardController {
     }
 
     @Operation(summary = "가게 게시글 수정")
-    @PutMapping("/{boardId}")
+    @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
-                                                   @RequestPart BoardRequestDto updateDto,
-                                                   @RequestPart(required = false) List<MultipartFile> images,
-                                                   @RequestPart List<FileRequestDto> requestDto,
+                                                   @Parameter(description = "게시글 정보 - BoardRequestDto", content =
+                                                    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                        @Validated
+                                                            @RequestPart(name = "updateDto") BoardRequestDto updateDto,
+                                                   @Parameter(description = "추가할 이미지 리스트", content =
+                                                    @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                        @RequestPart(required = false) List<MultipartFile> images,
+                                                   @Parameter(description = "원본 이미지 추가 / 삭제 여부", content =
+                                                    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                        @RequestPart(required = false) List<FileRequestDto> requestDto,
                                                    HttpServletRequest request) throws IOException {
         boardService.updateBoard(boardId, updateDto, images, requestDto, request);
         return ResponseEntity.ok("게시글 수정 완료");
