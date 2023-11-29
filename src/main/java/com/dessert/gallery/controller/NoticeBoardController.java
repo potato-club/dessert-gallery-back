@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,11 +30,15 @@ public class NoticeBoardController {
 
     @Operation(summary = "가게의 공지/이벤트 조회 - 사장님용")
     @GetMapping("/myStore")
-    public List<NoticeListDto> getNoticeBoardByOwner(
+    public Slice<NoticeListDto> getNoticeBoardByOwner(
             @Parameter(name = "type", description = "공지 타입 (0 : 공지사항 / 1 : 이벤트)")
             @RequestParam(value = "type", defaultValue = "2") int type,
-                                                     HttpServletRequest request) {
-        return noticeService.getNoticesByOwner(type, request);
+            @Parameter(name = "keyword", description = "검색어")
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @Parameter(name = "last", description = "이전 조회된 공지의 마지막 id값")
+            @RequestParam(value = "last", required = false) Long last,
+            HttpServletRequest request) {
+        return noticeService.getNoticesByOwner(type, keyword, last, request);
     }
 
     @Operation(summary = "가게 공지글 작성")
