@@ -1,14 +1,14 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
+import com.dessert.gallery.dto.memo.MemoResponseDto;
 import com.dessert.gallery.dto.schedule.ScheduleResponseDto;
-import com.dessert.gallery.entity.Calendar;
-import com.dessert.gallery.entity.Schedule;
-import com.dessert.gallery.entity.Store;
-import com.dessert.gallery.entity.User;
+import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.repository.CalendarRepository;
 import com.dessert.gallery.service.Interface.CalendarService;
+import com.dessert.gallery.service.Interface.MemoService;
 import com.dessert.gallery.service.Interface.ScheduleService;
 import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +30,7 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 public class CalendarServiceImpl implements CalendarService {
     private final CalendarRepository calendarRepository;
     private final ScheduleService scheduleService;
+    private final MemoService memoService;
     private final UserService userService;
 
     @Override
@@ -54,7 +55,7 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
     @Override
-    public CalendarResponseDto getOwnerCalendar(int year, int month, HttpServletRequest request) {
+    public CalendarOwnerResponseDto getOwnerCalendar(int year, int month, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
         Calendar calendar = calendarRepository.findByStore_User(user);
@@ -65,8 +66,14 @@ public class CalendarServiceImpl implements CalendarService {
         LocalDateTime endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.getMonth()
                 .length(startOfMonth.toLocalDate().isLeapYear()));
         List<Schedule> scheduleList = scheduleService.getSchedulesForOwner(calendar, startOfMonth, endOfMonth);
+        List<Memo> memoList = memoService.getMemoList(calendar, startOfMonth, endOfMonth);
 
-        return toCalendarDto(year, month, scheduleList);
+        return toOwnerCalendarDto(toCalendarDto(year, month, scheduleList), memoList);
+    }
+
+    private CalendarOwnerResponseDto toOwnerCalendarDto(CalendarResponseDto responseDto, List<Memo> memoList) {
+        return new CalendarOwnerResponseDto(responseDto,
+                memoList.stream().map(MemoResponseDto::new).collect(Collectors.toList()));
     }
 
     private CalendarResponseDto toCalendarDto(int year, int month, List<Schedule> scheduleList) {

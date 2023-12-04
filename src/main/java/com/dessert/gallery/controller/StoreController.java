@@ -1,12 +1,15 @@
 package com.dessert.gallery.controller;
 
+import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
+import com.dessert.gallery.dto.memo.MemoRequestDto;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.service.Interface.CalendarService;
+import com.dessert.gallery.service.Interface.MemoService;
 import com.dessert.gallery.service.Interface.ScheduleService;
 import com.dessert.gallery.service.Interface.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +34,7 @@ public class StoreController {
     private final StoreService storeService;
     private final CalendarService calendarService;
     private final ScheduleService scheduleService;
+    private final MemoService memoService;
 
     @Operation(summary = "가게 정보 조회 API - 사장님 마이페이지")
     @GetMapping("")
@@ -47,41 +51,40 @@ public class StoreController {
 
     @Operation(summary = "가게 캘린더 조회 API - 사장님 마이페이지")
     @GetMapping("/calendar")
-    public CalendarResponseDto getOwnerCalendar(
+    public CalendarOwnerResponseDto getOwnerCalendar(
             @RequestParam(required = false, defaultValue = "0", value = "year") int year,
             @RequestParam(required = false, defaultValue = "0", value = "month") int month,
             HttpServletRequest request) {
-        if (year == 0 && month == 0) {
-            LocalDate now = LocalDate.now();
-            year = now.getYear();
-            month = now.getMonthValue();
-        }
+        LocalDate now = LocalDate.now();
+
+        if (year == 0) year = now.getYear();
+        if (month == 0) month = now.getMonthValue();
+
         return calendarService.getOwnerCalendar(year, month, request);
     }
 
     @Operation(summary = "가게 캘린더 조회 API - 회원")
     @GetMapping("/{storeId}/calendar")
-    public ResponseEntity<CalendarResponseDto> getCalendar(
+    public CalendarResponseDto getCalendar(
             @PathVariable(name = "storeId") Long storeId,
             @RequestParam(required = false, defaultValue = "0", value = "year") int year,
             @RequestParam(required = false, defaultValue = "0", value = "month") int month) {
-        if (year == 0 && month == 0) {
-            LocalDate now = LocalDate.now();
-            year = now.getYear();
-            month = now.getMonthValue();
-        }
-        CalendarResponseDto responseDto = calendarService.getCalendarByStore(storeId, year, month);
-        return ResponseEntity.ok(responseDto);
+        LocalDate now = LocalDate.now();
+
+        if (year == 0) year = now.getYear();
+        if (month == 0) month = now.getMonthValue();
+
+        return calendarService.getCalendarByStore(storeId, year, month);
     }
 
     @Operation(summary = "가게 생성 API")
     @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> createStore(@Parameter(description = "가게 정보 - StoreRequestDto", content =
-                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                  @RequestPart StoreRequestDto requestDto,
+    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                              @RequestPart StoreRequestDto requestDto,
                                               @Parameter(description = "업로드 할 이미지", content =
-                                                @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                    @RequestPart(required = false) MultipartFile image,
+                                              @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                              @RequestPart(required = false) MultipartFile image,
                                               HttpServletRequest request) {
         storeService.createStore(requestDto, image, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("가게 생성 완료");
@@ -92,24 +95,41 @@ public class StoreController {
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequestDto requestDto,
                                                  HttpServletRequest request) {
         scheduleService.addSchedule(requestDto, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("등록 완료");
+        return ResponseEntity.status(HttpStatus.CREATED).body("스케줄 등록 완료");
+    }
+
+    @Operation(summary = "가게 캘린더 메모 작성 API")
+    @PostMapping(value = "/memo")
+    public ResponseEntity<String> createSchedule(@RequestBody MemoRequestDto requestDto,
+                                                 HttpServletRequest request) {
+        memoService.addMemo(requestDto, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("메모 작성 완료");
     }
 
     @Operation(summary = "가게 정보 수정 API")
     @PutMapping(value = "/{storeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
                                               @Parameter(description = "가게 정보 - StoreRequestDto", content =
-                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                    @RequestPart StoreRequestDto updateDto,
+                                              @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                              @RequestPart StoreRequestDto updateDto,
                                               @Parameter(description = "추가할 이미지", content =
-                                                @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                    @RequestPart(required = false) MultipartFile image,
+                                              @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                              @RequestPart(required = false) MultipartFile image,
                                               @Parameter(description = "원본 이미지 추가 / 삭제 여부", content =
-                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                    @RequestPart(required = false) FileRequestDto requestDto,
+                                              @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                              @RequestPart(required = false) FileRequestDto requestDto,
                                               HttpServletRequest request) throws Exception {
         storeService.updateStore(id, updateDto, image, requestDto, request);
         return ResponseEntity.ok("가게 정보 수정 완료");
+    }
+
+    @Operation(summary = "가게 캘린더 메모 체크 API")
+    @PutMapping("/memo")
+    public ResponseEntity<String> checkMemo(@Parameter(description = "메모 id")
+                                            @RequestParam(value = "id") Long id,
+                                            HttpServletRequest request) {
+        memoService.toggleMemo(id, request);
+        return ResponseEntity.ok("메모 수정 완료");
     }
 
     @Operation(summary = "가게 삭제 API")
@@ -120,10 +140,20 @@ public class StoreController {
     }
 
     @Operation(summary = "가게 스케줄 삭제 API")
-    @DeleteMapping("/schedules")
-    public ResponseEntity<String> deleteSchedule(@RequestParam(value = "id") Long id,
+    @DeleteMapping("/schedule")
+    public ResponseEntity<String> deleteSchedule(@Parameter(description = "스케줄 id")
+                                                 @RequestParam(value = "id") Long id,
                                                  HttpServletRequest request) {
         scheduleService.removeSchedule(id, request);
         return ResponseEntity.ok("스케줄 삭제 완료");
+    }
+
+    @Operation(summary = "가게 캘린더 메모 삭제 API")
+    @DeleteMapping("/memo")
+    public ResponseEntity<String> deleteMemo(@Parameter(description = "메모 id")
+                                             @RequestParam(value = "id") Long id,
+                                             HttpServletRequest request) {
+        memoService.removeMemo(id, request);
+        return ResponseEntity.ok("메모 삭제 완료");
     }
 }
