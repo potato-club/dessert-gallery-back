@@ -3,14 +3,12 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.entity.Calendar;
 import com.dessert.gallery.entity.Schedule;
-import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.ScheduleType;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.CalendarRepository;
 import com.dessert.gallery.repository.ScheduleRepository;
-import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.ScheduleService;
 import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
@@ -33,20 +31,13 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 public class ScheduleServiceImpl implements ScheduleService {
     private final CalendarRepository calendarRepository;
     private final ScheduleRepository scheduleRepository;
-    private final StoreRepository storeRepository;
     private final UserService userService;
 
     @Override
     public void addSchedule(ScheduleRequestDto requestDto, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        Store store = storeRepository.findByUser(user);
-        if (store == null) throw new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION);
+        Calendar calendar = calendarRepository.findByStore_User(user);
 
-        Calendar calendar = calendarRepository.findByStoreId(store.getId());
-        if (calendar == null) {
-            calendar = new Calendar(store);
-            calendarRepository.save(calendar);
-        }
         Schedule schedule = new Schedule(requestDto, calendar);
         Schedule saveSchedule = scheduleRepository.save(schedule);
         calendar.addSchedule(saveSchedule);
@@ -59,6 +50,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
         if (schedule.getCalendar().getStore().getUser() != user)
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+        schedule.removeSchedule();
         scheduleRepository.delete(schedule);
     }
 

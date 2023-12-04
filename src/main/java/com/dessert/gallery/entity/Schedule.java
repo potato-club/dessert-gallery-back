@@ -35,4 +35,8 @@ public class Schedule {
         this.type = ScheduleType.findWithKey(requestDto.getKey());
         this.calendar = calendar;
     }
+
+    public void removeSchedule() {
+        this.calendar.removeSchedule(this);
+    }
 }
