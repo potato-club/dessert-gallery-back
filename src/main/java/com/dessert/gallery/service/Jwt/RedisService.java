@@ -32,7 +32,7 @@ public class RedisService {
     public Map<String, String> getValues(String token){
         ValueOperations<String, Object> operations = redisTemplate.opsForValue();
         Object object = operations.get(token);
-        if (object != null && object instanceof Map) {
+        if (object instanceof Map) {
             return (Map<String, String>) object;
         }
         return null;
