@@ -34,7 +34,6 @@ public class FollowServiceImpl implements FollowService {
     private final StoreRepository storeRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-
     @Override
     public void addStoreFollowing(Long storeId, HttpServletRequest request) {
         String email = this.getUserEmail(request);
