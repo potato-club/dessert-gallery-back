@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
-    List<Schedule> findByCalendarAndDateTimeBetweenAndType(Calendar calendar, LocalDateTime start,
+    List<Schedule> findByCalendarAndDateTimeBetweenAndTypeIsNot(Calendar calendar, LocalDateTime start,
                                                            LocalDateTime end, ScheduleType type);
     List<Schedule> findByCalendarAndDateTimeBetween(Calendar calendar, LocalDateTime start, LocalDateTime end);
 }

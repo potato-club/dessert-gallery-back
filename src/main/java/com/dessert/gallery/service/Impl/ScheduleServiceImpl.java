@@ -57,7 +57,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public List<Schedule> getSchedules(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate) {
         return scheduleRepository.
-                findByCalendarAndDateTimeBetweenAndType(calendar, startDate, endDate, ScheduleType.HOLIDAY);
+                findByCalendarAndDateTimeBetweenAndTypeIsNot(calendar, startDate, endDate, ScheduleType.RESERVATION);
     }
 
     @Override
