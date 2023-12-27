@@ -41,6 +41,13 @@ public class NoticeBoardController {
         return noticeService.getNoticesByOwner(type, keyword, last, request);
     }
 
+    @Operation(summary = "공지 수정을 위한 기존 데이터 조회")
+    @GetMapping("/{noticeId}")
+    public NoticeRequestDto getNoticeBoardById(@PathVariable(name = "noticeId") Long noticeId,
+                                               HttpServletRequest request) {
+        return noticeService.getNoticeById(noticeId, request);
+    }
+
     @Operation(summary = "가게 공지글 작성")
     @PostMapping("/myStore")
     public ResponseEntity<String> createNoticeBoard(@RequestBody NoticeRequestDto requestDto,
