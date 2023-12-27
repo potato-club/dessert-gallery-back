@@ -21,7 +21,7 @@ public class NoticeListDto {
     @Schema(description = "메인 노출 여부")
     private boolean exposed;
     @Schema(description = "공지글 타입")
-    private NoticeType type;
+    private String type;
     @Schema(description = "작성 일자")
     private String createdDate;
 
@@ -30,7 +30,7 @@ public class NoticeListDto {
         this.title = notice.getTitle();
         this.content = notice.getContent();
         this.exposed = notice.isExposed();
-        this.type = notice.getType();
+        this.type = notice.getType().getType();
         this.createdDate = parsingDateTime(notice.getCreatedDate());
     }
     private String parsingDateTime(LocalDateTime dateTime) {

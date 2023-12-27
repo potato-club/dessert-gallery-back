@@ -1,5 +1,6 @@
 package com.dessert.gallery.dto.notice;
 
+import com.dessert.gallery.entity.NoticeBoard;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,11 @@ public class NoticeRequestDto {
     private boolean exposed;
     @Schema(description = "공지글 타입 (0 / 1), 0: 공지사항 / 1: 이벤트")
     private int typeKey;
+
+    public NoticeRequestDto(NoticeBoard notice) {
+        this.title = notice.getTitle();
+        this.content = notice.getContent();
+        this.exposed = notice.isExposed();
+        this.typeKey = notice.getType().getKey();
+    }
 }

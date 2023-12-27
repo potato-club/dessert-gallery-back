@@ -80,6 +80,19 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         return transType(query.fetch(), pageable);
     }
 
+    @Override
+    public NoticeRequestDto getNoticeById(Long noticeId, HttpServletRequest request) {
+        User owner = userService.findUserByToken(request);
+        NoticeBoard notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 공지", NOT_FOUND_EXCEPTION));
+
+        if (owner == null || owner != notice.getStore().getUser()) {
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+        }
+
+        return new NoticeRequestDto(notice);
+    }
+
     // List to Slice
     // NoticeBoard to Dto
     private Slice<NoticeListDto> transType(List<NoticeBoard> list, Pageable pageable) {
