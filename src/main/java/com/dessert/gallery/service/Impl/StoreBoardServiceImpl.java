@@ -1,6 +1,7 @@
 package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.board.BoardListResponseDto;
+import com.dessert.gallery.dto.board.BoardListResponseDtoForMap;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
@@ -9,6 +10,7 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.service.Interface.*;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @Transactional
 @RequiredArgsConstructor
 public class StoreBoardServiceImpl implements StoreBoardService {
+    private final JPAQueryFactory jpaQueryFactory;
     private final StoreBoardRepository boardRepository;
     private final StoreService storeService;
     private final UserService userService;
@@ -61,6 +64,16 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         List<StoreBoard> boards = boardRepository.findByStoreAndDeletedIsFalse(store);
         if (boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         return boards.stream().map(BoardListResponseDto::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BoardListResponseDtoForMap> getBoardsForMap(Store store) {
+        List<StoreBoard> boards = jpaQueryFactory.select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
+                .where(QStoreBoard.storeBoard.store.eq(store).and(QStoreBoard.storeBoard.deleted.isFalse()))
+                .orderBy(QStoreBoard.storeBoard.createdDate.desc())
+                .limit(4).fetch();
+
+        return boards.stream().map(BoardListResponseDtoForMap::new).collect(Collectors.toList());
     }
 
     @Override
