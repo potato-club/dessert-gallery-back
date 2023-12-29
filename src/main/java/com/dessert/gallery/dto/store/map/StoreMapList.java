@@ -8,6 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class StoreMapList {
 
+    @Schema(description = "가게 ID")
+    private Long storeId;
+
     @Schema(description = "가게 이름")
     private String storeName;
 
@@ -22,4 +25,13 @@ public class StoreMapList {
 
     @Schema(description = "경도")
     private double longitude;
+
+    @Schema(description = "가게 설명")
+    private String content;
+
+    @Schema(description = "썸네일 사진 이름")
+    private String fileName;
+
+    @Schema(description = "썸네일 사진 URL")
+    private String fileUrl;
 }

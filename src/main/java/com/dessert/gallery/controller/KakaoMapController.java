@@ -40,4 +40,10 @@ public class KakaoMapController {
     public List<StoreListInMap> getStoreListByTags(@ModelAttribute MapSearchRequest request) {
         return kakaoMapService.getStoreListByTags(request);
     }
+
+    @Operation(summary = "지도 내 선택 가게 상세정보 출력 API")
+    @GetMapping("/detail/{storeId}")
+    public StoreDetailInMap getStoreDetailForMap(@PathVariable Long storeId) {
+        return kakaoMapService.getStoreDetailForMap(storeId);
+    }
 }

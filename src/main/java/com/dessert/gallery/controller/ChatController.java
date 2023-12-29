@@ -39,15 +39,13 @@ public class ChatController {
     @Operation(summary = "내 채팅 내역 출력 API")
     @GetMapping("/mypage/room/{roomId}")
     public List<ChatMessageDto> getLastChatMessages(@PathVariable Long roomId, HttpServletRequest request) {
-        List<ChatMessageDto> chatMessages = chatService.getLastChatMessages(roomId, request);
-        return chatMessages;
+        return chatService.getLastChatMessages(roomId, request);
     }
 
     @Operation(summary = "내 채팅방 목록 출력 API")
     @GetMapping("/mypage/room")
     public List<ChatRoomDto> getMyChatRoomsList(@RequestParam int page, HttpServletRequest request) {
-        List<ChatRoomDto> chatRooms = chatService.getMyChatRoomsList(page, request);
-        return chatRooms;
+        return chatService.getMyChatRoomsList(page, request);
     }
 
     @Operation(summary = "채팅방 나가기 API")

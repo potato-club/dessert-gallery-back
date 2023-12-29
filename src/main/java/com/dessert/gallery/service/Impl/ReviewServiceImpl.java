@@ -9,6 +9,7 @@ import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.ReviewBoardRepository;
+import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 public class ReviewServiceImpl implements ReviewService {
     private final JPAQueryFactory jpaQueryFactory;
     private final ReviewBoardRepository reviewRepository;
-    private final StoreService storeService;
+    private final StoreRepository storeRepository;
     private final UserService userService;
     private final ImageService imageService;
 
@@ -46,7 +47,11 @@ public class ReviewServiceImpl implements ReviewService {
     public Page<ReviewListResponseDto> getStoreReviews(Long storeId, int page) {
         PageRequest request = PageRequest.of(page - 1, 4,
                 Sort.by(Sort.Direction.DESC, "createdDate"));
-        Store store = storeService.getStore(storeId);
+
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
+            throw new NotFoundException("검색된 가게가 없음", NOT_FOUND_EXCEPTION);
+        });
+
         Page<ReviewBoard> reviews = reviewRepository.findAllByStore(request, store);
 
         return reviews.map(ReviewListResponseDto::new);
@@ -84,14 +89,19 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void addReview(Long storeId, ReviewRequestDto requestDto,
                           List<MultipartFile> images, HttpServletRequest request) throws IOException {
-        Store store = storeService.getStore(storeId);
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
+            throw new NotFoundException("검색된 가게가 없음", NOT_FOUND_EXCEPTION);
+        });
+
         User user = userService.findUserByToken(request);
         ReviewBoard review = new ReviewBoard(requestDto, store, user);
         ReviewBoard saveReview = reviewRepository.save(review);
+
         if (images != null) {
             List<File> files = imageService.uploadImages(images, review);
             saveReview.updateImages(files);
         }
+
         addScore(store, requestDto.getScore());
     }
 
