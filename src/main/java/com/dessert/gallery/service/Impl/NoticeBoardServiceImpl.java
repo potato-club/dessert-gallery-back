@@ -10,8 +10,8 @@ import com.dessert.gallery.enums.NoticeType;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.NoticeBoardRepository;
+import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
-import com.dessert.gallery.service.Interface.StoreService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -36,15 +36,18 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @Transactional
 @RequiredArgsConstructor
 public class NoticeBoardServiceImpl implements NoticeBoardService {
+
     private final JPAQueryFactory jpaQueryFactory;
     private final NoticeBoardRepository noticeRepository;
-    private final StoreService storeService;
+    private final StoreRepository storeRepository;
     private final UserService userService;
 
     // 메인 노출되는 공지사항 리스트 출력
     @Override
     public List<NoticeListDto> getNoticesByStore(Long storeId) {
-        Store store = storeService.getStore(storeId);
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
+            throw new NotFoundException("검색된 가게가 없음", NOT_FOUND_EXCEPTION);
+        });
 
         List<NoticeBoard> notices = noticeRepository.findByStoreAndDeletedFalseAndExposedTrue(store);
         if (notices == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
@@ -72,9 +75,11 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     @Override
     public Slice<NoticeListDto> getNoticesByOwner(int typeKey, String keyword, Long last, HttpServletRequest request) {
         User owner = userService.findUserByToken(request);
-        Store store = storeService.getStoreByUser(owner);
+        Store store = storeRepository.findByUser(owner);
         NoticeType type = NoticeType.findWithKey(typeKey);
-        if (store == null) throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
+
+        if (store == null)
+            throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
         if (owner == null || owner != store.getUser())
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
 
@@ -82,9 +87,13 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 
         BooleanBuilder whereQuery = new BooleanBuilder();
         whereQuery.and(QNoticeBoard.noticeBoard.deleted.isFalse()); // 삭제 안된 공지
-        if (type != NoticeType.ALL) whereQuery.and(QNoticeBoard.noticeBoard.type.eq(type));
-        if (keyword != null) whereQuery.and(QNoticeBoard.noticeBoard.title.contains(keyword)); // 키워드 검색 조건
-        if (last != null) whereQuery.and(QNoticeBoard.noticeBoard.id.lt(last)); // no-offset 을 위한 마지막 id 값 확인
+
+        if (type != NoticeType.ALL)
+            whereQuery.and(QNoticeBoard.noticeBoard.type.eq(type));
+        if (keyword != null)
+            whereQuery.and(QNoticeBoard.noticeBoard.title.contains(keyword)); // 키워드 검색 조건
+        if (last != null)
+            whereQuery.and(QNoticeBoard.noticeBoard.id.lt(last)); // no-offset 을 위한 마지막 id 값 확인
 
         JPAQuery<NoticeBoard> query = jpaQueryFactory
                 .select(QNoticeBoard.noticeBoard).from(QNoticeBoard.noticeBoard)
@@ -125,10 +134,13 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     public void createNotice(NoticeRequestDto requestDto,
                              HttpServletRequest request) {
         User user = userService.findUserByToken(request);
-        if (user == null) throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
 
-        Store store = storeService.getStoreByUser(user);
-        if (store == null) throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
+        if (user == null)
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+
+        Store store = storeRepository.findByUser(user);
+        if (store == null)
+            throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
 
         NoticeBoard notice = new NoticeBoard(requestDto, store);
         noticeRepository.save(notice);
@@ -151,7 +163,8 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         NoticeBoard notice = noticeRepository.findByIdAndDeletedIsFalse(noticeId);
         User user = userService.findUserByToken(request);
 
-        if (notice == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        if (notice == null)
+            throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         if (notice.getStore().getUser() != user)
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
 

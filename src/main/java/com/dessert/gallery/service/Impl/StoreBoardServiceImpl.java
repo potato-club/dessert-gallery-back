@@ -9,6 +9,7 @@ import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
+import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ import static com.dessert.gallery.error.ErrorCode.*;
 public class StoreBoardServiceImpl implements StoreBoardService {
     private final JPAQueryFactory jpaQueryFactory;
     private final StoreBoardRepository boardRepository;
-    private final StoreService storeService;
+    private final StoreRepository storeRepository;
     private final UserService userService;
     private final BookmarkService bookmarkService;
     private final ImageService imageService;
@@ -43,7 +44,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         User user = userService.findUserByToken(request);
         if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
 
-        Store store = storeService.getStoreByUser(user);
+        Store store = storeRepository.findByUser(user);
         StoreBoard board = new StoreBoard(requestDto, store);
         StoreBoard saveBoard = boardRepository.save(board);
 
@@ -60,9 +61,13 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
     @Override
     public List<BoardListResponseDto> getBoardsByStore(Long storeId) {
-        Store store = storeService.getStore(storeId);
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
+            throw new NotFoundException("검색된 가게가 없음", NOT_FOUND_EXCEPTION);
+        });
+
         List<StoreBoard> boards = boardRepository.findByStoreAndDeletedIsFalse(store);
         if (boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+
         return boards.stream().map(BoardListResponseDto::new).collect(Collectors.toList());
     }
 

@@ -1,6 +1,7 @@
 package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.board.BoardListResponseDtoForMap;
+import com.dessert.gallery.dto.follow.FollowResponseDto;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.review.ReviewResponseDtoForMap;
 import com.dessert.gallery.dto.store.map.*;
@@ -10,10 +11,8 @@ import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreRepository;
-import com.dessert.gallery.service.Interface.KakaoMapService;
-import com.dessert.gallery.service.Interface.NoticeBoardService;
-import com.dessert.gallery.service.Interface.ReviewService;
-import com.dessert.gallery.service.Interface.StoreBoardService;
+import com.dessert.gallery.repository.SubscribeRepository;
+import com.dessert.gallery.service.Interface.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
@@ -28,6 +27,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -43,6 +43,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
     private final StoreBoardService boardService;
     private final NoticeBoardService noticeService;
     private final ReviewService reviewService;
+    private final SubscribeRepository subscribeRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")

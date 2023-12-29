@@ -16,22 +16,31 @@ import java.util.List;
 public class StoreDetailInMap {
     @Schema(description = "가게 id")
     private Long id;
+
     @Schema(description = "가게 이름")
     private String name;
+
     @Schema(description = "가게 정보")
     private String info;
+
     @Schema(description = "가게 소개")
     private String content;
+
     @Schema(description = "가게 주소")
     private String address;
+
     @Schema(description = "가게 전화번호")
     private String phoneNumber;
+
     @Schema(description = "가게 프로필 이미지")
     private FileDto storeImage;
+
     @Schema(description = "가게 최신 게시글 4개")
     private List<BoardListResponseDtoForMap> posts;
+
     @Schema(description = "가게 최신 리뷰 2개")
     private List<ReviewResponseDtoForMap> reviews;
+
     @Schema(description = "가게 최신 공지 2개")
     private List<NoticeListDto> notices;
 
