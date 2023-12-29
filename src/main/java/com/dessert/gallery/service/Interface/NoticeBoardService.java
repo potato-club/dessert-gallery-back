@@ -2,6 +2,7 @@ package com.dessert.gallery.service.Interface;
 
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
+import com.dessert.gallery.entity.Store;
 import org.springframework.data.domain.Slice;
 
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +10,7 @@ import java.util.List;
 
 public interface NoticeBoardService {
     List<NoticeListDto> getNoticesByStore(Long storeId);
+    List<NoticeListDto> getNoticesForMap(Store store);
     Slice<NoticeListDto> getNoticesByOwner(int type, String keyword, Long last, HttpServletRequest request);
     NoticeRequestDto getNoticeById(Long noticeId, HttpServletRequest request);
     void createNotice(NoticeRequestDto requestDto, HttpServletRequest request);

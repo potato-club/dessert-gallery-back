@@ -52,6 +52,21 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
     }
 
+    // Map 에서 보여줄 공지 2개
+    @Override
+    public List<NoticeListDto> getNoticesForMap(Store store) {
+        BooleanBuilder whereQuery = new BooleanBuilder();
+        whereQuery.and(QNoticeBoard.noticeBoard.deleted.isFalse()); // 삭제 안된 공지
+        whereQuery.and(QNoticeBoard.noticeBoard.exposed.isTrue()); // 노출 된 공지
+
+        List<NoticeBoard> notices = jpaQueryFactory.select(QNoticeBoard.noticeBoard).from(QNoticeBoard.noticeBoard)
+                .where(whereQuery.and(QNoticeBoard.noticeBoard.store.eq(store)))
+                .orderBy(QNoticeBoard.noticeBoard.createdDate.desc())
+                .limit(2).fetch();
+
+        return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
+    }
+
     // 사장님 마이페이지 공지사항 리스트 출력
     // no-offset 방식 무한스크롤
     @Override

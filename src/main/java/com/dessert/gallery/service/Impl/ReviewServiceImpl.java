@@ -4,14 +4,13 @@ import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.review.MyReviewListDto;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
-import com.dessert.gallery.entity.File;
-import com.dessert.gallery.entity.ReviewBoard;
-import com.dessert.gallery.entity.Store;
-import com.dessert.gallery.entity.User;
+import com.dessert.gallery.dto.review.ReviewResponseDtoForMap;
+import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.ReviewBoardRepository;
 import com.dessert.gallery.service.Interface.*;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +26,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
 import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -36,6 +36,7 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 @Transactional
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
+    private final JPAQueryFactory jpaQueryFactory;
     private final ReviewBoardRepository reviewRepository;
     private final StoreService storeService;
     private final UserService userService;
@@ -49,6 +50,16 @@ public class ReviewServiceImpl implements ReviewService {
         Page<ReviewBoard> reviews = reviewRepository.findAllByStore(request, store);
 
         return reviews.map(ReviewListResponseDto::new);
+    }
+
+    @Override
+    public List<ReviewResponseDtoForMap> getReviewsForMap(Store store) {
+        List<ReviewBoard> reviews = jpaQueryFactory.select(QReviewBoard.reviewBoard).from(QReviewBoard.reviewBoard)
+                .where(QReviewBoard.reviewBoard.store.eq(store))
+                .orderBy(QReviewBoard.reviewBoard.createdDate.desc())
+                .limit(2).fetch();
+
+        return reviews.stream().map(ReviewResponseDtoForMap::new).collect(Collectors.toList());
     }
 
     @Override

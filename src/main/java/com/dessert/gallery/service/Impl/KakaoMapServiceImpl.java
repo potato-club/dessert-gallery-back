@@ -1,15 +1,19 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.dto.store.map.MapSearchRequest;
-import com.dessert.gallery.dto.store.map.StoreCoordinate;
-import com.dessert.gallery.dto.store.map.StoreListInMap;
-import com.dessert.gallery.dto.store.map.StoreMapList;
+import com.dessert.gallery.dto.board.BoardListResponseDtoForMap;
+import com.dessert.gallery.dto.notice.NoticeListDto;
+import com.dessert.gallery.dto.review.ReviewResponseDtoForMap;
+import com.dessert.gallery.dto.store.map.*;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.SearchType;
 import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.KakaoMapService;
+import com.dessert.gallery.service.Interface.NoticeBoardService;
+import com.dessert.gallery.service.Interface.ReviewService;
+import com.dessert.gallery.service.Interface.StoreBoardService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
@@ -25,9 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 
 @Service
 @Slf4j
@@ -36,6 +40,9 @@ import java.util.List;
 public class KakaoMapServiceImpl implements KakaoMapService {
 
     private final StoreRepository storeRepository;
+    private final StoreBoardService boardService;
+    private final NoticeBoardService noticeService;
+    private final ReviewService reviewService;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -154,6 +161,18 @@ public class KakaoMapServiceImpl implements KakaoMapService {
                 .offset((request.getPage() - 1) * 15L)
                 .limit(15)
                 .fetch();
+    }
+
+    @Override
+    public StoreDetailInMap getStoreDetailForMap(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_EXCEPTION.getMessage(), NOT_FOUND_EXCEPTION));
+
+        List<BoardListResponseDtoForMap> boards = boardService.getBoardsForMap(store);
+        List<ReviewResponseDtoForMap> reviews = reviewService.getReviewsForMap(store);
+        List<NoticeListDto> notices = noticeService.getNoticesForMap(store);
+
+        return new StoreDetailInMap(store, boards, reviews, notices);
     }
 
     private BooleanBuilder existsFilterOption(MapSearchRequest request) {
