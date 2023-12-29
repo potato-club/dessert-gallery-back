@@ -8,6 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class StoreListInMap {
 
+    @Schema(description = "가게 ID")
+    private Long storeId;
+
     @Schema(description = "가게 이름")
     private String storeName;
 

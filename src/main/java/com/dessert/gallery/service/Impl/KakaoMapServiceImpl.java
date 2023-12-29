@@ -71,18 +71,24 @@ public class KakaoMapServiceImpl implements KakaoMapService {
     @Override
     public List<StoreMapList> getStoreListWithCoordinate(double lat, double lon, int radius) {
         QStore qStore = QStore.store;
+        QFile qFile = QFile.file;
 
         return jpaQueryFactory.select(
                         Projections.constructor(
                                 StoreMapList.class,
+                                qStore.id.as("storeId"),
                                 qStore.name.as("storeName"),
                                 qStore.address.as("storeAddress"),
                                 qStore.score.as("score"),
                                 qStore.latitude.as("latitude"),
-                                qStore.longitude.as("longitude")
+                                qStore.longitude.as("longitude"),
+                                qStore.content.as("content"),
+                                qFile.fileName.as("fileName"),
+                                qFile.fileUrl.as("fileUrl")
                         )
-        )
+                )
                 .from(qStore)
+                .leftJoin(qFile).on(qFile.store.eq(qStore))
                 .where(calculateDistance(lat, lon, radius))
                 .orderBy(QStore.store.score.desc())
                 .limit(15)
@@ -102,6 +108,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         return jpaQueryFactory.select(
                         Projections.constructor(
                                 StoreMapList.class,
+                                qStore.id.as("storeId"),
                                 qStore.name.as("storeName"),
                                 qStore.address.as("storeAddress"),
                                 qStore.score.as("score"),
@@ -127,6 +134,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         return jpaQueryFactory.select(
                         Projections.constructor(
                                 StoreListInMap.class,
+                                qStore.id.as("storeId"),
                                 qStore.name.as("storeName"),
                                 qStore.address.as("storeAddress"),
                                 qStore.content.as("content"),
