@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,21 +60,28 @@ public class CalendarServiceImpl implements CalendarService {
         User user = userService.findUserByToken(request);
         if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
         Calendar calendar = calendarRepository.findByStore_User(user);
+        LocalDate now = LocalDate.now();
+        LocalDateTime today = LocalDateTime.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth(), 0, 0);
+
         // 해당 월의 시작일 지정
         LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
 
         // 윤년 확인 + 해당 월의 마지막일 지정
         LocalDateTime endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.getMonth()
                 .length(startOfMonth.toLocalDate().isLeapYear()));
+        boolean isHoliday = scheduleService.getTodayIsHoliday(calendar, today);
         List<Schedule> scheduleList = scheduleService.getSchedulesForOwner(calendar, startOfMonth, endOfMonth);
         List<Memo> memoList = memoService.getMemoList(calendar, startOfMonth, endOfMonth);
 
-        return toOwnerCalendarDto(toCalendarDto(year, month, scheduleList), memoList);
+        return toOwnerCalendarDto(toCalendarDto(year, month, scheduleList), memoList, isHoliday);
     }
 
-    private CalendarOwnerResponseDto toOwnerCalendarDto(CalendarResponseDto responseDto, List<Memo> memoList) {
+    private CalendarOwnerResponseDto toOwnerCalendarDto(CalendarResponseDto responseDto,
+                                                        List<Memo> memoList,
+                                                        boolean isHoliday) {
         return new CalendarOwnerResponseDto(responseDto,
-                memoList.stream().map(MemoResponseDto::new).collect(Collectors.toList()));
+                memoList.stream().map(MemoResponseDto::new).collect(Collectors.toList()),
+                isHoliday);
     }
 
     private CalendarResponseDto toCalendarDto(int year, int month, List<Schedule> scheduleList) {

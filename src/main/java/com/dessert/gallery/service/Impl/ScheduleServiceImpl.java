@@ -65,4 +65,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         return scheduleRepository.
                 findByCalendarAndDateTimeBetween(calendar, startDate, endDate);
     }
+
+    @Override
+    public boolean getTodayIsHoliday(Calendar calendar, LocalDateTime today) {
+        return scheduleRepository.existsByCalendarAndDateTimeAndType(calendar, today, ScheduleType.HOLIDAY);
+    }
 }

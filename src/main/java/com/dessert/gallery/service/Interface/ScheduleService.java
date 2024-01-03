@@ -14,4 +14,5 @@ public interface ScheduleService {
     void removeSchedule(Long scheduleId, HttpServletRequest request);
     List<Schedule> getSchedules(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate);
     List<Schedule> getSchedulesForOwner(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate);
+    boolean getTodayIsHoliday(Calendar calendar, LocalDateTime today);
 }
