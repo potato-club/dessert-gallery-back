@@ -40,17 +40,6 @@ public class StoreServiceImpl implements StoreService {
     private final ImageService imageService;
 
     @Override
-    public Store getStore(Long id) {
-        return storeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
-    }
-
-    @Override
-    public Store getStoreByUser(User user) {
-        return storeRepository.findByUser(user);
-    }
-
-    @Override
     public StoreOwnerResponseDto getStoreDtoByUser(HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
@@ -66,12 +55,14 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public StoreResponseDto getStoreDto(Long id, HttpServletRequest request) {
-        Store store = getStore(id);
+        Store store = storeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
+        User user = userService.findUserByToken(request);
+
         int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
         int followerCount = Math.toIntExact(subscribeRepository.countAllByStoreAndDeletedIsFalse(store));
 
         StoreResponseDto responseDto = new StoreResponseDto(store, postCount, followerCount);
-        User user = userService.findUserByToken(request);
         if (user != null) {
             boolean isOwner = store.checkOwner(user);
             boolean followState = subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(store, user);

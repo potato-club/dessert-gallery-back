@@ -13,5 +13,8 @@ import java.util.List;
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findByCalendarAndDateTimeBetweenAndTypeIsNot(Calendar calendar, LocalDateTime start,
                                                            LocalDateTime end, ScheduleType type);
+
     List<Schedule> findByCalendarAndDateTimeBetween(Calendar calendar, LocalDateTime start, LocalDateTime end);
+
+    boolean existsByCalendarAndDateTimeAndType(Calendar calendar, LocalDateTime dateTime, ScheduleType type);
 }
