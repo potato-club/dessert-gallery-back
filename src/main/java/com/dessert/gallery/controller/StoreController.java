@@ -4,6 +4,8 @@ import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.memo.MemoRequestDto;
+import com.dessert.gallery.dto.schedule.ReservationRequestDto;
+import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -63,6 +66,26 @@ public class StoreController {
         return calendarService.getOwnerCalendar(year, month, request);
     }
 
+    @Operation(summary = "가게 캘린더 세부 스케줄 조회 API - 사장님 마이페이지")
+    @GetMapping("/schedule")
+    public ScheduleDetailResponseDto getDetailSchedule(
+            @RequestParam(value = "year") int year,
+            @RequestParam(value = "month") int month,
+            @RequestParam(value = "day") int day,
+            HttpServletRequest request) {
+        return scheduleService.getDetailScheduleByDate(year, month, day, request);
+    }
+
+    @Operation(summary = "가게 휴무일 여부 조회 API - 사장님 마이페이지")
+    @GetMapping("/closed")
+    public boolean storeIsClosed(HttpServletRequest request) {
+        LocalDate now = LocalDate.now();
+        LocalDateTime today = LocalDateTime.of(now.getYear(),
+                now.getMonthValue(), now.getDayOfMonth(), 0, 0);
+
+        return scheduleService.getTodayIsHoliday(request, today);
+    }
+
     @Operation(summary = "가게 캘린더 조회 API - 회원")
     @GetMapping("/{storeId}/calendar")
     public CalendarResponseDto getCalendar(
@@ -90,12 +113,20 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body("가게 생성 완료");
     }
 
-    @Operation(summary = "가게 캘린더 스케줄 등록 API")
+    @Operation(summary = "가게 캘린더 스케줄 (휴무일 / 이벤트) 등록 API")
     @PostMapping(value = "/schedule")
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequestDto requestDto,
                                                  HttpServletRequest request) {
         scheduleService.addSchedule(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("스케줄 등록 완료");
+    }
+
+    @Operation(summary = "가게 픽업 예약 API")
+    @PostMapping(value = "/reservation")
+    public ResponseEntity<String> createReservation(@RequestBody ReservationRequestDto requestDto,
+                                                 HttpServletRequest request) {
+        scheduleService.addReservation(requestDto, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("픽업 예약 완료");
     }
 
     @Operation(summary = "가게 캘린더 메모 작성 API")

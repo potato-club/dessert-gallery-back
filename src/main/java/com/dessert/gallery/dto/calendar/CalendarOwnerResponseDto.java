@@ -23,16 +23,11 @@ public class CalendarOwnerResponseDto {
     @Schema(description = "연월에 해당하는 메모 리스트")
     private List<MemoResponseDto> memoList;
 
-    @Schema(description = "금일 가게 휴무 여부")
-    private boolean holiday;
-
     public CalendarOwnerResponseDto(CalendarResponseDto responseDto,
-                                    List<MemoResponseDto> memoList,
-                                    boolean holiday) {
+                                    List<MemoResponseDto> memoList) {
         this.year = responseDto.getYear();
         this.month = responseDto.getMonth();
         this.scheduleList = responseDto.getScheduleList();
         this.memoList = memoList.isEmpty() ? null : memoList;
-        this.holiday = holiday;
     }
 }
