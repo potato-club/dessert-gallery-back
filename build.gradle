@@ -44,6 +44,8 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
 	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.2'
+	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.2'
 	implementation 'io.lettuce:lettuce-core:6.2.3.RELEASE'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
