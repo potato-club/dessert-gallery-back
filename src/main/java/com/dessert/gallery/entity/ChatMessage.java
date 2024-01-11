@@ -24,6 +24,9 @@ public class ChatMessage {
     private ChatRoom chatRoom;
 
     @Column
+    private String sender;
+
+    @Column
     private String message;
 
     @Column
