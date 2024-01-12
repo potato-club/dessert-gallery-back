@@ -34,7 +34,7 @@ public class ErrorExceptionControllerAdvice {
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorEntity.builder()
                         .errorCode(e.getErrorCode().getCode())
-                        .errorMessage(e.getErrorCode().getMessage())
+                        .errorMessage(e.getMessage())
                         .build());
     }
 
@@ -44,7 +44,7 @@ public class ErrorExceptionControllerAdvice {
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorEntity.builder()
                         .errorCode(e.getErrorCode().getCode())
-                        .errorMessage(e.getErrorCode().getMessage())
+                        .errorMessage(e.getMessage())
                         .build());
     }
 
@@ -54,7 +54,7 @@ public class ErrorExceptionControllerAdvice {
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorEntity.builder()
                         .errorCode(e.getErrorCode().getCode())
-                        .errorMessage(e.getErrorCode().getMessage())
+                        .errorMessage(e.getMessage())
                         .build());
     }
 
@@ -64,7 +64,7 @@ public class ErrorExceptionControllerAdvice {
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorEntity.builder()
                         .errorCode(e.getErrorCode().getCode())
-                        .errorMessage(e.getErrorCode().getMessage())
+                        .errorMessage(e.getMessage())
                         .build());
     }
 
@@ -126,7 +126,7 @@ public class ErrorExceptionControllerAdvice {
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorEntity.builder()
                         .errorCode(e.getErrorCode().getCode())
-                        .errorMessage(e.getErrorCode().getMessage())
+                        .errorMessage(e.getMessage())
                         .build());
     }
 }

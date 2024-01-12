@@ -1,5 +1,6 @@
 package com.dessert.gallery.entity;
 
+import com.dessert.gallery.dto.schedule.ReservationRequestDto;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.enums.ScheduleType;
 import lombok.Getter;
@@ -29,10 +30,20 @@ public class Schedule {
     @Enumerated(value = EnumType.STRING)
     private ScheduleType type;
 
+    @Column
+    private String client;
+
     public Schedule(ScheduleRequestDto requestDto, Calendar calendar) {
         this.dateTime = LocalDate.parse(requestDto.getDate(),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay();
         this.type = ScheduleType.findWithKey(requestDto.getKey());
+        this.calendar = calendar;
+    }
+
+    public Schedule(ReservationRequestDto requestDto, Calendar calendar) {
+        this.dateTime = requestDto.getDateTime();
+        this.type = ScheduleType.RESERVATION;
+        this.client = requestDto.getClient();
         this.calendar = calendar;
     }
 
