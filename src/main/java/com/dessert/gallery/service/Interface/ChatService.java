@@ -11,7 +11,7 @@ public interface ChatService {
 
     Long createRoom(RoomCreateDto roomCreateDto, HttpServletRequest request);
 
-    void saveChatMessage(ChatMessageDto chatMessage);
+    void saveChatMessage(Long id, ChatMessageDto chatMessage);
 
     List<ChatMessageDto> getLastChatMessages(Long chatRoomId, HttpServletRequest request);
 

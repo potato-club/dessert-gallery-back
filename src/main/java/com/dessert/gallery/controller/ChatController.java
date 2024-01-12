@@ -3,12 +3,15 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.ChatRoomDto;
 import com.dessert.gallery.dto.chat.RoomCreateDto;
+import com.dessert.gallery.entity.ChatMessage;
 import com.dessert.gallery.service.Interface.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,10 +33,10 @@ public class ChatController {
     }
 
     @Operation(summary = "실시간 채팅 저장 API")
-    @MessageMapping("/pub/chat")
-    public void send(@RequestBody ChatMessageDto chatMessage) {
-        chatService.saveChatMessage(chatMessage);
-        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getId(), chatMessage);
+    @MessageMapping("/pub/{id}")
+    public void send(ChatMessageDto chatMessage) {
+        chatService.saveChatMessage(chatMessage.getId(), chatMessage);
+        messagingTemplate.convertAndSend("/sub/" + chatMessage.getId(), chatMessage);
     }
 
     @Operation(summary = "내 채팅 내역 출력 API")

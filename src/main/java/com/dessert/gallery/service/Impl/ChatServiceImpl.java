@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.chat.ChatRoomDto;
 import com.dessert.gallery.dto.chat.RoomCreateDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.*;
@@ -56,8 +57,12 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void saveChatMessage(ChatMessageDto chatMessage) {
-        chatMessage.setTimestamp(LocalDateTime.now());
+    public void saveChatMessage(Long id, ChatMessageDto chatMessage) {
+        ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow(() -> {
+            throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
+        });
+
+        chatMessage.setChatRoom(chatRoom);
         chatMessageRepository.save(chatMessage.toEntity());
     }
 
@@ -126,7 +131,6 @@ public class ChatServiceImpl implements ChatService {
         chatMessageRepository.deleteByChatRoomId(chatRoom.getId());
         chatRoomRepository.delete(chatRoom);
     }
-
 
     @Override
     @Scheduled(cron = "0 0 0 * * ?")
