@@ -48,7 +48,8 @@ public class ReviewController {
     }
 
     @Operation(summary = "가게에 대한 리뷰 등록")
-    @PostMapping(value = "/stores/{storeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/stores/{storeId}",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> addReview(@PathVariable(name = "storeId") Long storeId,
                                             @Parameter(description = "리뷰 정보 - ReviewRequestDto", content =
                                                 @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
@@ -62,7 +63,8 @@ public class ReviewController {
     }
 
     @Operation(summary = "리뷰 수정")
-    @PutMapping(value = "/{reviewId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{reviewId}",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateReview(@PathVariable(name = "reviewId") Long reviewId,
                                                @Parameter(description = "리뷰 정보 - ReviewRequestDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))

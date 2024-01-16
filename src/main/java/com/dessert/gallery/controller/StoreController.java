@@ -101,7 +101,8 @@ public class StoreController {
     }
 
     @Operation(summary = "가게 생성 API")
-    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> createStore(@Parameter(description = "가게 정보 - StoreRequestDto", content =
     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                               @RequestPart StoreRequestDto requestDto,
@@ -124,7 +125,7 @@ public class StoreController {
     @Operation(summary = "가게 픽업 예약 API")
     @PostMapping(value = "/reservation")
     public ResponseEntity<String> createReservation(@RequestBody ReservationRequestDto requestDto,
-                                                 HttpServletRequest request) {
+                                                    HttpServletRequest request) {
         scheduleService.addReservation(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("픽업 예약 완료");
     }
@@ -138,7 +139,8 @@ public class StoreController {
     }
 
     @Operation(summary = "가게 정보 수정 API")
-    @PutMapping(value = "/{storeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{storeId}",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
                                               @Parameter(description = "가게 정보 - StoreRequestDto", content =
                                               @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
