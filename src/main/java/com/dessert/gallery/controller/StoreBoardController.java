@@ -45,8 +45,11 @@ public class StoreBoardController {
         return ResponseEntity.ok(boards);
     }
 
+//    @Operation(summary = "채팅창 게시글 리스트 출력 API")
+
+
     @Operation(summary = "가게 게시글 작성")
-    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> createStoreBoard(@Parameter(description = "게시글 정보 - BoardRequestDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                         @Validated
@@ -68,7 +71,7 @@ public class StoreBoardController {
     }
 
     @Operation(summary = "가게 게시글 수정")
-    @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
                                                    @Parameter(description = "게시글 정보 - BoardRequestDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
