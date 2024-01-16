@@ -1,5 +1,6 @@
 package com.dessert.gallery.dto.chat;
 
+import com.dessert.gallery.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,4 +20,7 @@ public class ChatRoomDto {
 
     @Schema(description = "썸네일 메시지")
     private String thumbnailMessage;
+
+    @Schema(description = "메시지 타입")
+    private MessageType messageType;
 }

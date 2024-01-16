@@ -1,5 +1,6 @@
 package com.dessert.gallery.entity;
 
+import com.dessert.gallery.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,10 @@ public class ChatMessage {
 
     @Column
     private String message;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MessageType messageType;
 
     @Column
     private LocalDateTime timestamp;
