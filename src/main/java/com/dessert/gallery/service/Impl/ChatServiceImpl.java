@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,6 +91,7 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatRoomDto> getMyChatRoomsList(int page, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
         Optional<User> user = userRepository.findByEmail(email);
+
         QChatRoom qChatRoom = QChatRoom.chatRoom;
         QChatMessage qChatMessage = QChatMessage.chatMessage;
 
@@ -99,7 +102,8 @@ public class ChatServiceImpl implements ChatService {
                                 qChatRoom.id.as("roomId"),
                                 qChatRoom.store.name.as("storeName"),
                                 qChatRoom.customer.nickname.as("customerName"),
-                                qChatMessage.message.as("thumbnailMessage")
+                                qChatMessage.message.as("thumbnailMessage"),
+                                qChatMessage.messageType.as("messageType")
                         )
                 )
                 .from(qChatRoom)
@@ -117,7 +121,7 @@ public class ChatServiceImpl implements ChatService {
     public void deleteRoom(Long roomId, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
         Optional<User> user = userRepository.findByEmail(email);
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
@@ -136,6 +140,9 @@ public class ChatServiceImpl implements ChatService {
     @Scheduled(cron = "0 0 0 * * ?")
     public void deleteExpiredChatMessages() {
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        ZoneId zoneId = ZoneId.of("Asia/Seoul");
+        long milliseconds = oneMonthAgo.atZone(zoneId).toInstant().toEpochMilli();
+
         chatMessageRepository.deleteByTimestampBefore(oneMonthAgo);
     }
 }
