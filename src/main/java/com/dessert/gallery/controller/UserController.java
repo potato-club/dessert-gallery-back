@@ -7,6 +7,7 @@ import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
+import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,7 @@ public class UserController {
 
     private final UserService userService;
     private final BookmarkService bookmarkService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "카카오 로그인 API")
     @GetMapping("/login/kakao")
@@ -92,5 +94,11 @@ public class UserController {
     public ResponseEntity<String> reissueToken(HttpServletRequest request, HttpServletResponse response) {
         userService.reissueToken(request, response);
         return ResponseEntity.ok("토큰 재발급이 완료되었습니다");
+    }
+
+    @GetMapping("/check")
+    public boolean validateToken(HttpServletRequest request) {
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        return jwtTokenProvider.validateToken(accessToken);
     }
 }
