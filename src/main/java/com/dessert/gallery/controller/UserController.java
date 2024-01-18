@@ -97,8 +97,7 @@ public class UserController {
     }
 
     @GetMapping("/check")
-    public boolean validateToken(HttpServletRequest request) {
-        String accessToken = jwtTokenProvider.resolveAccessToken(request);
-        return jwtTokenProvider.validateToken(accessToken);
+    public ResponseEntity<String> validateToken() {
+        return ResponseEntity.ok("Accessed Token");
     }
 }
