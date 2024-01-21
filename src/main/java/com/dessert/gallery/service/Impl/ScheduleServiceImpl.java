@@ -114,7 +114,8 @@ public class ScheduleServiceImpl implements ScheduleService {
         Calendar calendar = calendarRepository.findByStore_User(owner);
 
         LocalDateTime startOfDay = LocalDateTime.of(year, month, day, 0, 0);
-        LocalDateTime endOfDay = startOfDay.with(LocalTime.MAX);
+        LocalDateTime endOfDay = LocalDateTime.of(LocalDate.of(year, month, day),
+                LocalTime.of(23, 59, 59));
 
         List<Schedule> scheduleList = scheduleRepository
                 .findByCalendarAndDateTimeBetween(calendar, startOfDay, endOfDay);
