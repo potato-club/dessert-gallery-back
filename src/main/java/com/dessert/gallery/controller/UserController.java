@@ -84,18 +84,21 @@ public class UserController {
         return ResponseEntity.ok("로그아웃 되었습니다");
     }
 
+    @Operation(summary = "회원탈퇴 API")
     @PutMapping("/withdrawal")
     public ResponseEntity<String> withdrawalMembership(HttpServletRequest request) {
         userService.withdrawalMembership(request);
         return ResponseEntity.ok("회원탈퇴 처리 되었습니다");
     }
 
+    @Operation(summary = "토큰 재발급 API")
     @GetMapping("/reissue")
     public ResponseEntity<String> reissueToken(HttpServletRequest request, HttpServletResponse response) {
         userService.reissueToken(request, response);
         return ResponseEntity.ok("토큰 재발급이 완료되었습니다");
     }
 
+    @Operation(summary = "토큰 상태 확인 API")
     @GetMapping("/check")
     public ResponseEntity<String> validateToken() {
         return ResponseEntity.ok("Accessed Token");
