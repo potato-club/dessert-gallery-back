@@ -1,6 +1,5 @@
 package com.dessert.gallery.service.Interface;
 
-import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.review.MyReviewListDto;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
@@ -20,6 +19,6 @@ public interface ReviewService {
     Slice<MyReviewListDto> getReviewListByUser(int page, int month, HttpServletRequest request);
     void addReview(Long storeId, ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void updateReview(Long reviewId, ReviewRequestDto updateDto,
-                      List<MultipartFile> images, List<FileRequestDto> requestDto, HttpServletRequest request) throws IOException;
+                      List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void removeReview(Long reviewId, HttpServletRequest request);
 }

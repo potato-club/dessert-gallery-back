@@ -47,7 +47,7 @@ public class StoreServiceImpl implements StoreService {
         Store store = storeRepository.findByUser(user);
         if (store == null) throw new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION);
 
-        int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
+        int postCount = Math.toIntExact(boardRepository.countAllByStoreAndDeletedIsFalse(store));
         int reviewCount = Math.toIntExact(reviewRepository.countByStore(store));
 
         return new StoreOwnerResponseDto(store, postCount, reviewCount);
@@ -59,7 +59,7 @@ public class StoreServiceImpl implements StoreService {
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 가게입니다", NOT_FOUND_EXCEPTION));
         User user = userService.findUserByToken(request);
 
-        int postCount = Math.toIntExact(boardRepository.countAllByStore(store));
+        int postCount = Math.toIntExact(boardRepository.countAllByStoreAndDeletedIsFalse(store));
         int followerCount = Math.toIntExact(subscribeRepository.countAllByStoreAndDeletedIsFalse(store));
 
         StoreResponseDto responseDto = new StoreResponseDto(store, postCount, followerCount);
@@ -97,8 +97,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public void updateStore(Long id, StoreRequestDto updateDto,
-                            MultipartFile file, FileRequestDto requestDto,
-                            HttpServletRequest request) throws Exception {
+                            MultipartFile file, HttpServletRequest request) throws Exception {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();
 
@@ -110,31 +109,32 @@ public class StoreServiceImpl implements StoreService {
         }
         store.updateStore(updateDto);
 
-        List<MultipartFile> files = new ArrayList<>();
-        List<FileRequestDto> requestDtoList = new ArrayList<>();
-        List<File> resultImages;
+        List<MultipartFile> images = new ArrayList<>();
+        List<FileRequestDto> originImages = new ArrayList<>();
+        File originImage = store.getImage();
 
-        if (file != null) { // 바꿀 사진 존재
-            files.add(file);
-
-            if (requestDto == null) { // 원본 없음 => 단순 사진 업로드
-                resultImages = imageService.uploadImages(files, store);
-                store.setImage(resultImages.get(0));
-            }
-            if (requestDto != null) { // 원본 있음 => 사진 업데이트
-                requestDtoList.add(requestDto);
-                resultImages = imageService.updateImages(store, files, requestDtoList);
-                store.setImage(resultImages.get(0));
-            }
+        // 기존 이미지가 없으면서 새로운 이미지 추가
+        if (originImage == null && file != null) {
+            images.add(file);
+            List<File> files = imageService.uploadImages(images, store);
+            store.setImage(files.get(0));
         }
-        if (file == null) { // 바꿀 사진 없음
-            if (requestDto != null) { // 원본 있음 -> 삭제 요청
-                requestDtoList.add(requestDto);
 
-                List<File> newFile = imageService.updateImages(store, files, requestDtoList);
+        // 기존 이미지가 있는 경우 업데이트
+        if (originImage != null) {
+            originImages.add(new FileRequestDto(originImage));
 
-                if (newFile.size() != 0) store.setImage(newFile.get(0));
-                else store.setImage(null);
+            // 새로운 이미지 없음 -> 삭제 처리
+            if (file == null) {
+                imageService.updateImages(store, images, originImages);
+                store.setImage(null);
+            }
+
+            // 새로운 이미지 있음 -> 업데이트
+            else {
+                images.add(file);
+                List<File> files = imageService.updateImages(store, images, originImages);
+                store.setImage(files.get(0));
             }
         }
     }

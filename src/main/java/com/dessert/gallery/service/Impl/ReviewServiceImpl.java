@@ -20,12 +20,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -107,27 +107,31 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public void updateReview(Long reviewId, ReviewRequestDto updateDto,
-                             List<MultipartFile> images,
-                             List<FileRequestDto> requestDto,
-                             HttpServletRequest request) throws IOException {
+                             List<MultipartFile> images, HttpServletRequest request) throws IOException {
         ReviewBoard review = validateReview(reviewId, request);
         double scoreGap = review.getScore() - updateDto.getScore();
         review.updateReview(updateDto);
         updateScore(review.getStore(), scoreGap);
 
-        // images == null 이면 빈 배열 생성
-        if (images == null) images = new ArrayList<>();
-        List<File> fileList;
+        // 기존 이미지 삭제 처리를 위함
+        List<FileRequestDto> originImages = review.getImages().stream()
+                .map(FileRequestDto::new)
+                .collect(Collectors.toList());
 
-        // requestDto 가 null 이고 images 가 있다면 이미지 업로드와 같음
-        if (requestDto == null && images.size() != 0) {
-            fileList = imageService.uploadImages(images, review);
-        } else {
-            fileList = imageService.updateImages(review, images, requestDto);
-        }
+        // 리뷰 이미지 삭제 처리
         review.imageClear();
-        review.updateImages(fileList);
 
+        // 기존 이미지 없고 업로드할 이미지 있는 경우
+        if (CollectionUtils.isEmpty(originImages) && !CollectionUtils.isEmpty(images)) {
+            List<File> files = imageService.uploadImages(images, review);
+            review.updateImages(files);
+        }
+
+        // 기존 이미지 있는 경우 => 업데이트 진행
+        if (!CollectionUtils.isEmpty(originImages)) {
+            List<File> files = imageService.updateImages(review, images, originImages);
+            review.updateImages(files);
+        }
     }
 
     @Override

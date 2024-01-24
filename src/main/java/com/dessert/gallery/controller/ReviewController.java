@@ -1,6 +1,5 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.review.MyReviewListDto;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
@@ -69,14 +68,11 @@ public class ReviewController {
                                                @Parameter(description = "리뷰 정보 - ReviewRequestDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                         @RequestPart ReviewRequestDto updateDto,
-                                               @Parameter(description = "추가할 이미지 리스트", content =
+                                               @Parameter(description = "업로드 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                         @RequestPart(required = false) List<MultipartFile> images,
-                                               @Parameter(description = "원본 이미지 추가 / 삭제 여부", content =
-                                                    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                        @RequestPart(required = false) List<FileRequestDto> requestDto,
                                                HttpServletRequest request) throws IOException {
-        reviewService.updateReview(reviewId, updateDto, images, requestDto, request);
+        reviewService.updateReview(reviewId, updateDto, images, request);
         return ResponseEntity.ok("수정 완료");
     }
 

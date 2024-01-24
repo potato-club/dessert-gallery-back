@@ -2,7 +2,6 @@ package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
-import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.memo.MemoRequestDto;
 import com.dessert.gallery.dto.schedule.ReservationRequestDto;
 import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
@@ -148,11 +147,8 @@ public class StoreController {
                                               @Parameter(description = "추가할 이미지", content =
                                               @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                               @RequestPart(required = false) MultipartFile image,
-                                              @Parameter(description = "원본 이미지 추가 / 삭제 여부", content =
-                                              @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                              @RequestPart(required = false) FileRequestDto requestDto,
                                               HttpServletRequest request) throws Exception {
-        storeService.updateStore(id, updateDto, image, requestDto, request);
+        storeService.updateStore(id, updateDto, image, request);
         return ResponseEntity.ok("가게 정보 수정 완료");
     }
 
