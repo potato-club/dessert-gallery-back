@@ -1,5 +1,6 @@
 package com.dessert.gallery.dto.file;
 
+import com.dessert.gallery.entity.File;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,4 +19,10 @@ public class FileRequestDto {
 
     @Schema(description = "파일 삭제/교체 여부")
     private boolean deleted;
+
+    public FileRequestDto(File file) {
+        this.fileName = file.getFileName();
+        this.fileUrl = file.getFileUrl();
+        this.deleted = true;
+    }
 }

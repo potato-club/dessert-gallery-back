@@ -3,7 +3,6 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
-import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,9 +40,10 @@ public class StoreBoardController {
 
     @Operation(summary = "가게의 모든 게시글 조회")
     @GetMapping("/stores/{storeId}")
-    public ResponseEntity<List<BoardListResponseDto>> getBoardListByStore(@PathVariable(name = "storeId") Long storeId) {
-        List<BoardListResponseDto> boards = boardService.getBoardsByStore(storeId);
-        return ResponseEntity.ok(boards);
+    public Slice<BoardListResponseDto> getBoardListByStore(@PathVariable(name = "storeId") Long storeId,
+                                                           @Parameter(name = "last", description = "이전 조회된 공지의 마지막 id값")
+                                                           @RequestParam(value = "last", required = false) Long last) {
+        return boardService.getBoardsByStore(storeId, last);
     }
 
 //    @Operation(summary = "채팅창 게시글 리스트 출력 API")
@@ -77,14 +78,11 @@ public class StoreBoardController {
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                         @Validated
                                                             @RequestPart(name = "updateDto") BoardRequestDto updateDto,
-                                                   @Parameter(description = "추가할 이미지 리스트", content =
+                                                   @Parameter(description = "업로드 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                         @RequestPart(required = false) List<MultipartFile> images,
-                                                   @Parameter(description = "원본 이미지 추가 / 삭제 여부", content =
-                                                    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                        @RequestPart(required = false) List<FileRequestDto> requestDto,
                                                    HttpServletRequest request) throws IOException {
-        boardService.updateBoard(boardId, updateDto, images, requestDto, request);
+        boardService.updateBoard(boardId, updateDto, images, request);
         return ResponseEntity.ok("게시글 수정 완료");
     }
 

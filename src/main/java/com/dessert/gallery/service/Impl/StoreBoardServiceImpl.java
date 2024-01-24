@@ -11,16 +11,21 @@ import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,15 +65,35 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public List<BoardListResponseDto> getBoardsByStore(Long storeId) {
+    public Slice<BoardListResponseDto> getBoardsByStore(Long storeId, Long last) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
             throw new NotFoundException("검색된 가게가 없음", NOT_FOUND_EXCEPTION);
         });
 
-        List<StoreBoard> boards = boardRepository.findByStoreAndDeletedIsFalse(store);
-        if (boards == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
+        Pageable pageable = PageRequest.ofSize(15);
 
-        return boards.stream().map(BoardListResponseDto::new).collect(Collectors.toList());
+        BooleanBuilder whereQuery = new BooleanBuilder();
+        whereQuery.and(QStoreBoard.storeBoard.deleted.isFalse());
+
+        if (last != null) {
+            whereQuery.and(QStoreBoard.storeBoard.id.lt(last));
+        }
+
+        List<StoreBoard> list = jpaQueryFactory
+                .select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
+                .where(whereQuery.and(QStoreBoard.storeBoard.store.eq(store)))
+                .orderBy(QStoreBoard.storeBoard.createdDate.desc())
+                .limit(pageable.getPageSize() + 1).fetch();
+
+        boolean hasNext = false;
+
+        if (list.size() > pageable.getPageSize()) {
+            hasNext = true;
+            list.remove(pageable.getPageSize());
+        }
+
+        Slice<StoreBoard> sliceList = new SliceImpl<>(list, pageable, hasNext);
+        return sliceList.map(BoardListResponseDto::new);
     }
 
     @Override
@@ -97,23 +122,30 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public void updateBoard(Long boardId, BoardRequestDto updateDto, List<MultipartFile> images,
-                            List<FileRequestDto> requestDto, HttpServletRequest request) throws IOException {
+    public void updateBoard(Long boardId, BoardRequestDto updateDto,
+                            List<MultipartFile> images, HttpServletRequest request) throws IOException {
         StoreBoard board = validateBoard(boardId, request);
         board.updateBoard(updateDto);
 
-        // images 가 null 이면 빈 배열 생성
-        if (images == null) images = new ArrayList<>();
+        // 기존 저장된 파일 전체 삭제처리를 위해 변경
+        List<FileRequestDto> originImages = board.getImages().stream()
+                .map(FileRequestDto::new)
+                .collect(Collectors.toList());
 
-        List<File> files;
-        // requestDto 가 null 이고 images 가 있다면 이미지 업로드와 같음
-        if (requestDto == null && images.size() != 0) {
-            files = imageService.uploadImages(images, board);
-        } else {
-            files = imageService.updateImages(board, images, requestDto);
-        }
+        // 게시글의 이미지 일괄 삭제 처리
         board.imageClear();
-        board.updateImages(files);
+
+        // 기존 이미지 없고 새로운 이미지만 있음
+        if (CollectionUtils.isEmpty(originImages) && !CollectionUtils.isEmpty(images)) {
+            List<File> files = imageService.uploadImages(images, board);
+            board.updateImages(files);
+        }
+
+        // 기존 이미지 존재 => images 여부 상관없이 update 진행
+        if (!CollectionUtils.isEmpty(originImages)) {
+            List<File> files = imageService.updateImages(board, images, originImages);
+            board.updateImages(files);
+        }
     }
 
     @Override
