@@ -34,7 +34,7 @@ public class ChatController {
 
     @Operation(summary = "실시간 채팅 저장 API")
     @MessageMapping("/chat")
-    public void send(@RequestBody ChatMessageDto chatMessage) {
+    public void send(ChatMessageDto chatMessage) {
         chatService.saveChatMessage(chatMessage.getId(), chatMessage);
         messagingTemplate.convertAndSend("/sub/" + chatMessage.getId(), chatMessage);
     }
