@@ -161,6 +161,15 @@ public class StoreController {
         return ResponseEntity.ok("메모 수정 완료");
     }
 
+    @Operation(summary = "가게 스케줄 체크 API")
+    @PutMapping("/schedule")
+    public ResponseEntity<String> checkSchedule(@Parameter(description = "스케줄 id")
+                                                @RequestParam(value = "id") Long id,
+                                                HttpServletRequest request) {
+        scheduleService.toggleSchedule(id, request);
+        return ResponseEntity.ok("스케줄 체크 완료");
+    }
+
     @Operation(summary = "가게 삭제 API")
     @DeleteMapping("")
     public ResponseEntity<String> deleteStore(HttpServletRequest request) {

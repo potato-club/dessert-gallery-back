@@ -86,12 +86,34 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    public void toggleSchedule(Long scheduleId, HttpServletRequest request) {
+        User user = userService.findUserByToken(request);
+        Calendar calendar = calendarRepository.findByStore_User(user);
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
+
+        if (schedule.getCalendar().getStore().getUser() != user) {
+            throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+        }
+
+        if (schedule.getType() != ScheduleType.RESERVATION) {
+            throw new BadRequestException("예약 스케줄만 체크할 수 있습니다.", ErrorCode.RUNTIME_EXCEPTION);
+        }
+
+        Schedule newSchedule = schedule.toggleSchedule();
+        calendar.removeSchedule(schedule);
+        calendar.addSchedule(newSchedule);
+    }
+
+    @Override
     public void removeSchedule(Long scheduleId, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
+
         if (schedule.getCalendar().getStore().getUser() != user)
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+
         schedule.removeSchedule();
         scheduleRepository.delete(schedule);
     }

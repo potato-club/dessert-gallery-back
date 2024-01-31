@@ -31,6 +31,9 @@ public class Schedule {
     private ScheduleType type;
 
     @Column
+    private boolean completed;
+
+    @Column
     private String client;
 
     public Schedule(ScheduleRequestDto requestDto, Calendar calendar) {
@@ -45,6 +48,12 @@ public class Schedule {
         this.type = ScheduleType.RESERVATION;
         this.client = requestDto.getClient();
         this.calendar = calendar;
+        this.completed = false;
+    }
+
+    public Schedule toggleSchedule() {
+        this.completed = !this.completed;
+        return this;
     }
 
     public void removeSchedule() {
