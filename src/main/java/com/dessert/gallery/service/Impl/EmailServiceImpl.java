@@ -74,7 +74,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void verifyEmail(String key, HttpServletResponse response) {
-        String email = redisService.getEmailOtpData(key);
+        String email = redisService.getEmailOtpData(key).toString();
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> {
             throw new NotFoundException("Email Not Found", ErrorCode.NOT_FOUND_EXCEPTION);

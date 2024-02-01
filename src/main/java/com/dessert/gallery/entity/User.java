@@ -47,9 +47,6 @@ public class User extends BaseTimeEntity {
     private boolean emailOtp;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Subscribe> subscriptions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarkList = new ArrayList<>();
 
     public void update(UserUpdateRequestDto userDto) {

@@ -1,19 +1,17 @@
 package com.dessert.gallery.entity;
 
+import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.enums.MessageType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class ChatMessage {
 
     @Id
@@ -35,5 +33,13 @@ public class ChatMessage {
     private MessageType messageType;
 
     @Column
-    private LocalDateTime timestamp;
+    private LocalDateTime localDateTime;
+
+    public ChatMessage(ChatRoom chatRoom, LocalDateTime localDateTime, ChatMessageDto dto) {
+        this.sender = dto.getSender();
+        this.chatRoom = chatRoom;
+        this.message = dto.getMessage();
+        this.messageType = dto.getMessageType();
+        this.localDateTime = localDateTime;
+    }
 }

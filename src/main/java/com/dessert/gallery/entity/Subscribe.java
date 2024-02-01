@@ -4,7 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 
-@Data
+@Getter
 @Entity
 @Builder
 @RequiredArgsConstructor
@@ -26,4 +26,8 @@ public class Subscribe extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stores_id")
     private Store store;
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }

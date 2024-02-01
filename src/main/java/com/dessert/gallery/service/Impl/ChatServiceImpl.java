@@ -17,12 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -36,6 +35,11 @@ public class ChatServiceImpl implements ChatService {
     private final SubscribeRepository subscribeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final JPAQueryFactory jpaQueryFactory;
+    private final RedisChatMessageCache messageMap;
+    private static final int transactionMessageSize = 20; // 트랜잭션에 묶일 메세지 양
+    private static final int messagePageableSize = 30; // roomId에 종속된 큐에 보관할 메세지의 양
+    private final EntityManager em;
+
 
     @Override
     public Long createRoom(RoomCreateDto roomCreateDto, HttpServletRequest request) {
@@ -49,7 +53,6 @@ public class ChatServiceImpl implements ChatService {
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .customer(customer)
-                .owner(store.getUser())
                 .store(store)
                 .build();
 
@@ -58,32 +61,58 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void saveChatMessage(Long id, ChatMessageDto chatMessage) {
+    public void saveMessage(Long id, ChatMessageDto chatMessageDto) {
+
         ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow(() -> {
             throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
         });
 
-        chatMessage.setChatRoom(chatRoom);
-        chatMessageRepository.save(chatMessage.toEntity());
+        if (!messageMap.containsKey(id)) {
+            // 채팅방에 처음쓰는 글이라면 캐시가 없으므로 캐시를 생성
+            Queue<ChatMessageDto> queue = new LinkedList<>();
+            queue.add(chatMessageDto);
+            messageMap.put(id, queue);
+        } else {
+            Queue<ChatMessageDto> mQueue = messageMap.get(id);
+            mQueue.add(chatMessageDto);
+
+            // 캐시 쓰기 전략 (Write Back 패턴)
+            if (mQueue.size() > transactionMessageSize + messagePageableSize) {
+                Queue<ChatMessageDto> q = new LinkedList<>();
+                for (int i = 0; i < transactionMessageSize; i++) {
+                    q.add(mQueue.poll());
+                }
+
+                commitMessageQueue(q, chatRoom); // commit
+            }
+
+            messageMap.put(id, mQueue);
+        }
     }
 
     @Override
-    public List<ChatMessageDto> getLastChatMessages(Long chatRoomId, HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> {
-           throw new UnAuthorizedException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
-        });
+    public List<ChatMessageDto> getMessages(Long chatRoomId, HttpServletRequest request) {
+        // 캐시 읽기 전략 (LookAside 패턴)
+        List<ChatMessageDto> messageList = new ArrayList<>();
 
-        User owner = chatRoom.getOwner();
-        User customer = chatRoom.getCustomer();
+        if (!messageMap.containsKey(chatRoomId)) {
+            // Cache Miss
+            List<ChatMessageDto> messagesInDB = getMessagesInDB(chatRoomId);
+            // DB 에도 없다면 새로 만든 방이므로 빈 리스트를 반환
+            if (messagesInDB.isEmpty()) {
+                return messageList;
+            }
 
-        // 요청하는 유저가 해당 채팅방에 참여하고 있는지 확인함.
-        if (!owner.getEmail().equals(email) && !customer.getEmail().equals(email)) {
-            throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            // DB 에서 가져온 데이터를 Cache 에 적재
+            Queue<ChatMessageDto> queue = new LinkedList<>(messagesInDB);
+            messageMap.put(chatRoomId, queue);
+            messageList = messagesInDB;
+        } else {
+            // Cache Hit
+            messageList = getMessagesInCache(chatRoomId);
         }
 
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        return chatMessageRepository.findByChatRoomIdAndTimestampAfterOrderByTimestampDesc(chatRoomId, oneMonthAgo);
+        return messageList;
     }
 
     @Override
@@ -107,9 +136,9 @@ public class ChatServiceImpl implements ChatService {
                 )
                 .from(qChatRoom)
                 .leftJoin(qChatMessage).on(qChatMessage.chatRoom.id.eq(qChatRoom.id))
-                .where(qChatRoom.customer.uid.eq(user.get().getUid()).or(qChatRoom.owner.uid.eq(user.get().getUid())))
+                .where(qChatRoom.customer.uid.eq(user.get().getUid()).or(qChatRoom.store.user.uid.eq(user.get().getUid())))
                 .distinct()
-                .orderBy(qChatMessage.timestamp.desc())
+                .orderBy(qChatMessage.localDateTime.desc())
                 .offset((page - 1) * 10L)
                 .limit(10);
 
@@ -127,7 +156,7 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() ->
                 new UnAuthorizedException("Not Found User", ErrorCode.ACCESS_DENIED_EXCEPTION));
 
-        if (!chatRoom.getCustomer().getEmail().equals(email) && !chatRoom.getOwner().getEmail().equals(email)) {
+        if (!chatRoom.getCustomer().getEmail().equals(email) && !chatRoom.getStore().getUser().getEmail().equals(email)) {
             throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
@@ -138,10 +167,26 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Scheduled(cron = "0 0 0 * * ?")
     public void deleteExpiredChatMessages() {
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        ZoneId zoneId = ZoneId.of("Asia/Seoul");
-        long milliseconds = oneMonthAgo.atZone(zoneId).toInstant().toEpochMilli();
+        messageMap.deleteOldMessages();
+    }
 
-        chatMessageRepository.deleteByTimestampBefore(oneMonthAgo);
+    private List<ChatMessageDto> getMessagesInDB(Long roomId) {
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        return chatMessageRepository.findByChatRoomIdAndLocalDateTimeAfterOrderByLocalDateTimeDesc(roomId, oneMonthAgo);
+    }
+
+    private List<ChatMessageDto> getMessagesInCache(Long roomId) {
+        return messageMap.get(roomId);
+    }
+
+    private void commitMessageQueue(Queue<ChatMessageDto> messageQueue, ChatRoom chatRoom) {
+
+        // 쓰기 지연
+        for (int i = 0; i < messageQueue.size(); i++) {
+            ChatMessage message = new ChatMessage(chatRoom, LocalDateTime.now(), Objects.requireNonNull(messageQueue.poll()));
+            em.persist(message);
+        }
+
+        em.flush();
     }
 }
