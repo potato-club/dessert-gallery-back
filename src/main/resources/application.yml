@@ -5,6 +5,9 @@ spring:
   application:
     name: gallery
 
+  cache:
+    type: redis
+
   redis:
     host: redis
     port: 6379
@@ -19,6 +22,7 @@ spring:
     username: ENC(ptgPiCGfwu1nCmkYDF/6XyGnp2Wcagax)
     password: ENC(8UNZPir3wjbMd+jGSXvrp7jFXY7ZgOfULqlgWB4zJdg=)
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,9 +32,11 @@ spring:
         show_sql: true
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+
   security:
     oauth2:
       client:

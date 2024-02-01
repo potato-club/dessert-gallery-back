@@ -4,6 +4,7 @@ import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.ChatRoomDto;
 import com.dessert.gallery.dto.chat.RoomCreateDto;
 import com.dessert.gallery.entity.ChatMessage;
+import com.dessert.gallery.repository.RedisChatMessageCache;
 import com.dessert.gallery.service.Interface.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisChatMessageCache redisChatMessageCache;
 
     @Operation(summary = "채팅방 생성 API")
     @PostMapping("/mypage/room")
@@ -35,14 +37,14 @@ public class ChatController {
     @Operation(summary = "실시간 채팅 저장 API")
     @MessageMapping("/chat")
     public void send(ChatMessageDto chatMessage) {
-        chatService.saveChatMessage(chatMessage.getId(), chatMessage);
-        messagingTemplate.convertAndSend("/sub/" + chatMessage.getId(), chatMessage);
+        chatService.saveMessage(chatMessage.getRoomId(), chatMessage);
+        messagingTemplate.convertAndSend("/sub/" + chatMessage.getRoomId(), chatMessage);
     }
 
     @Operation(summary = "내 채팅 내역 출력 API")
     @GetMapping("/mypage/room/{roomId}")
     public List<ChatMessageDto> getLastChatMessages(@PathVariable Long roomId, HttpServletRequest request) {
-        return chatService.getLastChatMessages(roomId, request);
+        return chatService.getMessages(roomId, request);
     }
 
     @Operation(summary = "내 채팅방 목록 출력 API")
