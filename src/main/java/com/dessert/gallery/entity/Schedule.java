@@ -31,7 +31,7 @@ public class Schedule {
     private ScheduleType type;
 
     @Column
-    private boolean completed;
+    private Boolean completed;
 
     @Column
     private String client;
