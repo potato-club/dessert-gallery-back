@@ -1,6 +1,8 @@
 package com.dessert.gallery.entity;
 
 import com.dessert.gallery.dto.board.BoardRequestDto;
+import com.dessert.gallery.dto.board.BoardUpdateDto;
+import com.dessert.gallery.dto.file.FileDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -44,17 +46,16 @@ public class StoreBoard extends BaseTimeEntity {
     }
 
     public void updateImages(List<File> images) {
-        for (File image : images) {
-            image.setStoreBoard(this);
-            this.images.add(image);
-        }
+        this.images.addAll(images);
     }
 
-    public void imageClear() {
-        this.images.clear();
+    public void removeImage(FileDto dto) {
+        this.images.removeIf(file ->
+                file.getFileName().equals(dto.getFileName())
+                        && file.getFileUrl().equals(dto.getFileUrl()));
     }
 
-    public void updateBoard(BoardRequestDto requestDto) {
+    public void updateBoard(BoardUpdateDto requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.tags = requestDto.getTags();

@@ -1,10 +1,8 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
-import com.dessert.gallery.dto.review.MyReviewListDto;
-import com.dessert.gallery.dto.review.ReviewListResponseDto;
-import com.dessert.gallery.dto.review.ReviewRequestDto;
-import com.dessert.gallery.dto.review.ReviewResponseDtoForMap;
+import com.dessert.gallery.dto.review.*;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
@@ -26,7 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
@@ -106,20 +107,33 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void updateReview(Long reviewId, ReviewRequestDto updateDto,
+    public void updateReview(Long reviewId, ReviewUpdateDto updateDto,
                              List<MultipartFile> images, HttpServletRequest request) throws IOException {
         ReviewBoard review = validateReview(reviewId, request);
         double scoreGap = review.getScore() - updateDto.getScore();
         review.updateReview(updateDto);
         updateScore(review.getStore(), scoreGap);
 
-        // 기존 이미지 삭제 처리를 위함
-        List<FileRequestDto> originImages = review.getImages().stream()
-                .map(FileRequestDto::new)
-                .collect(Collectors.toList());
+        // 남길 파일 리스트 저장
+        Set<FileDto> set = new HashSet<>(updateDto.getNonDeleteFiles());
 
-        // 리뷰 이미지 삭제 처리
-        review.imageClear();
+        // 기존 파일 리스트에서 남길 파일 리스트 비교
+        List<FileRequestDto> originImages = new ArrayList<>();
+        List<FileDto> collect = review.getImages().stream().map(FileDto::new).collect(Collectors.toList());
+
+        for (FileDto dto : collect) {
+            // 남길 파일에 존재 => 삭제 X
+            if (set.contains(dto)) {
+                originImages.add(new FileRequestDto(dto, false));
+            }
+
+            // 남길 파일에 존재 X => board 에서도 삭제
+            else {
+                FileRequestDto deleteDto = new FileRequestDto(dto, true);
+                originImages.add(deleteDto);
+                review.removeImage(dto);
+            }
+        }
 
         // 기존 이미지 없고 업로드할 이미지 있는 경우
         if (CollectionUtils.isEmpty(originImages) && !CollectionUtils.isEmpty(images)) {

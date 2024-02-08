@@ -1,9 +1,6 @@
 package com.dessert.gallery.service.Interface;
 
-import com.dessert.gallery.dto.board.BoardListResponseDto;
-import com.dessert.gallery.dto.board.BoardListResponseDtoForMap;
-import com.dessert.gallery.dto.board.BoardRequestDto;
-import com.dessert.gallery.dto.board.BoardResponseDto;
+import com.dessert.gallery.dto.board.*;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.StoreBoard;
 import org.springframework.data.domain.Slice;
@@ -16,11 +13,11 @@ import java.util.List;
 public interface StoreBoardService {
     StoreBoard getBoard(Long boardId);
     BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request);
-    Slice<BoardListResponseDto> getBoardsByStore(Long storeId, Long last);
+    Slice<BoardListResponseDto> getBoardsByStore(Long storeId, int page);
     List<BoardListResponseDtoForMap> getBoardsForMap(Store store);
     void createBoard(BoardRequestDto requestDto,
                      List<MultipartFile> images,HttpServletRequest request) throws IOException;
-    void updateBoard(Long boardId, BoardRequestDto updateDto,
+    void updateBoard(Long boardId, BoardUpdateDto updateDto,
                      List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void deleteBoard(Long boardId, HttpServletRequest request);
 }

@@ -3,6 +3,7 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.review.MyReviewListDto;
 import com.dessert.gallery.dto.review.ReviewListResponseDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
+import com.dessert.gallery.dto.review.ReviewUpdateDto;
 import com.dessert.gallery.service.Interface.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,9 +66,9 @@ public class ReviewController {
     @PutMapping(value = "/{reviewId}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateReview(@PathVariable(name = "reviewId") Long reviewId,
-                                               @Parameter(description = "리뷰 정보 - ReviewRequestDto", content =
+                                               @Parameter(description = "리뷰 정보 - ReviewUpdateDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                        @RequestPart ReviewRequestDto updateDto,
+                                                        @RequestPart ReviewUpdateDto updateDto,
                                                @Parameter(description = "업로드 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                         @RequestPart(required = false) List<MultipartFile> images,

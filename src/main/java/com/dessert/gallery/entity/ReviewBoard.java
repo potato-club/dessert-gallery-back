@@ -1,6 +1,8 @@
 package com.dessert.gallery.entity;
 
+import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.dto.review.ReviewRequestDto;
+import com.dessert.gallery.dto.review.ReviewUpdateDto;
 import lombok.*;
 import org.hibernate.annotations.Formula;
 
@@ -52,11 +54,13 @@ public class ReviewBoard extends BaseTimeEntity {
         }
     }
 
-    public void imageClear() {
-        this.images.clear();
+    public void removeImage(FileDto dto) {
+        this.images.removeIf(file ->
+                file.getFileName().equals(dto.getFileName())
+                        && file.getFileUrl().equals(dto.getFileUrl()));
     }
 
-    public void updateReview(ReviewRequestDto updateDto) {
+    public void updateReview(ReviewUpdateDto updateDto) {
         this.score = updateDto.getScore();
         this.content = updateDto.getContent();
     }

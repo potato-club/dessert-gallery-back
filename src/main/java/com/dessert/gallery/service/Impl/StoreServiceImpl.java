@@ -4,6 +4,7 @@ import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
+import com.dessert.gallery.dto.store.StoreUpdateDto;
 import com.dessert.gallery.dto.store.map.StoreCoordinate;
 import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
@@ -96,7 +97,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public void updateStore(Long id, StoreRequestDto updateDto,
+    public void updateStore(Long id, StoreUpdateDto updateDto,
                             MultipartFile file, HttpServletRequest request) throws Exception {
         User user = userService.findUserByToken(request);
         Store store = storeRepository.findById(id).orElseThrow();
@@ -113,29 +114,30 @@ public class StoreServiceImpl implements StoreService {
         List<FileRequestDto> originImages = new ArrayList<>();
         File originImage = store.getImage();
 
-        // 기존 이미지가 없으면서 새로운 이미지 추가
-        if (originImage == null && file != null) {
-            images.add(file);
-            List<File> files = imageService.uploadImages(images, store);
-            store.setImage(files.get(0));
+        // 원본 이미지만 지울 경우
+        if (updateDto.isRemoveOriginImage()) {
+            originImages.add(new FileRequestDto(originImage));
+            imageService.updateImages(store, images, originImages);
+            store.setImage(null);
+            return;
         }
 
-        // 기존 이미지가 있는 경우 업데이트
-        if (originImage != null) {
-            originImages.add(new FileRequestDto(originImage));
+        // 이미지 업데이트 하는 경우
+        if (file != null) {
+            List<File> files;
+            images.add(file);
 
-            // 새로운 이미지 없음 -> 삭제 처리
-            if (file == null) {
-                imageService.updateImages(store, images, originImages);
-                store.setImage(null);
+            // 원본 이미지가 없을 경우
+            if (originImage == null) {
+                files = imageService.uploadImages(images, store);
             }
 
-            // 새로운 이미지 있음 -> 업데이트
+            // 원본 이미지가 있어서 update 진행
             else {
-                images.add(file);
-                List<File> files = imageService.updateImages(store, images, originImages);
-                store.setImage(files.get(0));
+                originImages.add(new FileRequestDto(originImage));
+                files = imageService.updateImages(store, images, originImages);
             }
+            store.setImage(files.get(0));
         }
     }
 

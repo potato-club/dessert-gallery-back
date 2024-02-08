@@ -25,4 +25,10 @@ public class FileRequestDto {
         this.fileUrl = file.getFileUrl();
         this.deleted = true;
     }
+
+    public FileRequestDto(FileDto dto, boolean deleted) {
+        this.fileName = dto.getFileName();
+        this.fileUrl = dto.getFileUrl();
+        this.deleted = deleted;
+    }
 }

@@ -1,9 +1,7 @@
 package com.dessert.gallery.service.Impl;
 
-import com.dessert.gallery.dto.board.BoardListResponseDto;
-import com.dessert.gallery.dto.board.BoardListResponseDtoForMap;
-import com.dessert.gallery.dto.board.BoardRequestDto;
-import com.dessert.gallery.dto.board.BoardResponseDto;
+import com.dessert.gallery.dto.board.*;
+import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
@@ -26,7 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.dessert.gallery.error.ErrorCode.*;
@@ -65,24 +66,25 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public Slice<BoardListResponseDto> getBoardsByStore(Long storeId, Long last) {
+    public Slice<BoardListResponseDto> getBoardsByStore(Long storeId, int page) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
             throw new NotFoundException("검색된 가게가 없음", NOT_FOUND_EXCEPTION);
         });
 
-        Pageable pageable = PageRequest.ofSize(15);
+        if (page < 1) { // 잘못된 page 값 입력시 1로 초기화
+            page = 1;
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, 15);
 
         BooleanBuilder whereQuery = new BooleanBuilder();
         whereQuery.and(QStoreBoard.storeBoard.deleted.isFalse());
-
-        if (last != null) {
-            whereQuery.and(QStoreBoard.storeBoard.id.lt(last));
-        }
 
         List<StoreBoard> list = jpaQueryFactory
                 .select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
                 .where(whereQuery.and(QStoreBoard.storeBoard.store.eq(store)))
                 .orderBy(QStoreBoard.storeBoard.createdDate.desc())
+                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1).fetch();
 
         boolean hasNext = false;
@@ -122,18 +124,31 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public void updateBoard(Long boardId, BoardRequestDto updateDto,
+    public void updateBoard(Long boardId, BoardUpdateDto updateDto,
                             List<MultipartFile> images, HttpServletRequest request) throws IOException {
         StoreBoard board = validateBoard(boardId, request);
         board.updateBoard(updateDto);
 
-        // 기존 저장된 파일 전체 삭제처리를 위해 변경
-        List<FileRequestDto> originImages = board.getImages().stream()
-                .map(FileRequestDto::new)
-                .collect(Collectors.toList());
+        // 남길 파일 리스트 저장
+        Set<FileDto> set = new HashSet<>(updateDto.getNonDeleteFiles());
 
-        // 게시글의 이미지 일괄 삭제 처리
-        board.imageClear();
+        // 기존 파일 리스트에서 남길 파일 리스트 비교
+        List<FileRequestDto> originImages = new ArrayList<>();
+        List<FileDto> collect = board.getImages().stream().map(FileDto::new).collect(Collectors.toList());
+
+        for (FileDto dto : collect) {
+            // 남길 파일에 존재 => 삭제 X
+            if (set.contains(dto)) {
+                originImages.add(new FileRequestDto(dto, false));
+            }
+
+            // 남길 파일에 존재 X => board 에서도 삭제
+            else {
+                FileRequestDto deleteDto = new FileRequestDto(dto, true);
+                originImages.add(deleteDto);
+                board.removeImage(dto);
+            }
+        }
 
         // 기존 이미지 없고 새로운 이미지만 있음
         if (CollectionUtils.isEmpty(originImages) && !CollectionUtils.isEmpty(images)) {
