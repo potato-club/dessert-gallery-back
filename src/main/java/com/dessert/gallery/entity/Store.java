@@ -1,6 +1,7 @@
 package com.dessert.gallery.entity;
 
 import com.dessert.gallery.dto.store.StoreRequestDto;
+import com.dessert.gallery.dto.store.StoreUpdateDto;
 import com.dessert.gallery.dto.store.map.StoreCoordinate;
 import lombok.*;
 
@@ -72,7 +73,7 @@ public class Store extends BaseTimeEntity {
         this.score = score;
     }
 
-    public void updateStore(StoreRequestDto updateDto) {
+    public void updateStore(StoreUpdateDto updateDto) {
         if(updateDto.getName() != null)
             this.name = updateDto.getName();
         if(updateDto.getInfo() != null)

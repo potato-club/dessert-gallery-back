@@ -3,6 +3,7 @@ package com.dessert.gallery.controller;
 import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.dto.board.BoardRequestDto;
 import com.dessert.gallery.dto.board.BoardResponseDto;
+import com.dessert.gallery.dto.board.BoardUpdateDto;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,9 +42,11 @@ public class StoreBoardController {
     @Operation(summary = "가게의 모든 게시글 조회")
     @GetMapping("/stores/{storeId}")
     public Slice<BoardListResponseDto> getBoardListByStore(@PathVariable(name = "storeId") Long storeId,
-                                                           @Parameter(name = "last", description = "이전 조회된 공지의 마지막 id값")
-                                                           @RequestParam(value = "last", required = false) Long last) {
-        return boardService.getBoardsByStore(storeId, last);
+                                                           @Parameter(name = "page", description = "페이지 정보")
+                                                           @RequestParam(value = "page",
+                                                                   required = false,
+                                                                   defaultValue = "1") int page) {
+        return boardService.getBoardsByStore(storeId, page);
     }
 
 //    @Operation(summary = "채팅창 게시글 리스트 출력 API")
@@ -74,10 +77,10 @@ public class StoreBoardController {
     @Operation(summary = "가게 게시글 수정")
     @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
-                                                   @Parameter(description = "게시글 정보 - BoardRequestDto", content =
+                                                   @Parameter(description = "게시글 정보 - BoardUpdateDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                         @Validated
-                                                            @RequestPart(name = "updateDto") BoardRequestDto updateDto,
+                                                            @RequestPart(name = "updateDto") BoardUpdateDto updateDto,
                                                    @Parameter(description = "업로드 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                         @RequestPart(required = false) List<MultipartFile> images,

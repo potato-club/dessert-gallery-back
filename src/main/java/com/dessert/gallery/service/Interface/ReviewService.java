@@ -1,9 +1,6 @@
 package com.dessert.gallery.service.Interface;
 
-import com.dessert.gallery.dto.review.MyReviewListDto;
-import com.dessert.gallery.dto.review.ReviewListResponseDto;
-import com.dessert.gallery.dto.review.ReviewRequestDto;
-import com.dessert.gallery.dto.review.ReviewResponseDtoForMap;
+import com.dessert.gallery.dto.review.*;
 import com.dessert.gallery.entity.Store;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
@@ -18,7 +15,7 @@ public interface ReviewService {
     List<ReviewResponseDtoForMap> getReviewsForMap(Store store);
     Slice<MyReviewListDto> getReviewListByUser(int page, int month, HttpServletRequest request);
     void addReview(Long storeId, ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException;
-    void updateReview(Long reviewId, ReviewRequestDto updateDto,
+    void updateReview(Long reviewId, ReviewUpdateDto updateDto,
                       List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void removeReview(Long reviewId, HttpServletRequest request);
 }

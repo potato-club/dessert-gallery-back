@@ -9,6 +9,7 @@ import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
+import com.dessert.gallery.dto.store.StoreUpdateDto;
 import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.MemoService;
 import com.dessert.gallery.service.Interface.ScheduleService;
@@ -141,9 +142,9 @@ public class StoreController {
     @PutMapping(value = "/{storeId}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateStore(@PathVariable(name = "storeId") Long id,
-                                              @Parameter(description = "가게 정보 - StoreRequestDto", content =
+                                              @Parameter(description = "가게 정보 - StoreUpdateDto", content =
                                               @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                              @RequestPart StoreRequestDto updateDto,
+                                              @RequestPart StoreUpdateDto updateDto,
                                               @Parameter(description = "추가할 이미지", content =
                                               @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                               @RequestPart(required = false) MultipartFile image,
