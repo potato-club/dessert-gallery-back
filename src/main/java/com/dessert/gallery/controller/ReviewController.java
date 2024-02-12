@@ -66,10 +66,10 @@ public class ReviewController {
     @PutMapping(value = "/{reviewId}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateReview(@PathVariable(name = "reviewId") Long reviewId,
-                                               @Parameter(description = "리뷰 정보 - ReviewUpdateDto", content =
+                                               @Parameter(description = "수정할 리뷰 정보 - ReviewUpdateDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                         @RequestPart ReviewUpdateDto updateDto,
-                                               @Parameter(description = "업로드 이미지 리스트", content =
+                                               @Parameter(description = "추가할 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                         @RequestPart(required = false) List<MultipartFile> images,
                                                HttpServletRequest request) throws IOException {
