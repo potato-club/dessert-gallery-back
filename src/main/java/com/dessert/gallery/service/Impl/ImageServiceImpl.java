@@ -10,6 +10,7 @@ import com.dessert.gallery.service.Interface.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -76,7 +77,10 @@ public class ImageServiceImpl implements ImageService {
 
         // 기존 파일 리스트와 새로 업로드한 파일 리스트를 비교하여
         // 바뀐 파일만 업로드하고, 기존 파일 중 사용하지 않는 파일은 삭제
-        List<File> list = this.existsFiles(files);
+        List<File> list = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(files)) {
+            list = this.existsFiles(files);
+        }
 
         // 결과 저장할 리스트 별도 생성
         List<File> resultList = new ArrayList<>();
