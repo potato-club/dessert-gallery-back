@@ -21,6 +21,6 @@ public class BoardUpdateDto {
     @Pattern(regexp = "^(#(?:[가-힣a-zA-Z0-9]+))*$", message = "해시태그를 올바르게 입력해주세요.")
     private String tags;
 
-    @Schema(description = "남길 이미지 리스트")
-    private List<FileDto> nonDeleteFiles;
+    @Schema(description = "원본 중 삭제할 이미지 리스트")
+    private List<FileDto> deleteFiles;
 }

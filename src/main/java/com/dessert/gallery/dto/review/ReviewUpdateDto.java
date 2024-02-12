@@ -16,6 +16,6 @@ public class ReviewUpdateDto {
     @Schema(description = "리뷰 점수")
     private Double score;
 
-    @Schema(description = "남길 이미지 리스트")
-    private List<FileDto> nonDeleteFiles;
+    @Schema(description = "삭제할 이미지 리스트")
+    private List<FileDto> deleteFiles;
 }

@@ -77,11 +77,11 @@ public class StoreBoardController {
     @Operation(summary = "가게 게시글 수정")
     @PutMapping(value = "/{boardId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
-                                                   @Parameter(description = "게시글 정보 - BoardUpdateDto", content =
+                                                   @Parameter(description = "수정할 게시글 정보 - BoardUpdateDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
                                                         @Validated
                                                             @RequestPart(name = "updateDto") BoardUpdateDto updateDto,
-                                                   @Parameter(description = "업로드 이미지 리스트", content =
+                                                   @Parameter(description = "추가할 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                         @RequestPart(required = false) List<MultipartFile> images,
                                                    HttpServletRequest request) throws IOException {

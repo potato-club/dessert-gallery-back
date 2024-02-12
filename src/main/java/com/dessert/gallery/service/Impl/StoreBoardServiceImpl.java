@@ -129,24 +129,22 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         StoreBoard board = validateBoard(boardId, request);
         board.updateBoard(updateDto);
 
-        // 남길 파일 리스트 저장
-        Set<FileDto> set = new HashSet<>(updateDto.getNonDeleteFiles());
+        // 삭제할 파일 리스트 저장
+        Set<FileDto> set = new HashSet<>(updateDto.getDeleteFiles());
 
-        // 기존 파일 리스트에서 남길 파일 리스트 비교
+        // 기존 파일 리스트에서 삭제할 파일 리스트 비교
         List<FileRequestDto> originImages = new ArrayList<>();
         List<FileDto> collect = board.getImages().stream().map(FileDto::new).collect(Collectors.toList());
 
         for (FileDto dto : collect) {
-            // 남길 파일에 존재 => 삭제 X
+            // 삭제할 파일 리스트에 존재 => 삭제
             if (set.contains(dto)) {
-                originImages.add(new FileRequestDto(dto, false));
-            }
-
-            // 남길 파일에 존재 X => board 에서도 삭제
-            else {
-                FileRequestDto deleteDto = new FileRequestDto(dto, true);
-                originImages.add(deleteDto);
+                originImages.add(new FileRequestDto(dto, true));
                 board.removeImage(dto);
+            }
+            // 삭제할 파일 리스트에 존재 X => 삭제 X
+            else {
+                originImages.add(new FileRequestDto(dto, false));
             }
         }
 

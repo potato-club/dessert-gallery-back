@@ -114,24 +114,23 @@ public class ReviewServiceImpl implements ReviewService {
         review.updateReview(updateDto);
         updateScore(review.getStore(), scoreGap);
 
-        // 남길 파일 리스트 저장
-        Set<FileDto> set = new HashSet<>(updateDto.getNonDeleteFiles());
+        // 삭제할 파일 리스트 저장
+        Set<FileDto> set = new HashSet<>(updateDto.getDeleteFiles());
 
-        // 기존 파일 리스트에서 남길 파일 리스트 비교
+        // 기존 파일 리스트에서 삭제할 파일 리스트 비교
         List<FileRequestDto> originImages = new ArrayList<>();
         List<FileDto> collect = review.getImages().stream().map(FileDto::new).collect(Collectors.toList());
 
         for (FileDto dto : collect) {
-            // 남길 파일에 존재 => 삭제 X
+            // 삭제할 파일 리스트에 존재 => 삭제
             if (set.contains(dto)) {
-                originImages.add(new FileRequestDto(dto, false));
+                originImages.add(new FileRequestDto(dto, true));
+                review.removeImage(dto);
             }
 
-            // 남길 파일에 존재 X => board 에서도 삭제
+            // 삭제할 파일 리스트에 존재 X => 삭제 X
             else {
-                FileRequestDto deleteDto = new FileRequestDto(dto, true);
-                originImages.add(deleteDto);
-                review.removeImage(dto);
+                originImages.add(new FileRequestDto(dto, false));
             }
         }
 
