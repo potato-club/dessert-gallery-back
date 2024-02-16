@@ -7,12 +7,13 @@ import org.springframework.data.domain.Slice;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
 public interface StoreBoardService {
     StoreBoard getBoard(Long boardId);
-    BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request);
+    BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request, HttpServletResponse response);
     Slice<BoardListResponseDto> getBoardsByStore(Long storeId, int page);
     List<BoardListResponseDtoForMap> getBoardsForMap(Store store);
     void createBoard(BoardRequestDto requestDto,

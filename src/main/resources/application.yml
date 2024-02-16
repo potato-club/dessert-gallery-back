@@ -1,6 +1,11 @@
 server:
   port: 8888
 
+  servlet:
+    session:
+      cookie:
+        same-site: none
+
 spring:
   application:
     name: gallery
@@ -103,3 +108,6 @@ management:
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
+
+viewCount:
+  key: updateView

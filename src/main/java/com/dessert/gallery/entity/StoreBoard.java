@@ -27,6 +27,9 @@ public class StoreBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private String tags;
 
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int view;
+
     @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 

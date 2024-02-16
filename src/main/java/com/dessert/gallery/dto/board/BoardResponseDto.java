@@ -27,6 +27,8 @@ public class BoardResponseDto {
     private boolean isBookmark = false;
     @Schema(description = "가게 사장님 여부")
     private boolean isOwner = false;
+    @Schema(description = "게시글 조회수")
+    private int viewCount;
 
     public BoardResponseDto(StoreBoard board) {
         this.title = board.getTitle();
@@ -35,6 +37,11 @@ public class BoardResponseDto {
                 .map(FileDto::new)
                 .collect(Collectors.toList());
         this.tags = convertTags(board.getTags());
+        this.viewCount = board.getView();
+    }
+
+    public void updateView(int view) {
+        this.viewCount = view;
     }
 
     public void addUserInfo(boolean isBookmark, boolean isOwner) {

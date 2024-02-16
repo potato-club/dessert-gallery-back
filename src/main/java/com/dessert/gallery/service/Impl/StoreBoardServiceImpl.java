@@ -13,6 +13,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -21,9 +22,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +48,8 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     private final UserService userService;
     private final BookmarkService bookmarkService;
     private final ImageService imageService;
+    @Value("${viewCount.key}")
+    private String COOKIE_KEY;
 
     @Override
     public void createBoard(BoardRequestDto requestDto, List<MultipartFile> images,
@@ -109,7 +116,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
-    public BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request) {
+    public BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request, HttpServletResponse response) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         if (board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
         BoardResponseDto dto = new BoardResponseDto(board);
@@ -120,7 +127,55 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             boolean isOwner = board.getStore().checkOwner(user);
             dto.addUserInfo(bookmarkStatus, isOwner);
         }
+
+        int viewCount = updateViewCount(board, request, response);
+        if (viewCount != -1) {
+            dto.updateView(viewCount);
+        }
+
         return dto;
+    }
+
+    private int updateViewCount(StoreBoard board, HttpServletRequest request, HttpServletResponse response) {
+        Cookie cookie = null;
+        Cookie[] cookies = request.getCookies();
+        String value = "[" + board.getId() + "]";
+        int viewCount = -1;
+
+        if (cookies != null) {
+            for (Cookie old : cookies) {
+                if (old.getName().equals(COOKIE_KEY)) {
+                    cookie = old;
+                    break;
+                }
+            }
+        }
+
+        // 쿠키에 boardId 가 있을 경우만 view 증가 x
+        if (cookie != null) {
+            if(!cookie.getValue().contains(value)) { // 쿠키에 해당 게시물 저장 x
+                cookie.setValue(cookie.getValue() + "_" + value);
+                viewCount = boardRepository.updateViewCount(board.getId());
+            }
+        } else {
+            cookie = new Cookie(COOKIE_KEY, value);
+            cookie.setComment("조회수 중복 증가 방지");
+            cookie.setMaxAge(getTimeForExpired());
+            cookie.setSecure(true);
+            cookie.setHttpOnly(true);
+            viewCount = boardRepository.updateViewCount(board.getId());
+        }
+
+        response.addCookie(cookie);
+        return viewCount;
+    }
+
+    // 쿠키 만료 시간 다음날 자정까지로 설정
+    private int getTimeForExpired() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime tomorrow = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+        return (int) ChronoUnit.SECONDS.between(now, tomorrow);
     }
 
     @Override
