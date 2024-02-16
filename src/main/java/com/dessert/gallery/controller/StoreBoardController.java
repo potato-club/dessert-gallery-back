@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,8 +35,9 @@ public class StoreBoardController {
     @Operation(summary = "게시글 조회")
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable(name = "boardId") Long boardId,
-                                                         HttpServletRequest request) {
-        BoardResponseDto dto = boardService.getBoardDto(boardId, request);
+                                                         HttpServletRequest request,
+                                                         HttpServletResponse response) {
+        BoardResponseDto dto = boardService.getBoardDto(boardId, request, response);
         return ResponseEntity.ok(dto);
     }
 
