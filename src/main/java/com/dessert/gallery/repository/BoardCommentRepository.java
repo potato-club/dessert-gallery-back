@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BoardCommentRepository extends JpaRepository<BoardComment, Long> {
     Slice<BoardComment> findByBoard(Pageable pageable, StoreBoard board);
+
+    int countByBoard(StoreBoard board);
 }
