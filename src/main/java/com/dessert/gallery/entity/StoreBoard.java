@@ -64,6 +64,10 @@ public class StoreBoard extends BaseTimeEntity {
         this.tags = requestDto.getTags();
     }
 
+    public int increaseView() {
+        return this.view += 1;
+    }
+
     public void deleteBoard() {
         this.deleted = true;
     }

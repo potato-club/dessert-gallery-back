@@ -6,6 +6,7 @@ import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.repository.BoardCommentRepository;
 import com.dessert.gallery.repository.StoreBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
@@ -45,6 +46,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     private final JPAQueryFactory jpaQueryFactory;
     private final StoreBoardRepository boardRepository;
     private final StoreRepository storeRepository;
+    private final BoardCommentRepository commentRepository;
     private final UserService userService;
     private final BookmarkService bookmarkService;
     private final ImageService imageService;
@@ -119,7 +121,8 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     public BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request, HttpServletResponse response) {
         StoreBoard board = boardRepository.findByIdAndDeletedIsFalse(boardId);
         if (board == null) throw new NotFoundException("게시물 없음", NOT_FOUND_EXCEPTION);
-        BoardResponseDto dto = new BoardResponseDto(board);
+        int commentCount = commentRepository.countByBoard(board);
+        BoardResponseDto dto = new BoardResponseDto(board, commentCount);
 
         User user = userService.findUserByToken(request);
         if (user != null) {
@@ -153,9 +156,9 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
         // 쿠키에 boardId 가 있을 경우만 view 증가 x
         if (cookie != null) {
-            if(!cookie.getValue().contains(value)) { // 쿠키에 해당 게시물 저장 x
+            if (!cookie.getValue().contains(value)) { // 쿠키에 해당 게시물 저장 x
                 cookie.setValue(cookie.getValue() + "_" + value);
-                viewCount = boardRepository.updateViewCount(board.getId());
+                viewCount = board.increaseView();
             }
         } else {
             cookie = new Cookie(COOKIE_KEY, value);
@@ -163,7 +166,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             cookie.setMaxAge(getTimeForExpired());
             cookie.setSecure(true);
             cookie.setHttpOnly(true);
-            viewCount = boardRepository.updateViewCount(board.getId());
+            viewCount = board.increaseView();
         }
 
         response.addCookie(cookie);

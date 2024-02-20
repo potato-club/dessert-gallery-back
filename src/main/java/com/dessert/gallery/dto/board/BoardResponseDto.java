@@ -29,8 +29,10 @@ public class BoardResponseDto {
     private boolean isOwner = false;
     @Schema(description = "게시글 조회수")
     private int viewCount;
+    @Schema(description = "게시글의 댓글 수")
+    private int commentCount;
 
-    public BoardResponseDto(StoreBoard board) {
+    public BoardResponseDto(StoreBoard board, int commentCount) {
         this.title = board.getTitle();
         this.content = board.getContent();
         this.images = board.getImages().isEmpty() ? null : board.getImages().stream()
@@ -38,6 +40,7 @@ public class BoardResponseDto {
                 .collect(Collectors.toList());
         this.tags = convertTags(board.getTags());
         this.viewCount = board.getView();
+        this.commentCount = commentCount;
     }
 
     public void updateView(int view) {
