@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,6 +160,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             if (!cookie.getValue().contains(value)) { // 쿠키에 해당 게시물 저장 x
                 cookie.setValue(cookie.getValue() + "_" + value);
                 viewCount = board.increaseView();
+                response.addHeader("Set-Cookie", convertCookie(cookie));
             }
         } else {
             cookie = new Cookie(COOKIE_KEY, value);
@@ -167,10 +169,19 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             cookie.setSecure(true);
             cookie.setHttpOnly(true);
             viewCount = board.increaseView();
+            response.addHeader("Set-Cookie", convertCookie(cookie));
         }
 
-        response.addCookie(cookie);
         return viewCount;
+    }
+
+    private String convertCookie(Cookie cookie) {
+        return ResponseCookie.from(cookie.getName(), cookie.getValue())
+                .maxAge(cookie.getMaxAge())
+                .secure(cookie.getSecure())
+                .httpOnly(cookie.isHttpOnly())
+                .sameSite("None")
+                .build().toString();
     }
 
     // 쿠키 만료 시간 다음날 자정까지로 설정
