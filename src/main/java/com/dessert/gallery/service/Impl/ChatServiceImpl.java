@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -67,13 +69,16 @@ public class ChatServiceImpl implements ChatService {
             throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
         });
 
-        if (!messageMap.containsKey(id)) {
+        LocalDate currentDate = LocalDate.now();
+        String time = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        if (!messageMap.containsKey(id, time)) {
             // 채팅방에 처음쓰는 글이라면 캐시가 없으므로 캐시를 생성
             Queue<ChatMessageDto> queue = new LinkedList<>();
             queue.add(chatMessageDto);
             messageMap.put(id, queue);
         } else {
-            Queue<ChatMessageDto> mQueue = messageMap.get(id);
+            Queue<ChatMessageDto> mQueue = messageMap.get(id, time);
             mQueue.add(chatMessageDto);
 
             // 캐시 쓰기 전략 (Write Back 패턴)
@@ -91,11 +96,11 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<ChatMessageDto> getMessages(Long chatRoomId, HttpServletRequest request) {
+    public List<ChatMessageDto> getMessages(Long chatRoomId, String time, HttpServletRequest request) {
         // 캐시 읽기 전략 (LookAside 패턴)
         List<ChatMessageDto> messageList = new ArrayList<>();
 
-        if (!messageMap.containsKey(chatRoomId)) {
+        if (!messageMap.containsKey(chatRoomId, time)) {
             // Cache Miss
             List<ChatMessageDto> messagesInDB = getMessagesInDB(chatRoomId);
             // DB 에도 없다면 새로 만든 방이므로 빈 리스트를 반환
@@ -109,7 +114,7 @@ public class ChatServiceImpl implements ChatService {
             messageList = messagesInDB;
         } else {
             // Cache Hit
-            messageList = getMessagesInCache(chatRoomId);
+            messageList = getMessagesInCache(chatRoomId, time);
         }
 
         return messageList;
@@ -175,8 +180,8 @@ public class ChatServiceImpl implements ChatService {
         return chatMessageRepository.findByChatRoomIdAndLocalDateTimeAfterOrderByLocalDateTimeDesc(roomId, oneMonthAgo);
     }
 
-    private List<ChatMessageDto> getMessagesInCache(Long roomId) {
-        return messageMap.get(roomId);
+    private List<ChatMessageDto> getMessagesInCache(Long roomId, String time) {
+        return messageMap.get(roomId, time);
     }
 
     private void commitMessageQueue(Queue<ChatMessageDto> messageQueue, ChatRoom chatRoom) {

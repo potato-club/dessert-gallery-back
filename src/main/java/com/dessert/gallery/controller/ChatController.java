@@ -43,8 +43,8 @@ public class ChatController {
 
     @Operation(summary = "내 채팅 내역 출력 API")
     @GetMapping("/mypage/room/{roomId}")
-    public List<ChatMessageDto> getLastChatMessages(@PathVariable Long roomId, HttpServletRequest request) {
-        return chatService.getMessages(roomId, request);
+    public List<ChatMessageDto> getLastChatMessages(@PathVariable Long roomId, @RequestParam String time, HttpServletRequest request) {
+        return chatService.getMessages(roomId, time, request);
     }
 
     @Operation(summary = "내 채팅방 목록 출력 API")
