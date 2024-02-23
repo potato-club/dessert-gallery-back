@@ -180,6 +180,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
                 .maxAge(cookie.getMaxAge())
                 .secure(cookie.getSecure())
                 .httpOnly(cookie.isHttpOnly())
+                .path("/")
                 .sameSite("None")
                 .build().toString();
     }

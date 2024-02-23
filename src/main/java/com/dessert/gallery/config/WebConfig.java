@@ -34,7 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "https://localhost:3000",
                         "https://dessert-gallery.com",
                         "https://www.dessert-gallery.com")
-                .exposedHeaders("authorization", "refreshToken") // 'authorization', 'refreshToken' 헤더 값을 받아온다
+                .exposedHeaders("authorization", "refreshToken", "Set-Cookie") // 'authorization', 'refreshToken' 헤더 값을 받아온다
                 .allowedHeaders("*")
                 .allowedMethods("*")
                 .allowCredentials(true);
