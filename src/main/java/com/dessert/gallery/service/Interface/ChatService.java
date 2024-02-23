@@ -14,7 +14,7 @@ public interface ChatService {
 
     void saveMessage(Long id, ChatMessageDto chatMessage);
 
-    List<ChatMessageDto> getMessages(Long chatRoomId, HttpServletRequest request);
+    List<ChatMessageDto> getMessages(Long chatRoomId, String time, HttpServletRequest request);
 
     List<ChatRoomDto> getMyChatRoomsList(int page, HttpServletRequest request);
 

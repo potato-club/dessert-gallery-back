@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum MessageType {
 
     CHAT("ROLE_CHAT", "일반 채팅"),
+    BOARD("ROLE_BOARD", "게시글 모달"),
     RESERVATION("ROLE_RESERVATION", "예약 확정"),
     REVIEW("ROLE_REVIEW", "리뷰 작성");
 
