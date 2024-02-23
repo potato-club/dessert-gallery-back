@@ -159,12 +159,14 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         if (cookie != null) {
             if (!cookie.getValue().contains(value)) { // 쿠키에 해당 게시물 저장 x
                 cookie.setValue(cookie.getValue() + "_" + value);
+                cookie.setMaxAge(getTimeForExpired());
+                cookie.setSecure(true);
+                cookie.setHttpOnly(true);
                 viewCount = board.increaseView();
                 response.addHeader("Set-Cookie", convertCookie(cookie));
             }
         } else {
             cookie = new Cookie(COOKIE_KEY, value);
-            cookie.setComment("조회수 중복 증가 방지");
             cookie.setMaxAge(getTimeForExpired());
             cookie.setSecure(true);
             cookie.setHttpOnly(true);
