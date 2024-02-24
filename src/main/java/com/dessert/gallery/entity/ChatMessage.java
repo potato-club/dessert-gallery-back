@@ -1,6 +1,6 @@
 package com.dessert.gallery.entity;
 
-import com.dessert.gallery.dto.chat.ChatMessageDto;
+import com.dessert.gallery.dto.chat.MessageStatusDto;
 import com.dessert.gallery.enums.MessageType;
 import lombok.*;
 
@@ -35,7 +35,7 @@ public class ChatMessage {
     @Column
     private LocalDateTime localDateTime;
 
-    public ChatMessage(ChatRoom chatRoom, LocalDateTime localDateTime, ChatMessageDto dto) {
+    public ChatMessage(ChatRoom chatRoom, LocalDateTime localDateTime, MessageStatusDto dto) {
         this.sender = dto.getSender();
         this.chatRoom = chatRoom;
         this.message = dto.getMessage();

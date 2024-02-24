@@ -3,9 +3,11 @@ package com.dessert.gallery.dto.chat.list;
 import com.dessert.gallery.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 @AllArgsConstructor
 public class ChatRecentMessageDto {
 
@@ -23,4 +25,7 @@ public class ChatRecentMessageDto {
 
     @Schema(description = "메시지 타입")
     private MessageType messageType;
+
+    @Schema(description = "메시지 타입")
+    private String lastChatDatetime;
 }
