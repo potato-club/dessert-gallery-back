@@ -1,7 +1,8 @@
 package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.chat.ChatMessageDto;
-import com.dessert.gallery.dto.chat.ChatRoomDto;
+import com.dessert.gallery.dto.chat.list.ChatRecentMessageDto;
+import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.dto.chat.RoomCreateDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.ErrorCode;
@@ -11,7 +12,6 @@ import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.*;
 import com.dessert.gallery.service.Interface.ChatService;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -128,15 +128,13 @@ public class ChatServiceImpl implements ChatService {
         QChatRoom qChatRoom = QChatRoom.chatRoom;
         QChatMessage qChatMessage = QChatMessage.chatMessage;
 
-        JPAQuery<ChatRoomDto> query = jpaQueryFactory
+        List<ChatRecentMessageDto> chatList = jpaQueryFactory
                 .select(
                         Projections.constructor(
-                                ChatRoomDto.class,
+                                ChatRecentMessageDto.class,
                                 qChatRoom.id.as("roomId"),
                                 qChatRoom.store.name.as("storeName"),
-                                qChatRoom.customer.nickname.as("customerName"),
-                                qChatMessage.message.as("thumbnailMessage"),
-                                qChatMessage.messageType.as("messageType")
+                                qChatRoom.customer.nickname.as("customerName")
                         )
                 )
                 .from(qChatRoom)
@@ -145,9 +143,12 @@ public class ChatServiceImpl implements ChatService {
                 .distinct()
                 .orderBy(qChatMessage.localDateTime.desc())
                 .offset((page - 1) * 10L)
-                .limit(10);
+                .limit(10)
+                .fetch();
 
-        return query.fetch();
+        Queue<ChatMessageDto> queue = messageMap.get(roomId, time);
+
+        return
     }
 
     @Override

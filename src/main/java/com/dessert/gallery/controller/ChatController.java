@@ -1,18 +1,15 @@
 package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.chat.ChatMessageDto;
-import com.dessert.gallery.dto.chat.ChatRoomDto;
+import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.dto.chat.RoomCreateDto;
-import com.dessert.gallery.entity.ChatMessage;
 import com.dessert.gallery.repository.RedisChatMessageCache;
 import com.dessert.gallery.service.Interface.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 

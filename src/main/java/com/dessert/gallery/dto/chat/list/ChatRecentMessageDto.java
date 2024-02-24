@@ -1,13 +1,13 @@
-package com.dessert.gallery.dto.chat;
+package com.dessert.gallery.dto.chat.list;
 
 import com.dessert.gallery.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @AllArgsConstructor
-public class ChatRoomDto {
+public class ChatRecentMessageDto {
 
     @Schema(description = "채팅방 ID")
     private Long roomId;
