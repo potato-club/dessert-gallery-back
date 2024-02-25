@@ -11,8 +11,10 @@ import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -73,8 +75,12 @@ public class UserController {
 
     @Operation(summary = "북마크 게시글 확인 API")
     @GetMapping("/bookmark")
-    public List<BoardListResponseDto> viewBookmark(HttpServletRequest request) {
-        return bookmarkService.getBookmarks(request);
+    public Slice<BoardListResponseDto> viewBookmark(HttpServletRequest request,
+                                                    @Parameter(name = "page", description = "페이지 정보")
+                                                   @RequestParam(value = "page",
+                                                           required = false,
+                                                           defaultValue = "1") int page) {
+        return bookmarkService.getBookmarks(request, page);
     }
 
     @Operation(summary = "로그아웃 API")
