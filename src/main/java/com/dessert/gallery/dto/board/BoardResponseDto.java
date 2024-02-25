@@ -1,6 +1,7 @@
 package com.dessert.gallery.dto.board;
 
 import com.dessert.gallery.dto.file.FileDto;
+import com.dessert.gallery.dto.store.StoreInfoDtoForBoard;
 import com.dessert.gallery.entity.StoreBoard;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class BoardResponseDto {
     @Schema(description = "게시글 이미지 파일")
     private List<FileDto> images;
     @Schema(description = "게시글 해시태그")
-    private List<String> tags = new ArrayList<>();
+    private List<String> tags;
     @Schema(description = "유저의 북마크 여부")
     private boolean isBookmark = false;
     @Schema(description = "가게 사장님 여부")
@@ -31,6 +32,8 @@ public class BoardResponseDto {
     private int viewCount;
     @Schema(description = "게시글의 댓글 수")
     private int commentCount;
+    @Schema(description = "게시글의 가게 정보")
+    private StoreInfoDtoForBoard storeInfo;
 
     public BoardResponseDto(StoreBoard board, int commentCount) {
         this.title = board.getTitle();
@@ -41,6 +44,7 @@ public class BoardResponseDto {
         this.tags = convertTags(board.getTags());
         this.viewCount = board.getView();
         this.commentCount = commentCount;
+        this.storeInfo = new StoreInfoDtoForBoard(board.getStore());
     }
 
     public void updateView(int view) {
