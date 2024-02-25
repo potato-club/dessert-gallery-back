@@ -4,7 +4,6 @@ import com.dessert.gallery.dto.follow.FollowResponseDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
-import com.dessert.gallery.error.exception.ForbiddenException;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
@@ -39,6 +38,11 @@ public class FollowServiceImpl implements FollowService {
         String email = this.getUserEmail(request);
 
         User user = userRepository.findByEmail(email).orElseThrow();
+
+        if (user.getUserRole().equals(UserRole.MANAGER)) {
+            throw new UnAuthorizedException("Do not subscribe store.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
+
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
             throw new UnAuthorizedException("Not Found", ErrorCode.ACCESS_DENIED_EXCEPTION);
         });
