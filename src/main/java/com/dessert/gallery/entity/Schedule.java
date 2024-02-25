@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Schedule {
+public class Schedule extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,7 +34,11 @@ public class Schedule {
     private Boolean completed;
 
     @Column
-    private String client;
+    private Boolean submitReview;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_uid")
+    private User client;
 
     public Schedule(ScheduleRequestDto requestDto, Calendar calendar) {
         this.dateTime = LocalDate.parse(requestDto.getDate(),
@@ -43,17 +47,22 @@ public class Schedule {
         this.calendar = calendar;
     }
 
-    public Schedule(ReservationRequestDto requestDto, Calendar calendar) {
+    public Schedule(ReservationRequestDto requestDto, User client, Calendar calendar) {
         this.dateTime = requestDto.getDateTime();
         this.type = ScheduleType.RESERVATION;
-        this.client = requestDto.getClient();
+        this.client = client;
         this.calendar = calendar;
         this.completed = false;
+        this.submitReview = false;
     }
 
     public Schedule toggleSchedule() {
         this.completed = !this.completed;
         return this;
+    }
+
+    public void submitReview() {
+        this.submitReview = true;
     }
 
     public void removeSchedule() {

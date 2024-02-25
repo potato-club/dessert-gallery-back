@@ -22,10 +22,10 @@ public class ReservationResponseDto implements Comparable<ReservationResponseDto
     @Schema(description = "체크 여부")
     private Boolean checked;
 
-    public ReservationResponseDto(Schedule schedule) {
+    public ReservationResponseDto(Schedule schedule, String nickname) {
         this.id = schedule.getId();
         this.dateTime = schedule.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-        this.client = schedule.getClient();
+        this.client = nickname;
         this.checked = schedule.getCompleted();
     }
 

@@ -1,9 +1,7 @@
 package com.dessert.gallery.controller;
 
-import com.dessert.gallery.dto.review.MyReviewListDto;
-import com.dessert.gallery.dto.review.ReviewListResponseDto;
-import com.dessert.gallery.dto.review.ReviewRequestDto;
-import com.dessert.gallery.dto.review.ReviewUpdateDto;
+import com.dessert.gallery.dto.review.*;
+import com.dessert.gallery.dto.store.StoreWritableReviewDto;
 import com.dessert.gallery.service.Interface.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +26,13 @@ import java.util.List;
 @Tag(name = "Review Board Controller", description = "리뷰 게시판 API")
 public class ReviewController {
     private final ReviewService reviewService;
+
+    @Operation(summary = "리뷰 작성 가능한 가게 조회 API - 회원")
+    @GetMapping("/writable")
+    public ResponseEntity<List<StoreWritableReviewDto>> getWritableReview(HttpServletRequest request) {
+        List<StoreWritableReviewDto> dtoList = reviewService.getStoreListWritableReview(request);
+        return ResponseEntity.ok(dtoList);
+    }
 
     @Operation(summary = "가게 리뷰 조회")
     @GetMapping("/stores/{storeId}")
