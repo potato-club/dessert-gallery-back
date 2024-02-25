@@ -1,5 +1,6 @@
 package com.dessert.gallery.controller;
 
+import com.dessert.gallery.dto.board.BoardListResponseDtoForChat;
 import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
 import com.dessert.gallery.dto.memo.MemoRequestDto;
@@ -10,15 +11,13 @@ import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
 import com.dessert.gallery.dto.store.StoreUpdateDto;
-import com.dessert.gallery.service.Interface.CalendarService;
-import com.dessert.gallery.service.Interface.MemoService;
-import com.dessert.gallery.service.Interface.ScheduleService;
-import com.dessert.gallery.service.Interface.StoreService;
+import com.dessert.gallery.service.Interface.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +34,7 @@ import java.time.LocalDateTime;
 @Tag(name = "Store Controller", description = "가게 API")
 public class StoreController {
     private final StoreService storeService;
+    private final StoreBoardService boardService;
     private final CalendarService calendarService;
     private final ScheduleService scheduleService;
     private final MemoService memoService;
@@ -98,6 +98,14 @@ public class StoreController {
         if (month == 0) month = now.getMonthValue();
 
         return calendarService.getCalendarByStore(storeId, year, month);
+    }
+
+    @Operation(summary = "채팅방에서 특정 가게의 게시글 리스트 출력 API")
+    @GetMapping("/{storeId}/chat/boards")
+    public Slice<BoardListResponseDtoForChat> getBoardListForChat(@PathVariable(name = "storeId") Long storeId,
+                                                                  @Parameter(name = "last", description = "이전 조회된 공지의 마지막 id값")
+                                                                 @RequestParam(value = "last", required = false) Long last) {
+        return boardService.getBoardListForChat(storeId, last);
     }
 
     @Operation(summary = "가게 생성 API")

@@ -51,9 +51,6 @@ public class StoreBoardController {
         return boardService.getBoardsByStore(storeId, page);
     }
 
-//    @Operation(summary = "채팅창 게시글 리스트 출력 API")
-
-
     @Operation(summary = "가게 게시글 작성")
     @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> createStoreBoard(@Parameter(description = "게시글 정보 - BoardRequestDto", content =
