@@ -15,6 +15,7 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.CalendarRepository;
 import com.dessert.gallery.repository.ScheduleRepository;
+import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Interface.ScheduleService;
 import com.dessert.gallery.service.Interface.UserService;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
-import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
+import static com.dessert.gallery.error.ErrorCode.*;
 
 @Service
 @Slf4j
@@ -42,6 +42,7 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 public class ScheduleServiceImpl implements ScheduleService {
     private final CalendarRepository calendarRepository;
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
 
     @Override
@@ -59,15 +60,15 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .existsByCalendarAndDateTimeAndType(calendar, dateTime, ScheduleType.EVENT);
 
         if (requestDto.getKey() != 2 && requestDto.getKey() != 3) {
-            throw new BadRequestException("잘못된 스케줄 타입 입력", ErrorCode.RUNTIME_EXCEPTION);
+            throw new BadRequestException("잘못된 스케줄 타입 입력", RUNTIME_EXCEPTION);
         }
 
         if (isHoliday && requestDto.getKey() == 2) {
-            throw new DuplicateException("스케줄 등록 중복", ErrorCode.CONFLICT_EXCEPTION);
+            throw new DuplicateException("스케줄 등록 중복", CONFLICT_EXCEPTION);
         }
 
         if (isEvent && requestDto.getKey() == 3) {
-            throw new DuplicateException("스케줄 등록 중복", ErrorCode.CONFLICT_EXCEPTION);
+            throw new DuplicateException("스케줄 등록 중복", CONFLICT_EXCEPTION);
         }
 
         Schedule schedule = new Schedule(requestDto, calendar);
@@ -80,7 +81,12 @@ public class ScheduleServiceImpl implements ScheduleService {
         User owner = userService.findUserByToken(request);
         Calendar calendar = calendarRepository.findByStore_User(owner);
 
-        Schedule schedule = new Schedule(requestDto, calendar);
+        User client = userRepository.findByNickname(requestDto.getClient())
+                .orElseThrow(() -> {
+                    throw new NotFoundException("존재하지 않는 client nickname", NOT_FOUND_EXCEPTION);
+                });
+
+        Schedule schedule = new Schedule(requestDto, client, calendar);
         Schedule saveSchedule = scheduleRepository.save(schedule);
         calendar.addSchedule(saveSchedule);
     }
@@ -97,7 +103,11 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
 
         if (schedule.getType() != ScheduleType.RESERVATION) {
-            throw new BadRequestException("예약 스케줄만 체크할 수 있습니다.", ErrorCode.RUNTIME_EXCEPTION);
+            throw new BadRequestException("예약 스케줄만 체크할 수 있습니다.", RUNTIME_EXCEPTION);
+        }
+
+        if (schedule.getSubmitReview()) {
+            throw new BadRequestException("이미 리뷰 등록된 스케줄입니다.", SCHEDULE_EXCEPTION_1);
         }
 
         Schedule newSchedule = schedule.toggleSchedule();
@@ -111,8 +121,18 @@ public class ScheduleServiceImpl implements ScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
 
+        LocalDateTime reviewWritableMaxDate = LocalDateTime.now().minusDays(7);
+
         if (schedule.getCalendar().getStore().getUser() != user)
             throw new UnAuthorizedException("401 권한 없음", NOT_ALLOW_WRITE_EXCEPTION);
+
+        // 예약 스케줄이면서 리뷰 등록이 안됐다면 픽업 완료 처리 + 수정 날짜가 7일이 안넘었을 경우 삭제 불가
+        if (schedule.getType() == ScheduleType.RESERVATION && !schedule.getSubmitReview()) {
+            if (schedule.getCompleted() &&
+                    schedule.getModifiedDate().isAfter(reviewWritableMaxDate)) {
+                throw new BadRequestException("픽업 완료 된 예약 스케줄은 완료 처리 7일 후 삭제 가능", SCHEDULE_EXCEPTION_2);
+            }
+        }
 
         schedule.removeSchedule();
         scheduleRepository.delete(schedule);
@@ -148,7 +168,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         for (Schedule schedule : scheduleList) {
             if (schedule.getType() == ScheduleType.RESERVATION) {
-                reservationList.add(new ReservationResponseDto(schedule));
+                reservationList.add(new ReservationResponseDto(schedule, schedule.getClient().getNickname()));
             }
 
             if (schedule.getType() == ScheduleType.HOLIDAY) {

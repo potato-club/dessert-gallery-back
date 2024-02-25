@@ -15,6 +15,7 @@ public interface StoreBoardService {
     StoreBoard getBoard(Long boardId);
     BoardResponseDto getBoardDto(Long boardId, HttpServletRequest request, HttpServletResponse response);
     Slice<BoardListResponseDto> getBoardsByStore(Long storeId, int page);
+    Slice<BoardListResponseDtoForChat> getBoardListForChat(Long storeId, Long last);
     List<BoardListResponseDtoForMap> getBoardsForMap(Store store);
     void createBoard(BoardRequestDto requestDto,
                      List<MultipartFile> images,HttpServletRequest request) throws IOException;

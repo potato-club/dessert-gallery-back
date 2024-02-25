@@ -3,12 +3,14 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.dto.review.*;
+import com.dessert.gallery.dto.store.StoreWritableReviewDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.ReviewBoardRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,6 +90,29 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public List<StoreWritableReviewDto> getStoreListWritableReview(HttpServletRequest request) {
+        User client = userService.findUserByToken(request);
+
+        // store 가 같은 스케줄은 dateTime 이 제일 큰 스케줄만 가져와서 저장
+        // 스케줄은 가장 최근에 픽업 완료된 순서대로 보여줌
+        List<Schedule> checkedSchedules = jpaQueryFactory.select(QSchedule.schedule).from(QSchedule.schedule)
+                .where(QSchedule.schedule.completed.isTrue().and(QSchedule.schedule.submitReview.isFalse())
+                        .and(QSchedule.schedule.client.eq(client)))
+                .groupBy(QSchedule.schedule.id, QSchedule.schedule.calendar.store)
+                .having(QSchedule.schedule.dateTime.eq(
+                        JPAExpressions.select(QSchedule.schedule.dateTime.max())
+                                .from(QSchedule.schedule)
+                                .where(QSchedule.schedule.calendar.store.eq(QSchedule.schedule.calendar.store))
+                ))
+                .orderBy(QSchedule.schedule.modifiedDate.desc())
+                .fetch();
+
+        return checkedSchedules.stream()
+                .map(s -> new StoreWritableReviewDto(s.getCalendar().getStore()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void addReview(Long storeId, ReviewRequestDto requestDto,
                           List<MultipartFile> images, HttpServletRequest request) throws IOException {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
@@ -95,6 +120,17 @@ public class ReviewServiceImpl implements ReviewService {
         });
 
         User user = userService.findUserByToken(request);
+
+        Schedule schedule = jpaQueryFactory.select(QSchedule.schedule).from(QSchedule.schedule)
+                .where(QSchedule.schedule.completed.isTrue().and(QSchedule.schedule.submitReview.isFalse())
+                        .and(QSchedule.schedule.client.eq(user).and(QSchedule.schedule.calendar.store.eq(store))))
+                .orderBy(QSchedule.schedule.dateTime.desc())
+                .fetchFirst();
+
+        if (schedule == null) {
+            throw new UnAuthorizedException("픽업 완료한 가게만 리뷰 작성 가능", NOT_ALLOW_WRITE_EXCEPTION);
+        }
+
         ReviewBoard review = new ReviewBoard(requestDto, store, user);
         ReviewBoard saveReview = reviewRepository.save(review);
 
@@ -104,6 +140,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         addScore(store, requestDto.getScore());
+        schedule.submitReview();
     }
 
     @Override

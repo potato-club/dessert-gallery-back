@@ -109,6 +109,42 @@ public class StoreBoardServiceImpl implements StoreBoardService {
     }
 
     @Override
+    public Slice<BoardListResponseDtoForChat> getBoardListForChat(Long storeId, Long last) {
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
+            throw new NotFoundException("존재하지 않는 가게", NOT_FOUND_EXCEPTION);
+        });
+
+        Pageable pageable = PageRequest.ofSize(10);
+
+        BooleanBuilder whereQuery = new BooleanBuilder();
+        whereQuery.and(QStoreBoard.storeBoard.store.eq(store)).and(QStoreBoard.storeBoard.deleted.isFalse());
+
+        if (last != null) {
+            whereQuery.and(QStoreBoard.storeBoard.id.lt(last));
+        }
+
+        // 해당 가게에서 삭제처리 되지 않은 게시글 리스트를 최신순으로 가져옴
+        List<StoreBoard> boardList = jpaQueryFactory.select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
+                .where(whereQuery)
+                .orderBy(QStoreBoard.storeBoard.createdDate.desc())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        return transType(boardList, pageable);
+    }
+
+    private Slice<BoardListResponseDtoForChat> transType(List<StoreBoard> boardList, Pageable pageable) {
+        boolean hasNext = false;
+
+        if (boardList.size() > pageable.getPageSize()) {
+            hasNext = true;
+            boardList.remove(pageable.getPageSize());
+        }
+        Slice<StoreBoard> slice = new SliceImpl<>(boardList, pageable, hasNext);
+        return slice.map(BoardListResponseDtoForChat::new);
+    }
+
+    @Override
     public List<BoardListResponseDtoForMap> getBoardsForMap(Store store) {
         List<StoreBoard> boards = jpaQueryFactory.select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
                 .where(QStoreBoard.storeBoard.store.eq(store).and(QStoreBoard.storeBoard.deleted.isFalse()))
