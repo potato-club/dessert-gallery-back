@@ -33,13 +33,13 @@ public class ChatMessage {
     private MessageType messageType;
 
     @Column
-    private LocalDateTime localDateTime;
+    private String dateTime;
 
-    public ChatMessage(ChatRoom chatRoom, LocalDateTime localDateTime, MessageStatusDto dto) {
+    public ChatMessage(ChatRoom chatRoom, String dateTime, MessageStatusDto dto) {
         this.sender = dto.getSender();
         this.chatRoom = chatRoom;
         this.message = dto.getMessage();
         this.messageType = dto.getMessageType();
-        this.localDateTime = localDateTime;
+        this.dateTime = dateTime;
     }
 }

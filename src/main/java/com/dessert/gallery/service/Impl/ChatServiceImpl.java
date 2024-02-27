@@ -21,7 +21,6 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -41,10 +40,10 @@ public class ChatServiceImpl implements ChatService {
     private static final int messagePageableSize = 30; // roomId에 종속된 큐에 보관할 메세지의 양
     private final EntityManager em;
 
-
     @Override
     public Long createRoom(RoomCreateDto roomCreateDto, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+
         User customer = userRepository.findByEmail(email).orElseThrow();
         Store store = storeRepository.findById(roomCreateDto.getStoreId()).orElseThrow();
 
@@ -57,11 +56,12 @@ public class ChatServiceImpl implements ChatService {
                 .store(store)
                 .build();
 
-        ChatRoom createRoom = chatRoomRepository.save(chatRoom);
-        messageMap.putChatList(customer.getUid(), null);
-        messageMap.putRoomIdForUid(createRoom.getId(), customer.getUid());
+        chatRoomRepository.save(chatRoom);
 
-        return createRoom.getId();
+        messageMap.putChatList(customer.getUid(), null);
+        messageMap.putRoomIdForUid(chatRoom.getId(), customer.getUid());
+
+        return chatRoom.getId();
     }
 
     @Override
@@ -126,7 +126,7 @@ public class ChatServiceImpl implements ChatService {
 
             String uid;
 
-            if (messageMap.getUid(chatRoomId) != null) {    // Redis 에 uid 가 존재하는지 확인
+            if (messageMap.getUid(chatRoomId).equals("")) {    // Redis 에 uid 가 존재하는지 확인
                 uid = messageMap.getUid(chatRoomId);
             } else {
                 uid = chatRoomRepository.findById(chatRoomId).get().getCustomer().getUid();
@@ -158,6 +158,10 @@ public class ChatServiceImpl implements ChatService {
         List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
         List<RedisRecentChatDto> list = messageMap.getChatList(user.get().getUid());
 
+        if (list == null) {
+            return new ChatRoomDto(0, null);
+        }
+
         for (int i = (page - 1) * 10; i < page * 10; i++) {
             if (list.size() <= i) {
                 break;
@@ -167,7 +171,7 @@ public class ChatServiceImpl implements ChatService {
                     .roomId(list.get(i).getRoomId())
                     .thumbnailMessage(list.get(i).getThumbnailMessage())
                     .messageType(list.get(i).getMessageType())
-                    .lastChatDatetime(list.get(i).getTimestamp())
+                    .lastChatDatetime(list.get(i).getDateTime())
                     .build();
 
             chatRecentMessageDtos.add(dto);
@@ -217,13 +221,10 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private List<MessageStatusDto> getMessagesInDB(Long roomId, String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate date = LocalDate.parse(time, formatter);
+        String start = time + " " + "00:00:00"; // yyyy-MM-dd 00:00:00
+        String end = time + " " + "23:59:59"; // yyyy-MM-dd 23:59:59
 
-        LocalDateTime start = date.atStartOfDay(); // yyyy-MM-dd 00:00:00
-        LocalDateTime end = date.atTime(23, 59, 59); // yyyy-MM-dd 23:59:59
-
-        return chatMessageRepository.findByChatRoomIdAndLocalDateTimeBetweenOrderByLocalDateTimeDesc(roomId, start, end);
+        return chatMessageRepository.findByChatRoomIdAndDateTimeBetweenOrderByDateTimeDesc(roomId, start, end);
     }
 
     private List<MessageStatusDto> getMessagesInCache(Long roomId, String time) {
@@ -232,14 +233,11 @@ public class ChatServiceImpl implements ChatService {
 
     private void commitMessageDeque(Deque<MessageStatusDto> messageDeque, ChatRoom chatRoom) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
         // 쓰기 지연
         for (int i = 0; i < messageDeque.size(); i++) {
             MessageStatusDto dto = Objects.requireNonNull(messageDeque.poll());
-            LocalDateTime dateTime = LocalDateTime.parse(dto.getDateTime(), formatter);
+            ChatMessage message = new ChatMessage(chatRoom, dto.getDateTime(), dto);
 
-            ChatMessage message = new ChatMessage(chatRoom, dateTime, dto);
             em.persist(message);
         }
 
