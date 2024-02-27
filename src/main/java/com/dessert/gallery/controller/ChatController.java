@@ -4,6 +4,7 @@ import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.MessageStatusDto;
 import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.dto.chat.RoomCreateDto;
+import com.dessert.gallery.repository.RedisChatMessageCache;
 import com.dessert.gallery.service.Interface.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +23,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisChatMessageCache redisChatMessageCache;
 
     @Operation(summary = "채팅방 생성 API")
     @PostMapping("/mypage/room")
@@ -53,5 +55,12 @@ public class ChatController {
     public ResponseEntity<String> deleteRoom(@PathVariable Long roomId, HttpServletRequest request) {
         chatService.deleteRoom(roomId, request);
         return ResponseEntity.ok("채팅방에서 나가셨습니다.");
+    }
+
+    @Operation(summary = "Redis 데이터 초기화 API")
+    @DeleteMapping("/redis")
+    public ResponseEntity<String> deleteCache() {
+        redisChatMessageCache.deleteAll();
+        return ResponseEntity.ok("Redis 캐쉬 삭제가 완료되었습니다.");
     }
 }

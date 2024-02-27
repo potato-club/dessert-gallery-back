@@ -126,11 +126,11 @@ public class RedisChatMessageCache {
         redisChatTemplate.delete(uid);
     }
 
-//    public void deleteAll() {
-//        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushDb();
-//        Objects.requireNonNull(redisChatTemplate.getConnectionFactory()).getConnection().flushDb();
-//        Objects.requireNonNull(redisSimpleTemplate.getConnectionFactory()).getConnection().flushDb();
-//    }
+    public void deleteAll() {
+        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushDb();
+        Objects.requireNonNull(redisChatTemplate.getConnectionFactory()).getConnection().flushDb();
+        Objects.requireNonNull(redisSimpleTemplate.getConnectionFactory()).getConnection().flushDb();
+    }
 
     private String generateKey(Long roomId, String time) {
         return roomId.toString() + ":" + time;
