@@ -22,18 +22,22 @@ public class RedisRecentChatDto implements Comparable<RedisRecentChatDto> {
     private MessageType messageType;
 
     @Schema(description = "저장된 시간")
-    private String timestamp;
+    private String dateTime;
 
     @Override
     public int compareTo(RedisRecentChatDto dto) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime time1 = LocalDateTime.parse(timestamp, formatter);
-        LocalDateTime time2 = LocalDateTime.parse(dto.getTimestamp(), formatter);
+        LocalDateTime time1 = LocalDateTime.parse(dateTime, formatter);
+        LocalDateTime time2 = LocalDateTime.parse(dto.getDateTime(), formatter);
 
         if (time1.isBefore(time2)) {
-            return -1;
-        } else {
             return 1;
+        } else {
+            return -1;
         }
+    }
+
+    public RedisRecentChatDto() {
+
     }
 }

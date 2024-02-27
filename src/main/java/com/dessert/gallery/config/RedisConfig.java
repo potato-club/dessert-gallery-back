@@ -1,6 +1,5 @@
 package com.dessert.gallery.config;
 
-import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.MessageStatusDto;
 import com.dessert.gallery.dto.chat.list.RedisRecentChatDto;
 import org.springframework.beans.factory.annotation.Value;

@@ -34,7 +34,24 @@ public class RedisChatMessageCache {
             list = redisChatTemplate.opsForValue().get(uid);
 
             assert list != null;
-            list.add(redisRecentChatDto);
+            boolean isDuplicate = false;
+
+            for (RedisRecentChatDto chatDto : list) {
+                if (chatDto.getRoomId().equals(redisRecentChatDto.getRoomId())) {
+                    // 중복된 roomId가 있는 경우 수정
+                    chatDto.setThumbnailMessage(redisRecentChatDto.getThumbnailMessage());
+                    chatDto.setMessageType(redisRecentChatDto.getMessageType());
+                    chatDto.setDateTime(redisRecentChatDto.getDateTime());
+
+                    isDuplicate = true;
+                    break;
+                }
+            }
+
+            if (!isDuplicate) {
+                // 중복된 roomId가 없는 경우 추가
+                list.add(redisRecentChatDto);
+            }
 
             Collections.sort(list);
         } else {
@@ -111,6 +128,8 @@ public class RedisChatMessageCache {
 
 //    public void deleteAll() {
 //        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushDb();
+//        Objects.requireNonNull(redisChatTemplate.getConnectionFactory()).getConnection().flushDb();
+//        Objects.requireNonNull(redisSimpleTemplate.getConnectionFactory()).getConnection().flushDb();
 //    }
 
     private String generateKey(Long roomId, String time) {
