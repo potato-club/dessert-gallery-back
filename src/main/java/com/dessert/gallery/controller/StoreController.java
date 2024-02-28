@@ -103,7 +103,7 @@ public class StoreController {
     @Operation(summary = "채팅방에서 특정 가게의 게시글 리스트 출력 API")
     @GetMapping("/{storeId}/chat/boards")
     public Slice<BoardListResponseDtoForChat> getBoardListForChat(@PathVariable(name = "storeId") Long storeId,
-                                                                  @Parameter(name = "last", description = "이전 조회된 공지의 마지막 id값")
+                                                                  @Parameter(name = "last", description = "이전 조회된 게시글의 마지막 id값")
                                                                  @RequestParam(value = "last", required = false) Long last) {
         return boardService.getBoardListForChat(storeId, last);
     }
