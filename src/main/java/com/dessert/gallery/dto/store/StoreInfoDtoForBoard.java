@@ -16,6 +16,9 @@ public class StoreInfoDtoForBoard {
     @Schema(description = "가게 주소")
     private String address;
 
+    @Schema(description = "가게 정보")
+    private String info;
+
     @Schema(description = "가게 프로필 이미지")
     private FileDto storeImage;
 
@@ -23,6 +26,7 @@ public class StoreInfoDtoForBoard {
         this.id = store.getId();
         this.name = store.getName();
         this.address = store.getAddress();
+        this.info = store.getInfo();
         this.storeImage = store.getImage() == null ? null : new FileDto(store.getImage());
     }
 }
