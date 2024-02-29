@@ -11,12 +11,9 @@ public class FollowResponseDto {
     @Schema(description = "가게 이름")
     private String storeName;
 
-    @Schema(description = "유저 닉네임")
-    private String nickname;
-
-    @Schema(description = "프로필 사진 이름")
+    @Schema(description = "가게 프로필 사진 이름")
     private String fileName;
 
-    @Schema(description = "프로필 사진 URL")
+    @Schema(description = "가게 프로필 사진 URL")
     private String fileUrl;
 }
