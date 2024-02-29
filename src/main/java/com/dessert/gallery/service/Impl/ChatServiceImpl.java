@@ -153,6 +153,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatRoomDto getMyChatRoomsList(int page, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+
+        if (email == null) {
+            throw new UnAuthorizedException("Unauthorized Token", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
+
         Optional<User> user = userRepository.findByEmail(email);
 
         List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();

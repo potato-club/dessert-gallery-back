@@ -94,31 +94,23 @@ public class FollowServiceImpl implements FollowService {
         String email = this.getUserEmail(request);
         UserRole userRole = jwtTokenProvider.getRoles(email);
 
-        BooleanBuilder whereBuilder = new BooleanBuilder();
-
-        switch (userRole) {
-            case USER: case ADMIN:
-                whereBuilder.and(QSubscribe.subscribe.user.email.eq(email));
-            case MANAGER:
-                whereBuilder.and(QSubscribe.subscribe.store.user.email.eq(email));
+        if (userRole.equals(UserRole.MANAGER)) {
+            throw new UnAuthorizedException("Access isn't permitted on the following.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
         JPAQuery<FollowResponseDto> query = jpaQueryFactory
                 .selectDistinct(
                         Projections.constructor(
                                 FollowResponseDto.class,
-                                QStore.store.name.as("storeName"),
-                                QUser.user.nickname.as("nickname"),
+                                QSubscribe.subscribe.store.name.as("storeName"),
                                 QFile.file.fileName.as("fileName"),
                                 QFile.file.fileUrl.as("fileUrl")
                         )
                 )
                 .from(QSubscribe.subscribe)
-                .leftJoin(QUser.user).on(QUser.user.email.eq(email))
-                .leftJoin(QStore.store).on(QStore.store.user.eq(QUser.user))
-                .leftJoin(QFile.file).on(QFile.file.store.eq(QStore.store)
-                        .or(QFile.file.user.eq(QUser.user)))
-                .where(whereBuilder.and(QSubscribe.subscribe.deleted.isFalse()))
+                .leftJoin(QFile.file).on(QFile.file.store.eq(QStore.store))
+                .where(QSubscribe.subscribe.user.email.eq(email)
+                        .and(QSubscribe.subscribe.deleted.isFalse()))
                 .orderBy(QSubscribe.subscribe.modifiedDate.desc())
                 .offset((page - 1) * 20L)
                 .limit(20);
