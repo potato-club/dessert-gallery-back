@@ -29,7 +29,7 @@ public class FollowContoller {
     @Operation(summary = "언팔로우 API")
     @PutMapping("/follow/{storeId}")
     public ResponseEntity<String> removeStoreFollowing(@PathVariable Long storeId, HttpServletRequest request) {
-        followService.removeStoreFollowing(storeId, request);
+        followService.removeFollowing(storeId, request);
         return ResponseEntity.ok("해당 손님/가게를 언팔로우했습니다.");
     }
 

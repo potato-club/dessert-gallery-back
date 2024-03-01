@@ -9,7 +9,7 @@ public interface FollowService {
 
     void addStoreFollowing(Long storeId, HttpServletRequest request);
 
-    void removeStoreFollowing(Long storeId, HttpServletRequest request);
+    void removeFollowing(Long storeId, HttpServletRequest request);
 
     List<FollowResponseDto> getFollowingList(int page, HttpServletRequest request);
 }

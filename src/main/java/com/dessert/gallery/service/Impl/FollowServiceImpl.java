@@ -7,11 +7,11 @@ import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
+import com.dessert.gallery.repository.BlackListRepository;
 import com.dessert.gallery.repository.StoreRepository;
 import com.dessert.gallery.repository.SubscribeRepository;
 import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Interface.FollowService;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,12 +31,12 @@ public class FollowServiceImpl implements FollowService {
     private final SubscribeRepository subscribeRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
+    private final BlackListRepository blackListRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     public void addStoreFollowing(Long storeId, HttpServletRequest request) {
         String email = this.getUserEmail(request);
-
         User user = userRepository.findByEmail(email).orElseThrow();
 
         if (user.getUserRole().equals(UserRole.MANAGER)) {
@@ -44,8 +44,12 @@ public class FollowServiceImpl implements FollowService {
         }
 
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
-            throw new UnAuthorizedException("Not Found", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Not Found data", ErrorCode.ACCESS_DENIED_EXCEPTION);
         });
+
+        if (blackListRepository.existsByUsernameAndStore(user.getNickname(), store)) {
+            throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
 
         if (store.getUser().equals(user)) {
             throw new UnAuthorizedException("Do not subscribe same user.", ErrorCode.ACCESS_DENIED_EXCEPTION);
@@ -67,7 +71,7 @@ public class FollowServiceImpl implements FollowService {
     }
 
     @Override
-    public void removeStoreFollowing(Long storeId, HttpServletRequest request) {
+    public void removeFollowing(Long storeId, HttpServletRequest request) {
         String email = this.getUserEmail(request);
         UserRole userRole = jwtTokenProvider.getRoles(email);
 
@@ -78,13 +82,10 @@ public class FollowServiceImpl implements FollowService {
                 if (subUser == null) {
                     throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
                 }
+
                 subUser.setDeleted(true);
             case MANAGER:
-                Subscribe subStore = subscribeRepository.findByStoreId(storeId);
-                if (subStore == null) {
-                    throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
-                }
-                subStore.setDeleted(true);
+                throw new UnAuthorizedException("Access isn't permitted on the unfollowing.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
     }
 
@@ -108,7 +109,7 @@ public class FollowServiceImpl implements FollowService {
                         )
                 )
                 .from(QSubscribe.subscribe)
-                .leftJoin(QFile.file).on(QFile.file.store.eq(QStore.store))
+                .leftJoin(QFile.file).on(QFile.file.store.eq(QSubscribe.subscribe.store))
                 .where(QSubscribe.subscribe.user.email.eq(email)
                         .and(QSubscribe.subscribe.deleted.isFalse()))
                 .orderBy(QSubscribe.subscribe.modifiedDate.desc())
