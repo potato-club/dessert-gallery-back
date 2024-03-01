@@ -110,12 +110,7 @@ public class BlackListServiceImpl implements BlackListService {
     }
 
     @Override
-    public void validateBlackList(Long storeId, HttpServletRequest request) {
-        User user = this.getUserInstance(request);
-        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
-            throw new NotFoundException("Not found data", ErrorCode.NOT_FOUND_EXCEPTION);
-        });
-
+    public void validateBlackList(Store store, User user) {
         if (blackListRepository.existsByUserAndStore(user, store)) {
             throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
