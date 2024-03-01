@@ -55,14 +55,12 @@ public class BlackListServiceImpl implements BlackListService {
                     .deleted(false)
                     .build();
 
-            Subscribe subscribe = Subscribe.builder()
-                    .user(user)
-                    .store(store)
-                    .deleted(true)
-                    .build();
+            if (subscribeRepository.existsByStoreAndUser(store, customer)) {
+                Subscribe subscribe = subscribeRepository.findByUser(customer);
+                subscribe.setDeleted(true);
+            }
 
             blackListRepository.save(blackList);
-            subscribeRepository.save(subscribe);
         }
     }
 
