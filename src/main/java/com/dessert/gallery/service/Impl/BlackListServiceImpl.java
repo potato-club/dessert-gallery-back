@@ -111,7 +111,9 @@ public class BlackListServiceImpl implements BlackListService {
 
     @Override
     public void validateBlackList(Store store, User user) {
-        if (blackListRepository.existsByUserAndStore(user, store)) {
+        BlackList blackList = blackListRepository.findByStoreAndUser(store, user);
+
+        if (blackList != null && !blackList.isDeleted()) {
             throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
     }
