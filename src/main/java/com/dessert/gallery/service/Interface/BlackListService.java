@@ -13,4 +13,6 @@ public interface BlackListService {
     void removeBlackList(BlackListRequestDto blackListRequestDto, HttpServletRequest request);
 
     List<BlackListResponseDto> getBlackList(int page, HttpServletRequest request);
+
+    void validateBlackList(Long storeId, HttpServletRequest request);
 }
