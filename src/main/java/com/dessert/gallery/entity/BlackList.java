@@ -22,8 +22,9 @@ public class BlackList extends BaseTimeEntity {
     @Column(columnDefinition = "TINYINT(1)")
     private boolean deleted;
 
-    @Column(nullable = false)
-    private String username;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "users_uid")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stores_id")

@@ -42,7 +42,7 @@ public class BlackListServiceImpl implements BlackListService {
 
         Store store = storeRepository.findByUser(user);
 
-        if (blackListRepository.existsByUsernameAndStore(customer.getNickname(), store)) {
+        if (blackListRepository.existsByUserAndStore(customer, store)) {
             BlackList blackList = blackListRepository.findByStore(store);
             Subscribe subscribe = subscribeRepository.findByUserAndStore(user, store);
 
@@ -50,7 +50,7 @@ public class BlackListServiceImpl implements BlackListService {
             subscribe.setDeleted(true);
         } else {
             BlackList blackList = BlackList.builder()
-                    .username(customer.getNickname())
+                    .user(customer)
                     .store(store)
                     .deleted(false)
                     .build();
@@ -71,7 +71,7 @@ public class BlackListServiceImpl implements BlackListService {
 
         Store store = storeRepository.findByUser(user);
 
-        if (blackListRepository.existsByUsernameAndStore(customer.getNickname(), store)) {
+        if (blackListRepository.existsByUserAndStore(customer, store)) {
             BlackList blackList = blackListRepository.findByStore(store);
             blackList.setDeleted(true);
         } else {
@@ -87,24 +87,38 @@ public class BlackListServiceImpl implements BlackListService {
             throw new UnAuthorizedException("Access isn't permitted on the blacklist.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
+        Store store = storeRepository.findByUser(user);
+
         JPAQuery<BlackListResponseDto> query = jpaQueryFactory
                 .selectDistinct(
                         Projections.constructor(
                                 BlackListResponseDto.class,
-                                QBlackList.blackList.username.as("userName"),
+                                QBlackList.blackList.user.nickname.as("userName"),
                                 QFile.file.fileName.as("fileName"),
                                 QFile.file.fileUrl.as("fileUrl")
                         )
                 )
                 .from(QBlackList.blackList)
                 .leftJoin(QFile.file).on(QFile.file.store.eq(QBlackList.blackList.store))
-                .where(QBlackList.blackList.username.eq(user.getNickname())
+                .where(QBlackList.blackList.store.eq(store)
                         .and(QBlackList.blackList.deleted.isFalse()))
                 .orderBy(QBlackList.blackList.modifiedDate.desc())
                 .offset((page - 1) * 20L)
                 .limit(20);
 
         return query.fetch();
+    }
+
+    @Override
+    public void validateBlackList(Long storeId, HttpServletRequest request) {
+        User user = this.getUserInstance(request);
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> {
+            throw new NotFoundException("Not found data", ErrorCode.NOT_FOUND_EXCEPTION);
+        });
+
+        if (blackListRepository.existsByUserAndStore(user, store)) {
+            throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        }
     }
 
     private User getUserInstance(HttpServletRequest request) {
