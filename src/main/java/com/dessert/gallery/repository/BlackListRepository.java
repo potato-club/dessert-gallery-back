@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BlackListRepository extends JpaRepository<BlackList, Long> {
 
-    BlackList findByStore(Store store);
+    BlackList findByStoreAndUser(Store store, User user);
     boolean existsByUserAndStore(User user, Store store);
 }

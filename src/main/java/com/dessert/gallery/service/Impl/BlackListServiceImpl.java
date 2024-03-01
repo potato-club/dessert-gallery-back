@@ -43,8 +43,8 @@ public class BlackListServiceImpl implements BlackListService {
         Store store = storeRepository.findByUser(user);
 
         if (blackListRepository.existsByUserAndStore(customer, store)) {
-            BlackList blackList = blackListRepository.findByStore(store);
-            Subscribe subscribe = subscribeRepository.findByUserAndStore(user, store);
+            BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
+            Subscribe subscribe = subscribeRepository.findByUserAndStore(customer, store);
 
             blackList.setDeleted(false);
             subscribe.setDeleted(true);
@@ -72,7 +72,7 @@ public class BlackListServiceImpl implements BlackListService {
         Store store = storeRepository.findByUser(user);
 
         if (blackListRepository.existsByUserAndStore(customer, store)) {
-            BlackList blackList = blackListRepository.findByStore(store);
+            BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
             blackList.setDeleted(true);
         } else {
             throw new NotFoundException("Not found data in blacklist", ErrorCode.NOT_FOUND_EXCEPTION);
