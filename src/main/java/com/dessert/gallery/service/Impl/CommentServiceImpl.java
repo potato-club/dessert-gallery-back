@@ -10,6 +10,7 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.BoardCommentRepository;
 import com.dessert.gallery.repository.FileRepository;
+import com.dessert.gallery.service.Interface.BlackListService;
 import com.dessert.gallery.service.Interface.CommentService;
 import com.dessert.gallery.service.Interface.StoreBoardService;
 import com.dessert.gallery.service.Interface.UserService;
@@ -34,6 +35,7 @@ import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 public class CommentServiceImpl implements CommentService {
     private final BoardCommentRepository commentRepository;
     private final StoreBoardService boardService;
+    private final BlackListService blackListService;
     private final FileRepository fileRepository;
     private final UserService userService;
 
@@ -49,7 +51,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseDto addComment(Long boardId, CommentRequestDto requestDto, HttpServletRequest request) {
         User user = userService.findUserByToken(request);
         StoreBoard board = boardService.getBoard(boardId);
+        blackListService.validateBlackList(board.getStore(), user);
+
         List<File> files = fileRepository.findByUser(user);
+
         BoardComment comment = !files.isEmpty() ?
                 BoardComment.builder()
                 .comment(requestDto.getComment())
@@ -62,6 +67,7 @@ public class CommentServiceImpl implements CommentService {
                 .board(board)
                 .user(user)
                 .build();
+
         BoardComment saveComment = commentRepository.save(comment);
         return new CommentResponseDto(saveComment);
     }
