@@ -3,13 +3,13 @@ package com.dessert.gallery.dto.chat.list;
 import com.dessert.gallery.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Data
-@AllArgsConstructor
 public class RedisRecentChatDto implements Comparable<RedisRecentChatDto> {
 
     @Schema(description = "Room Id")
@@ -35,6 +35,13 @@ public class RedisRecentChatDto implements Comparable<RedisRecentChatDto> {
         } else {
             return -1;
         }
+    }
+
+    public RedisRecentChatDto(Long roomId, String thumbnailMessage, MessageType messageType, String dateTime) {
+        this.roomId = roomId;
+        this.thumbnailMessage = thumbnailMessage;
+        this.messageType = messageType;
+        this.dateTime = dateTime;
     }
 
     public RedisRecentChatDto() {

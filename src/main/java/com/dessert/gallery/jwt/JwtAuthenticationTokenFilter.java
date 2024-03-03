@@ -30,7 +30,6 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        String ipAddress = request.getRemoteAddr();
 
         if (path.contains("/swagger") || path.contains("/v3/api-docs")) {   // 추후 ADMIN 권한을 가진 사람만 접근할 수 있도록 변경 예정.
             filterChain.doFilter(request, response);
@@ -48,11 +47,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         try {
             if (accessToken == null && refreshToken != null) {
-                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken, ipAddress)
+                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken)
                     && path.contains("/reissue")) {
                     filterChain.doFilter(request, response);
                 }
-            } else if (accessToken == null && refreshToken == null) {
+            } else if (accessToken == null) {
                 filterChain.doFilter(request, response);
                 return;
             } else {
