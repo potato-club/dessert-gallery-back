@@ -79,20 +79,19 @@ public class FollowServiceImpl implements FollowService {
         String email = this.getUserEmail(request);
         UserRole userRole = jwtTokenProvider.getRoles(email);
 
-        switch (userRole) {
-            case USER: case ADMIN:
-                User user = userRepository.findByEmail(email).orElseThrow();
-                Store store = storeRepository.findById(storeId).orElseThrow();
-                Subscribe subUser = subscribeRepository.findByUserAndStore(user, store);
-
-                if (subUser == null) {
-                    throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
-                }
-
-                subUser.setDeleted(true);
-            case MANAGER:
-                throw new UnAuthorizedException("Access isn't permitted on the unfollowing.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        if (userRole.equals(UserRole.MANAGER)) {
+            throw new UnAuthorizedException("Access isn't permitted on the unfollowing.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+        Store store = storeRepository.findById(storeId).orElseThrow();
+        Subscribe subUser = subscribeRepository.findByUserAndStore(user, store);
+
+        if (subUser == null) {
+            throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
+        subUser.setDeleted(true);
     }
 
     @Override
