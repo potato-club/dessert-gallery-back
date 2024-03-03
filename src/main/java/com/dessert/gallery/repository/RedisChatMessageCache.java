@@ -38,10 +38,9 @@ public class RedisChatMessageCache {
 
             for (RedisRecentChatDto chatDto : list) {
                 if (chatDto.getRoomId().equals(redisRecentChatDto.getRoomId())) {
-                    // 중복된 roomId가 있는 경우 수정
-                    chatDto.setThumbnailMessage(redisRecentChatDto.getThumbnailMessage());
-                    chatDto.setMessageType(redisRecentChatDto.getMessageType());
-                    chatDto.setDateTime(redisRecentChatDto.getDateTime());
+                    // 중복된 roomId가 있는 경우 삭제 후 추가
+                    list.remove(chatDto);
+                    list.add(redisRecentChatDto);
 
                     isDuplicate = true;
                     break;

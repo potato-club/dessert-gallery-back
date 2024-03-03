@@ -37,19 +37,16 @@ public class RedisService {
         return null;
     }
 
-    public boolean isRefreshTokenValid(String token, String ipAddress) {
+    public boolean isRefreshTokenValid(String token) {
         Map<String, String> values = getValues(token);
-        if (values == null) {
-            return false;
-        }
-        String storedIpAddress = values.get("ipAddress");
-        return ipAddress.equals(storedIpAddress);
+        return values != null;
     }
 
     public boolean isTokenInBlacklist(String token) {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(token))) {
             throw new InvalidTokenException("401_Invalid", ErrorCode.INVALID_TOKEN_EXCEPTION);
         }
+
         return false;
     }
 

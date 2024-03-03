@@ -51,6 +51,10 @@ public class ChatServiceImpl implements ChatService {
             throw new UnAuthorizedException("Not Following", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
+        if (chatRoomRepository.existsByCustomerAndStore(customer, store)) {
+            throw new UnAuthorizedException("This room has already been created.", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
         ChatRoom chatRoom = ChatRoom.builder()
                 .customer(customer)
                 .store(store)
@@ -58,7 +62,9 @@ public class ChatServiceImpl implements ChatService {
 
         chatRoomRepository.save(chatRoom);
 
-        messageMap.putChatList(customer.getUid(), null);
+        RedisRecentChatDto dto = new RedisRecentChatDto(chatRoom.getId(), null, null, null);
+
+        messageMap.putChatList(customer.getUid(), dto);
         messageMap.putRoomIdForUid(chatRoom.getId(), customer.getUid());
 
         return chatRoom.getId();
@@ -163,7 +169,7 @@ public class ChatServiceImpl implements ChatService {
         List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
         List<RedisRecentChatDto> list = messageMap.getChatList(user.get().getUid());
 
-        if (list == null) {
+        if (list == null || list.size() == 0) {
             return new ChatRoomDto(0, null);
         }
 

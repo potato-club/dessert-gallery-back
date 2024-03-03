@@ -159,15 +159,13 @@ public class UserServiceImpl implements UserService {
         User user = findUserByToken(request);
         List<File> file = fileRepository.findByUser(user);
 
-        UserProfileResponseDto responseDto = UserProfileResponseDto.builder()
+        return UserProfileResponseDto.builder()
                 .nickname(user.getNickname())
                 .loginType(user.getLoginType())
                 .userRole(user.getUserRole())
                 .fileName(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileName()).orElse(null))
                 .fileUrl(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileUrl()).orElse(null))
                 .build();
-
-        return responseDto;
     }
 
     @Override
