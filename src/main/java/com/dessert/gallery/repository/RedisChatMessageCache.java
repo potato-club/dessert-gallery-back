@@ -122,13 +122,29 @@ public class RedisChatMessageCache {
         assert keysToDelete != null;
         redisTemplate.delete(keysToDelete);
         redisSimpleTemplate.delete(roomId.toString());
-        redisChatTemplate.delete(uid);
+        this.deleteChatRoomInList(roomId, uid);
     }
 
     public void deleteAll() {
         Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushDb();
         Objects.requireNonNull(redisChatTemplate.getConnectionFactory()).getConnection().flushDb();
         Objects.requireNonNull(redisSimpleTemplate.getConnectionFactory()).getConnection().flushDb();
+    }
+
+    private void deleteChatRoomInList(Long roomId, String uid) {
+        if (Boolean.TRUE.equals(redisChatTemplate.hasKey(uid))) {
+            ArrayList<RedisRecentChatDto> list = redisChatTemplate.opsForValue().get(uid);
+            assert list != null;
+
+            for (RedisRecentChatDto chatDto : list) {
+                if (chatDto.getRoomId().equals(roomId)) {
+                    list.remove(chatDto);
+                    break;
+                }
+            }
+
+            Collections.sort(list);
+        }
     }
 
     private String generateKey(Long roomId, String time) {

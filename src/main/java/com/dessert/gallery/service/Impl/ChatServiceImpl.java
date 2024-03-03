@@ -52,7 +52,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         if (chatRoomRepository.existsByCustomerAndStore(customer, store)) {
-            throw new UnAuthorizedException("This room has already been created.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new UnAuthorizedException("This room has already been created.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
         ChatRoom chatRoom = ChatRoom.builder()
