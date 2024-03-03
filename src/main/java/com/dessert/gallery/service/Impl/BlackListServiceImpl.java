@@ -17,6 +17,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -80,16 +84,22 @@ public class BlackListServiceImpl implements BlackListService {
     }
 
     @Override
-    public List<BlackListResponseDto> getBlackList(int page, HttpServletRequest request) {
+    public Page<BlackListResponseDto> getBlackList(int page, HttpServletRequest request) {
         User user = this.getUserInstance(request);
 
         if (user.getUserRole().equals(UserRole.USER)) {
             throw new UnAuthorizedException("Access isn't permitted on the blacklist.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
+        if (page < 1) {
+            page = 1;
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, 20);
+
         Store store = storeRepository.findByUser(user);
 
-        JPAQuery<BlackListResponseDto> query = jpaQueryFactory
+        List<BlackListResponseDto> list = jpaQueryFactory
                 .selectDistinct(
                         Projections.constructor(
                                 BlackListResponseDto.class,
@@ -104,9 +114,16 @@ public class BlackListServiceImpl implements BlackListService {
                         .and(QBlackList.blackList.deleted.isFalse()))
                 .orderBy(QBlackList.blackList.modifiedDate.desc())
                 .offset((page - 1) * 20L)
-                .limit(20);
+                .limit(20)
+                .fetch();
 
-        return query.fetch();
+        JPAQuery<Long> countQuery = jpaQueryFactory
+                .select(QBlackList.blackList.count())
+                .from(QBlackList.blackList)
+                .where(QBlackList.blackList.store.eq(store)
+                        .and(QBlackList.blackList.deleted.isFalse()));
+
+        return PageableExecutionUtils.getPage(list, pageable, countQuery::fetchOne);
     }
 
     @Override

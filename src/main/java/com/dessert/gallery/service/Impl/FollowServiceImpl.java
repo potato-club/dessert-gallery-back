@@ -16,6 +16,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,22 +79,23 @@ public class FollowServiceImpl implements FollowService {
         String email = this.getUserEmail(request);
         UserRole userRole = jwtTokenProvider.getRoles(email);
 
-        switch (userRole) {
-            case USER: case ADMIN:
-                User user = userRepository.findByEmail(email).orElseThrow();
-                Subscribe subUser = subscribeRepository.findByUser(user);
-                if (subUser == null) {
-                    throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
-                }
-
-                subUser.setDeleted(true);
-            case MANAGER:
-                throw new UnAuthorizedException("Access isn't permitted on the unfollowing.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+        if (userRole.equals(UserRole.MANAGER)) {
+            throw new UnAuthorizedException("Access isn't permitted on the unfollowing.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+        Store store = storeRepository.findById(storeId).orElseThrow();
+        Subscribe subUser = subscribeRepository.findByUserAndStore(user, store);
+
+        if (subUser == null) {
+            throw new NotFoundException("No Subscribe Data", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
+        subUser.setDeleted(true);
     }
 
     @Override
-    public List<FollowResponseDto> getFollowingList(int page, HttpServletRequest request) {
+    public Page<FollowResponseDto> getFollowingList(int page, HttpServletRequest request) {
 
         String email = this.getUserEmail(request);
         UserRole userRole = jwtTokenProvider.getRoles(email);
@@ -99,10 +104,17 @@ public class FollowServiceImpl implements FollowService {
             throw new UnAuthorizedException("Access isn't permitted on the following.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-        JPAQuery<FollowResponseDto> query = jpaQueryFactory
+        if (page < 1) {
+            page = 1;
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, 20);
+
+        List<FollowResponseDto> list = jpaQueryFactory
                 .selectDistinct(
                         Projections.constructor(
                                 FollowResponseDto.class,
+                                QSubscribe.subscribe.store.id.as("storeId"),
                                 QSubscribe.subscribe.store.name.as("storeName"),
                                 QFile.file.fileName.as("fileName"),
                                 QFile.file.fileUrl.as("fileUrl")
@@ -114,9 +126,16 @@ public class FollowServiceImpl implements FollowService {
                         .and(QSubscribe.subscribe.deleted.isFalse()))
                 .orderBy(QSubscribe.subscribe.modifiedDate.desc())
                 .offset((page - 1) * 20L)
-                .limit(20);
+                .limit(20)
+                .fetch();
 
-        return query.fetch();
+        JPAQuery<Long> countQuery = jpaQueryFactory
+                .select(QSubscribe.subscribe.count())
+                .from(QSubscribe.subscribe)
+                .where(QSubscribe.subscribe.user.email.eq(email)
+                        .and(QSubscribe.subscribe.deleted.isFalse()));
+
+        return PageableExecutionUtils.getPage(list, pageable, countQuery::fetchOne);
     }
 
     private String getUserEmail(HttpServletRequest request) {

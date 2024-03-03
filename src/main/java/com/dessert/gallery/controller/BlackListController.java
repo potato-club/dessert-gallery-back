@@ -6,11 +6,11 @@ import com.dessert.gallery.service.Interface.BlackListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class BlackListController {
 
     @Operation(summary = "내가 등록한 블랙리스트 출력 API")
     @GetMapping("/blacklist")
-    public List<BlackListResponseDto> getBlackList(@RequestParam int page, HttpServletRequest request) {
+    public Page<BlackListResponseDto> getBlackList(@RequestParam int page, HttpServletRequest request) {
         return blackListService.getBlackList(page, request);
     }
 }

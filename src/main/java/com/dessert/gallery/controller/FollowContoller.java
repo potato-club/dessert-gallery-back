@@ -5,6 +5,7 @@ import com.dessert.gallery.service.Interface.FollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,7 @@ public class FollowContoller {
 
     @Operation(summary = "내 팔로우 목록 출력 API")
     @GetMapping("/follow")
-    public List<FollowResponseDto> getFollowingList(@RequestParam int page, HttpServletRequest request) {
+    public Page<FollowResponseDto> getFollowingList(@RequestParam int page, HttpServletRequest request) {
         return followService.getFollowingList(page, request);
     }
 }
