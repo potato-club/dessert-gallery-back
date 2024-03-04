@@ -60,7 +60,7 @@ public class BlackListServiceImpl implements BlackListService {
                     .build();
 
             if (subscribeRepository.existsByStoreAndUser(store, customer)) {
-                Subscribe subscribe = subscribeRepository.findByUser(customer);
+                Subscribe subscribe = subscribeRepository.findByUserAndStore(customer, store);
                 subscribe.setDeleted(true);
             }
 
