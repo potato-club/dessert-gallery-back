@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface ChatService {
 
-    Long createRoom(RoomCreateDto roomCreateDto, HttpServletRequest request);
+    Long createRoom(Long storeId, HttpServletRequest request);
 
-    void saveMessage(Long id, MessageStatusDto messageStatusDto);
+    void saveMessage(Long id, MessageStatusDto messageStatusDto, HttpServletRequest request);
 
     ChatMessageDto getMessages(Long chatRoomId, String time, HttpServletRequest request);
 
