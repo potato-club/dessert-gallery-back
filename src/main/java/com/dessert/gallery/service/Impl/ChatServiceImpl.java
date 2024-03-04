@@ -5,8 +5,8 @@ import com.dessert.gallery.dto.chat.MessageStatusDto;
 import com.dessert.gallery.dto.chat.list.RedisRecentChatDto;
 import com.dessert.gallery.dto.chat.list.ChatRecentMessageDto;
 import com.dessert.gallery.dto.chat.list.ChatRoomDto;
-import com.dessert.gallery.dto.chat.RoomCreateDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
@@ -21,6 +21,7 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -41,11 +42,11 @@ public class ChatServiceImpl implements ChatService {
     private final EntityManager em;
 
     @Override
-    public Long createRoom(RoomCreateDto roomCreateDto, HttpServletRequest request) {
+    public Long createRoom(Long storeId, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
 
         User customer = userRepository.findByEmail(email).orElseThrow();
-        Store store = storeRepository.findById(roomCreateDto.getStoreId()).orElseThrow();
+        Store store = storeRepository.findById(storeId).orElseThrow();
 
         if (!subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(store, customer)) {
             throw new UnAuthorizedException("Not Following", ErrorCode.ACCESS_DENIED_EXCEPTION);
@@ -62,16 +63,23 @@ public class ChatServiceImpl implements ChatService {
 
         chatRoomRepository.save(chatRoom);
 
-        RedisRecentChatDto dto = new RedisRecentChatDto(chatRoom.getId(), null, null, null);
+        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        RedisRecentChatDto dto = new RedisRecentChatDto(chatRoom.getId(), null, null, time);
 
         messageMap.putChatList(customer.getUid(), dto);
-        messageMap.putRoomIdForUid(chatRoom.getId(), customer.getUid());
 
         return chatRoom.getId();
     }
 
     @Override
-    public void saveMessage(Long id, MessageStatusDto messageStatusDto) {
+    public void saveMessage(Long id, MessageStatusDto messageStatusDto, HttpServletRequest request) {
+
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
 
         ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow(() -> {
             throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
@@ -93,7 +101,7 @@ public class ChatServiceImpl implements ChatService {
             messageMap.put(id, deque);
             messageMap.putChatList(chatRoom.getCustomer().getUid(), redisRecentChatDto);
         } else {
-            Deque<MessageStatusDto> mDeque = messageMap.get(id, time);
+            Deque<MessageStatusDto> mDeque = messageMap.get(id, user.get().getUid(), time);
             mDeque.add(messageStatusDto);
 
             // 캐시 쓰기 전략 (Write Back 패턴)
@@ -113,9 +121,16 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatMessageDto getMessages(Long chatRoomId, String time, HttpServletRequest request) {
-        // 캐시 읽기 전략 (LookAside 패턴)
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
         ChatMessageDto messageList = new ChatMessageDto();
 
+        // 캐시 읽기 전략 (LookAside 패턴)
         if (!messageMap.containsKey(chatRoomId, time)) {
             // Cache Miss
             List<MessageStatusDto> messagesInDB = getMessagesInDB(chatRoomId, time);
@@ -130,13 +145,16 @@ public class ChatServiceImpl implements ChatService {
             assert deque.peek() != null;
             messageMap.put(chatRoomId, deque);
 
+            ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> {
+                throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
+            });
+
             String uid;
 
-            if (messageMap.getUid(chatRoomId).equals("")) {    // Redis 에 uid 가 존재하는지 확인
-                uid = messageMap.getUid(chatRoomId);
+            if (user.get().getUserRole().equals(UserRole.USER) || user.get().getUserRole().equals(UserRole.ADMIN)) {
+                uid = chatRoom.getCustomer().getUid();
             } else {
-                uid = chatRoomRepository.findById(chatRoomId).get().getCustomer().getUid();
-                messageMap.putRoomIdForUid(chatRoomId, uid);    // Redis 에 재등록
+                uid = chatRoom.getStore().getUser().getUid();
             }
 
             messageMap.putChatList(uid, new RedisRecentChatDto(deque.getLast().getChatRoomId(),
@@ -147,7 +165,7 @@ public class ChatServiceImpl implements ChatService {
             messageList.setChatList(messagesInDB);
         } else {
             // Cache Hit
-            messageList.setChatList(getMessagesInCache(chatRoomId, time));
+            messageList.setChatList(getMessagesInCache(chatRoomId, user.get().getUid(), time));
         }
 
         // 현재 날짜 이후 가장 최근 채팅 일자를 불러온 뒤 싣는다.
@@ -159,12 +177,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatRoomDto getMyChatRoomsList(int page, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-
-        if (email == null) {
-            throw new UnAuthorizedException("Unauthorized Token", ErrorCode.ACCESS_DENIED_EXCEPTION);
-        }
-
         Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
 
         List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
         List<RedisRecentChatDto> list = messageMap.getChatList(user.get().getUid());
@@ -190,7 +207,7 @@ public class ChatServiceImpl implements ChatService {
 
         for (ChatRecentMessageDto chatRecentMessageDto : chatRecentMessageDtos) {
             ChatRoom chatRoom = chatRoomRepository.findById(chatRecentMessageDto.getRoomId()).orElseThrow(() -> {
-                throw new NotFoundException("Not Found User", ErrorCode.ACCESS_DENIED_EXCEPTION);
+                throw new NotFoundException("Not Found Room", ErrorCode.ACCESS_DENIED_EXCEPTION);
             });
 
             chatRecentMessageDto.setStoreName(chatRoom.getStore().getName());
@@ -209,19 +226,17 @@ public class ChatServiceImpl implements ChatService {
         Optional<User> user = userRepository.findByEmail(email);
 
         if (user.isEmpty()) {
-            throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
         }
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() ->
-                new UnAuthorizedException("Not Found User", ErrorCode.ACCESS_DENIED_EXCEPTION));
+                new UnAuthorizedException("Not Found Room", ErrorCode.ACCESS_DENIED_EXCEPTION));
 
         if (!chatRoom.getCustomer().getEmail().equals(email) && !chatRoom.getStore().getUser().getEmail().equals(email)) {
             throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-        chatMessageRepository.deleteByChatRoomId(chatRoom.getId());
         chatRoomRepository.delete(chatRoom);
-
         messageMap.deleteChatRoom(roomId, user.get().getUid()); // Redis 내 관련 정보 삭제
     }
 
@@ -238,8 +253,8 @@ public class ChatServiceImpl implements ChatService {
         return chatMessageRepository.findByChatRoomIdAndDateTimeBetweenOrderByDateTimeDesc(roomId, start, end);
     }
 
-    private List<MessageStatusDto> getMessagesInCache(Long roomId, String time) {
-        return messageMap.get(roomId, time);
+    private List<MessageStatusDto> getMessagesInCache(Long roomId, String uid, String time) {
+        return messageMap.get(roomId, uid, time);
     }
 
     private void commitMessageDeque(Deque<MessageStatusDto> messageDeque, ChatRoom chatRoom) {

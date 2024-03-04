@@ -26,15 +26,15 @@ public class ChatController {
     private final RedisChatMessageCache redisChatMessageCache;
 
     @Operation(summary = "채팅방 생성 API")
-    @PostMapping("/mypage/room")
-    public Long createRoom(@RequestBody RoomCreateDto roomCreateDto, HttpServletRequest request) {
-        return chatService.createRoom(roomCreateDto, request);
+    @PostMapping("/mypage/room/{storeId}")
+    public Long createRoom(@PathVariable Long storeId, HttpServletRequest request) {
+        return chatService.createRoom(storeId, request);
     }
 
     @Operation(summary = "실시간 채팅 저장 API")
     @MessageMapping("/chat")
-    public void send(MessageStatusDto messageStatusDto) {
-        chatService.saveMessage(messageStatusDto.getChatRoomId(), messageStatusDto);
+    public void send(MessageStatusDto messageStatusDto, HttpServletRequest request) {
+        chatService.saveMessage(messageStatusDto.getChatRoomId(), messageStatusDto, request);
         messagingTemplate.convertAndSend("/sub/" + messageStatusDto.getChatRoomId(), messageStatusDto);
     }
 

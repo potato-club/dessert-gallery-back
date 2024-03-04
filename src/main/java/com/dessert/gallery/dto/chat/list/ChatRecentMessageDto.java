@@ -26,6 +26,6 @@ public class ChatRecentMessageDto {
     @Schema(description = "메시지 타입")
     private MessageType messageType;
 
-    @Schema(description = "메시지 타입")
+    @Schema(description = "가장 최근 채팅 시간 or 채팅방 생성 시간")
     private String lastChatDatetime;
 }

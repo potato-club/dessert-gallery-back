@@ -37,7 +37,7 @@ public class RedisChatMessageCache {
             boolean isDuplicate = false;
 
             for (RedisRecentChatDto chatDto : list) {
-                if (chatDto.getRoomId().equals(redisRecentChatDto.getRoomId())) {
+                if (Objects.equals(chatDto.getRoomId(), redisRecentChatDto.getRoomId())) {
                     // 중복된 roomId가 있는 경우 삭제 후 추가
                     list.remove(chatDto);
                     list.add(redisRecentChatDto);
@@ -61,28 +61,16 @@ public class RedisChatMessageCache {
         redisChatTemplate.expire(uid, 30, TimeUnit.DAYS);
     }
 
-    public void putRoomIdForUid(Long roomId, String uid) {
-        redisSimpleTemplate.opsForValue().set(roomId.toString(), uid);
-        redisSimpleTemplate.expire(roomId.toString(), 30, TimeUnit.DAYS);
-    }
-
     public boolean containsKey(Long roomId, String time) {
         String key = generateKey(roomId, time);
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
-    public LinkedList<MessageStatusDto> get(Long roomId, String time) {
+    public LinkedList<MessageStatusDto> get(Long roomId, String uid, String time) {
         redisSimpleTemplate.expire(roomId.toString(), 30, TimeUnit.DAYS);   // 채팅 조회 시 관련 정보 expire 시간 초기화
-
-        String uid = getUid(roomId);
         redisChatTemplate.expire(uid, 30, TimeUnit.DAYS);
 
         return redisTemplate.opsForValue().get(generateKey(roomId, time));
-    }
-
-    public String getUid(Long roomId) {
-        redisSimpleTemplate.expire(roomId.toString(), 30, TimeUnit.DAYS);
-        return Objects.requireNonNull(redisSimpleTemplate.opsForValue().get(roomId.toString())).toString();
     }
 
     public ArrayList<RedisRecentChatDto> getChatList(String uid) {
@@ -121,7 +109,7 @@ public class RedisChatMessageCache {
 
         assert keysToDelete != null;
         redisTemplate.delete(keysToDelete);
-        redisSimpleTemplate.delete(roomId.toString());
+
         this.deleteChatRoomInList(roomId, uid);
     }
 
@@ -144,6 +132,9 @@ public class RedisChatMessageCache {
             }
 
             Collections.sort(list);
+
+            redisChatTemplate.opsForValue().set(uid, list);
+            redisChatTemplate.expire(uid, 30, TimeUnit.DAYS);
         }
     }
 
