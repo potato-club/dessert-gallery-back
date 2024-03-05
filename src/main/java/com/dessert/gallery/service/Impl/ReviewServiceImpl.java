@@ -113,6 +113,24 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public void addTestReview(ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException {
+        Store store = storeRepository.findById(9L).orElseThrow(() -> {
+            throw new NotFoundException("테스트 가게 삭제됐음 재생성 요청", NOT_FOUND_EXCEPTION);
+        });
+
+        User user = userService.findUserByToken(request);
+        ReviewBoard review = new ReviewBoard(requestDto, store, user);
+        ReviewBoard saveReview = reviewRepository.save(review);
+
+        if (images != null) {
+            List<File> files = imageService.uploadImages(images, review);
+            saveReview.updateImages(files);
+        }
+
+        addScore(store, requestDto.getScore());
+    }
+
+    @Override
     public void addReview(Long storeId, ReviewRequestDto requestDto,
                           List<MultipartFile> images, HttpServletRequest request) throws IOException {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
