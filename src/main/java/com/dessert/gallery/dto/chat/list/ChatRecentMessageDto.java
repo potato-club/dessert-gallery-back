@@ -14,6 +14,9 @@ public class ChatRecentMessageDto {
     @Schema(description = "채팅방 ID")
     private Long roomId;
 
+    @Schema(description = "가게 ID")
+    private Long storeId;
+
     @Schema(description = "가게 이름")
     private String storeName;
 

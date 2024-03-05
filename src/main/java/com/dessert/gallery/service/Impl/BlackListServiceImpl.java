@@ -46,7 +46,7 @@ public class BlackListServiceImpl implements BlackListService {
 
         Store store = storeRepository.findByUser(user);
 
-        if (blackListRepository.existsByUserAndStore(customer, store)) {
+        if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(customer, store)) {
             BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
             Subscribe subscribe = subscribeRepository.findByUserAndStore(customer, store);
 
@@ -75,7 +75,7 @@ public class BlackListServiceImpl implements BlackListService {
 
         Store store = storeRepository.findByUser(user);
 
-        if (blackListRepository.existsByUserAndStore(customer, store)) {
+        if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(customer, store)) {
             BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
             blackList.setDeleted(true);
         } else {
