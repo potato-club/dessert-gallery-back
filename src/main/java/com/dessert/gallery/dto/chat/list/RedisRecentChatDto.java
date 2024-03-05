@@ -2,8 +2,6 @@ package com.dessert.gallery.dto.chat.list;
 
 import com.dessert.gallery.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,6 +12,9 @@ public class RedisRecentChatDto implements Comparable<RedisRecentChatDto> {
 
     @Schema(description = "Room Id")
     private Long roomId;
+
+    @Schema(description = "Store Id")
+    private Long storeId;
 
     @Schema(description = "썸네일 메시지")
     private String thumbnailMessage;
@@ -37,8 +38,9 @@ public class RedisRecentChatDto implements Comparable<RedisRecentChatDto> {
         }
     }
 
-    public RedisRecentChatDto(Long roomId, String thumbnailMessage, MessageType messageType, String dateTime) {
+    public RedisRecentChatDto(Long roomId, Long storeId, String thumbnailMessage, MessageType messageType, String dateTime) {
         this.roomId = roomId;
+        this.storeId = storeId;
         this.thumbnailMessage = thumbnailMessage;
         this.messageType = messageType;
         this.dateTime = dateTime;

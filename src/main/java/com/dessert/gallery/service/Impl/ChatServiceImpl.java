@@ -45,6 +45,7 @@ public class ChatServiceImpl implements ChatService {
     public Long createRoom(Long storeId, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
 
+
         User customer = userRepository.findByEmail(email).orElseThrow();
         Store store = storeRepository.findById(storeId).orElseThrow();
 
@@ -64,7 +65,7 @@ public class ChatServiceImpl implements ChatService {
         chatRoomRepository.save(chatRoom);
 
         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        RedisRecentChatDto dto = new RedisRecentChatDto(chatRoom.getId(), null, null, time);
+        RedisRecentChatDto dto = new RedisRecentChatDto(chatRoom.getId(), store.getId(), null, null, time);
 
         messageMap.putChatList(customer.getUid(), dto);
 
@@ -89,6 +90,7 @@ public class ChatServiceImpl implements ChatService {
         String time = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         RedisRecentChatDto redisRecentChatDto = new RedisRecentChatDto(messageStatusDto.getChatRoomId(),
+                chatRoom.getStore().getId(),
                 messageStatusDto.getMessage(),
                 messageStatusDto.getMessageType(),
                 messageStatusDto.getDateTime());
@@ -158,6 +160,7 @@ public class ChatServiceImpl implements ChatService {
             }
 
             messageMap.putChatList(uid, new RedisRecentChatDto(deque.getLast().getChatRoomId(),
+                    chatRoom.getStore().getId(),
                     deque.getLast().getMessage(),
                     deque.getLast().getMessageType(),
                     deque.getLast().getDateTime()));
@@ -197,6 +200,7 @@ public class ChatServiceImpl implements ChatService {
 
             ChatRecentMessageDto dto = ChatRecentMessageDto.builder()
                     .roomId(list.get(i).getRoomId())
+                    .storeId(list.get(i).getStoreId())
                     .thumbnailMessage(list.get(i).getThumbnailMessage())
                     .messageType(list.get(i).getMessageType())
                     .lastChatDatetime(list.get(i).getDateTime())

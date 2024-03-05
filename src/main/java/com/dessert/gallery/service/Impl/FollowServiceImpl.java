@@ -51,7 +51,7 @@ public class FollowServiceImpl implements FollowService {
             throw new UnAuthorizedException("Not Found data", ErrorCode.ACCESS_DENIED_EXCEPTION);
         });
 
-        if (blackListRepository.existsByUserAndStore(user, store)) {
+        if (blackListRepository.existsByUserAndStoreAndDeletedIsTrue(user, store)) {
             throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
@@ -122,8 +122,11 @@ public class FollowServiceImpl implements FollowService {
                 )
                 .from(QSubscribe.subscribe)
                 .leftJoin(QFile.file).on(QFile.file.store.eq(QSubscribe.subscribe.store))
+                .leftJoin(QBlackList.blackList).on(QBlackList.blackList.user.eq(QSubscribe.subscribe.user)
+                        .and(QBlackList.blackList.store.eq(QSubscribe.subscribe.store)))
                 .where(QSubscribe.subscribe.user.email.eq(email)
-                        .and(QSubscribe.subscribe.deleted.isFalse()))
+                        .and(QSubscribe.subscribe.deleted.isFalse())
+                        .and(QBlackList.blackList.id.isNull().or(QBlackList.blackList.deleted.isTrue())))
                 .orderBy(QSubscribe.subscribe.modifiedDate.desc())
                 .offset((page - 1) * 20L)
                 .limit(20)
@@ -132,8 +135,11 @@ public class FollowServiceImpl implements FollowService {
         JPAQuery<Long> countQuery = jpaQueryFactory
                 .select(QSubscribe.subscribe.count())
                 .from(QSubscribe.subscribe)
+                .leftJoin(QBlackList.blackList).on(QBlackList.blackList.user.eq(QSubscribe.subscribe.user)
+                        .and(QBlackList.blackList.store.eq(QSubscribe.subscribe.store)))
                 .where(QSubscribe.subscribe.user.email.eq(email)
-                        .and(QSubscribe.subscribe.deleted.isFalse()));
+                        .and(QSubscribe.subscribe.deleted.isFalse())
+                        .and(QBlackList.blackList.id.isNull().or(QBlackList.blackList.deleted.isTrue())));
 
         return PageableExecutionUtils.getPage(list, pageable, countQuery::fetchOne);
     }
