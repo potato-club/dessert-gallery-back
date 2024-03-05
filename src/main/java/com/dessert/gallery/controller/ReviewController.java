@@ -45,12 +45,27 @@ public class ReviewController {
     @Operation(summary = "본인 리뷰 조회 - 회원")
     @GetMapping("/mine")
     public ResponseEntity<Slice<MyReviewListDto>> getMyReviewList(@RequestParam(value = "page", defaultValue = "1") int page,
-                                                                  @Parameter(description = "전체 리뷰 확인 - month=0")
-                                                                  @RequestParam(value = "month", defaultValue = "1") int month,
+                                                                    @Parameter(description = "전체 리뷰 확인 - month=0")
+                                                                        @RequestParam(value = "month", defaultValue = "1") int month,
                                                                   HttpServletRequest request) {
         Slice<MyReviewListDto> reviewList = reviewService.getReviewListByUser(page, month, request);
         return ResponseEntity.ok(reviewList);
     }
+
+    @Operation(summary = "테스트 리뷰 작성 API")
+    @PostMapping(value = "/test",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<String> addTestReview(@Parameter(description = "리뷰 정보 - ReviewRequestDto", content =
+                                                    @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+                                                        @RequestPart ReviewRequestDto requestDto,
+                                                @Parameter(description = "업로드 이미지 리스트", content =
+                                                    @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                        @RequestPart(required = false) List<MultipartFile> images,
+                                                HttpServletRequest request) throws IOException {
+        reviewService.addTestReview(requestDto, images, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("리뷰 등록 완료");
+    }
+
 
     @Operation(summary = "가게에 대한 리뷰 등록")
     @PostMapping(value = "/stores/{storeId}",

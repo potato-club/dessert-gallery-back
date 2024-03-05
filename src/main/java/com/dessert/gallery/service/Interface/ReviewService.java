@@ -16,6 +16,7 @@ public interface ReviewService {
     List<ReviewResponseDtoForMap> getReviewsForMap(Store store);
     Slice<MyReviewListDto> getReviewListByUser(int page, int month, HttpServletRequest request);
     List<StoreWritableReviewDto> getStoreListWritableReview(HttpServletRequest request);
+    void addTestReview(ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void addReview(Long storeId, ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void updateReview(Long reviewId, ReviewUpdateDto updateDto,
                       List<MultipartFile> images, HttpServletRequest request) throws IOException;
