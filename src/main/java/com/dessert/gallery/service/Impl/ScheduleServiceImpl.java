@@ -60,7 +60,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .existsByCalendarAndDateTimeAndType(calendar, dateTime, ScheduleType.EVENT);
 
         if (requestDto.getKey() != 2 && requestDto.getKey() != 3) {
-            throw new BadRequestException("잘못된 스케줄 타입 입력", RUNTIME_EXCEPTION);
+            throw new BadRequestException("잘못된 스케줄 타입 입력", BAD_REQUEST_EXCEPTION);
         }
 
         if (isHoliday && requestDto.getKey() == 2) {
@@ -103,7 +103,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
 
         if (schedule.getType() != ScheduleType.RESERVATION) {
-            throw new BadRequestException("예약 스케줄만 체크할 수 있습니다.", RUNTIME_EXCEPTION);
+            throw new BadRequestException("예약 스케줄만 체크할 수 있습니다.", BAD_REQUEST_EXCEPTION);
         }
 
         if (schedule.getSubmitReview()) {
