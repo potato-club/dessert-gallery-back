@@ -38,7 +38,4 @@ public class StoreListResponseDto {
 
     @Schema(description = "팔로우를 맺은 가게 표시")
     private Long followId;
-
-    @Schema(description = "북마크한 가게 표시")
-    private Long bookmarkId;
 }

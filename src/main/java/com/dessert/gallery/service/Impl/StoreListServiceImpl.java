@@ -51,8 +51,7 @@ public class StoreListServiceImpl implements StoreListService {
                                     QFile.file.fileUrl,
                                     QStore.store.score,
                                     QStore.store.createdDate,
-                                    QSubscribe.subscribe.id.as("followId"),
-                                    QBookmark.bookmark.id.as("bookmarkId")
+                                    QSubscribe.subscribe.id.as("followId")
                             )
                     )
                     .from(QStore.store)
@@ -65,9 +64,6 @@ public class StoreListServiceImpl implements StoreListService {
                         .on(QSubscribe.subscribe.deleted.isFalse())
                         .on(QSubscribe.subscribe.user.eq(QUser.user))
                         .on(QSubscribe.subscribe.store.eq(QStore.store))
-                    .leftJoin(QBookmark.bookmark)
-                        .on(QBookmark.bookmark.user.eq(QUser.user))
-                        .on(QBookmark.bookmark.storeBoard.eq(QStoreBoard.storeBoard))
                     .where(whereBuilder)
                     .distinct()
                     .orderBy(existsOrderByOption(storeSearchDto))
