@@ -73,10 +73,9 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void saveMessage(Long id, MessageStatusDto messageStatusDto, HttpServletRequest request) {
+    public void saveMessage(Long id, MessageStatusDto messageStatusDto) {
 
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        Optional<User> user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByNickname(messageStatusDto.getSender());
 
         if (user.isEmpty()) {
             throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);

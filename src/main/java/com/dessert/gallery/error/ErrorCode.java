@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @ToString
 public enum ErrorCode {
 
-    RUNTIME_EXCEPTION(HttpStatus.BAD_REQUEST, "400", "400 Bad Request"),
+    BAD_REQUEST_EXCEPTION(HttpStatus.BAD_REQUEST, "400", "400 Bad Request"),
     SCHEDULE_EXCEPTION_1(HttpStatus.BAD_REQUEST, "S0001", "리뷰 등록된 스케줄"),
     SCHEDULE_EXCEPTION_2(HttpStatus.BAD_REQUEST, "S0002", "삭제 불가능한 예약 스케줄"),
     ACCESS_DENIED_EXCEPTION(HttpStatus.UNAUTHORIZED, "401", "401 UnAuthorized"),

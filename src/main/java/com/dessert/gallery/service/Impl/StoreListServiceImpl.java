@@ -5,6 +5,8 @@ import com.dessert.gallery.dto.store.list.ReviewListDto;
 import com.dessert.gallery.dto.store.list.StoreReviewDto;
 import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.BadRequestException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.service.Interface.StoreListService;
 import com.querydsl.core.BooleanBuilder;
@@ -163,7 +165,7 @@ public class StoreListServiceImpl implements StoreListService {
                 NumberPath<Double> scorePath = QStore.store.score;
                 return scorePath.desc();
             default:
-                throw new IllegalArgumentException("Unexpected order type: " + storeSearchDto.getSortType());
+                throw new BadRequestException("Unexpected order type", ErrorCode.BAD_REQUEST_EXCEPTION);
         }
     }
 
