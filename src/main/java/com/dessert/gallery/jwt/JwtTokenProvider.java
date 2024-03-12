@@ -38,6 +38,7 @@ public class JwtTokenProvider {
     // 액세스 토큰 유효시간
     @Value("${jwt.accessTokenExpiration}")
     private long accessTokenValidTime;
+
     // 리프레시 토큰 유효시간
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenValidTime;
