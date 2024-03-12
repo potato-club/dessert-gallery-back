@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.store.list.ReviewListDto;
 import com.dessert.gallery.dto.store.list.StoreReviewDto;
 import com.dessert.gallery.dto.store.list.StoreSearchDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.enums.SearchType;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.BadRequestException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
@@ -68,7 +69,7 @@ public class StoreListServiceImpl implements StoreListService {
                         .on(QSubscribe.subscribe.store.eq(QStore.store))
                     .where(whereBuilder)
                     .distinct()
-                    .orderBy(existsOrderByOption(storeSearchDto))
+                    .orderBy(existsOrderByOption(storeSearchDto, SearchType.STORE_BOARD))
                     .offset((storeSearchDto.getPage() - 1) * 20L)
                     .limit(20)
                     .fetch();
@@ -89,10 +90,11 @@ public class StoreListServiceImpl implements StoreListService {
                     )
                     .from(QStore.store)
                     .leftJoin(QStore.store.image, QFile.file)
-                    .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                    .leftJoin(QStoreBoard.storeBoard)
+                        .on(QStoreBoard.storeBoard.store.eq(QStore.store))
                     .where(whereBuilder)
                     .distinct()
-                    .orderBy(existsOrderByOption(storeSearchDto))
+                    .orderBy(existsOrderByOption(storeSearchDto, SearchType.STORE_BOARD))
                     .offset((storeSearchDto.getPage() - 1) * 20L)
                     .limit(20)
                     .fetch();
@@ -116,11 +118,13 @@ public class StoreListServiceImpl implements StoreListService {
                         )
                 )
                 .from(QStore.store)
-                .innerJoin(QReviewBoard.reviewBoard).on(QReviewBoard.reviewBoard.store.eq(QStore.store))
+                .innerJoin(QReviewBoard.reviewBoard)
+                    .on(QReviewBoard.reviewBoard.store.eq(QStore.store))
                 .leftJoin(QStore.store.image, QFile.file)
-                .leftJoin(QStoreBoard.storeBoard).on(QStoreBoard.storeBoard.store.eq(QStore.store))
+                .leftJoin(QStoreBoard.storeBoard)
+                    .on(QStoreBoard.storeBoard.store.eq(QStore.store))
                 .where(whereBuilder)
-                .orderBy(existsOrderByOption(storeSearchDto))
+                .orderBy(existsOrderByOption(storeSearchDto, SearchType.REVIEW))
                 .offset((storeSearchDto.getPage() - 1) * 20L)
                 .limit(20);
 
@@ -153,17 +157,35 @@ public class StoreListServiceImpl implements StoreListService {
     }
 
     // OrderBy 필터링
-    private OrderSpecifier<?> existsOrderByOption(StoreSearchDto storeSearchDto) {
+    private OrderSpecifier<?> existsOrderByOption(StoreSearchDto storeSearchDto, SearchType searchType) {
         switch (storeSearchDto.getSortType()) {
             case RECENT:
-                DateTimePath<LocalDateTime> dateTimePath = QStore.store.createdDate;
+                DateTimePath<LocalDateTime> dateTimePath;
+
+                if (searchType.equals(SearchType.STORE_BOARD)) {
+                    dateTimePath = QStore.store.createdDate;
+                } else {
+                    dateTimePath = QReviewBoard.reviewBoard.createdDate;
+                }
+
                 return dateTimePath.desc();
+
             case FOLLOWER:
                 NumberExpression<Integer> sizePath = QStore.store.followers.size();
+
                 return sizePath.desc();
+
             case SCORE:
-                NumberPath<Double> scorePath = QStore.store.score;
+                NumberPath<Double> scorePath;
+
+                if (searchType.equals(SearchType.STORE_BOARD)) {
+                    scorePath = QStore.store.score;
+                } else {
+                    scorePath = QReviewBoard.reviewBoard.score;
+                }
+
                 return scorePath.desc();
+
             default:
                 throw new BadRequestException("Unexpected order type", ErrorCode.BAD_REQUEST_EXCEPTION);
         }

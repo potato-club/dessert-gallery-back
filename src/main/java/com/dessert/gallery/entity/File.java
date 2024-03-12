@@ -1,17 +1,15 @@
 package com.dessert.gallery.entity;
 
-import com.dessert.gallery.dto.file.FileDto;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "files")
 public class File extends BaseTimeEntity {
 
@@ -48,8 +46,9 @@ public class File extends BaseTimeEntity {
     @JoinColumn(name = "users_uid")
     private User user;
 
-    public void update(FileDto requestDto) {
-        this.fileName = requestDto.getFileName();
-        this.fileUrl = requestDto.getFileUrl();
+    @Builder
+    public File(String fileName, String fileUrl) {
+        this.fileName = fileName;
+        this.fileUrl = fileUrl;
     }
 }

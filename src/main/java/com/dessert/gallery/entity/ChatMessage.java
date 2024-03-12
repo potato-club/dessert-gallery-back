@@ -5,13 +5,11 @@ import com.dessert.gallery.enums.MessageType;
 import lombok.*;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "chat_message")
 public class ChatMessage {
 
     @Id
@@ -35,6 +33,7 @@ public class ChatMessage {
     @Column
     private String dateTime;
 
+    @Builder
     public ChatMessage(ChatRoom chatRoom, String dateTime, MessageStatusDto dto) {
         this.sender = dto.getSender();
         this.chatRoom = chatRoom;

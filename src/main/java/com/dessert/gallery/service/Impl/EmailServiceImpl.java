@@ -3,7 +3,6 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
-import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Interface.EmailService;
 import com.dessert.gallery.service.Jwt.RedisService;
@@ -101,7 +100,7 @@ public class EmailServiceImpl implements EmailService {
 
         message.setText(msg, "utf-8", "html"); // 내용, charset 타입, subType
 
-        if (type == "gmail") {
+        if (type.equals("gmail")) {
             message.setFrom(new InternetAddress(gmailUsername,"DG_Admin")); // 보내는 사람의 메일 주소, 보내는 사람 이름
         } else {
             message.setFrom(new InternetAddress(naverUsername,"DG_Admin"));
@@ -111,7 +110,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     public static String createKey() {
-        StringBuffer key = new StringBuffer();
+        StringBuilder key = new StringBuilder();
         Random rnd = new Random();
 
         for (int i = 0; i < 6; i++) { // 인증코드 6자리

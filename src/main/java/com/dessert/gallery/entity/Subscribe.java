@@ -6,9 +6,7 @@ import javax.persistence.*;
 
 @Getter
 @Entity
-@Builder
-@RequiredArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "subscribes")
 public class Subscribe extends BaseTimeEntity {
 
@@ -26,6 +24,13 @@ public class Subscribe extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stores_id")
     private Store store;
+
+    @Builder
+    public Subscribe(User user, Store store, boolean deleted) {
+        this.user = user;
+        this.store = store;
+        this.deleted = deleted;
+    }
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;

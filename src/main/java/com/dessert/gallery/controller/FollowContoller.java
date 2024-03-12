@@ -36,7 +36,8 @@ public class FollowContoller {
 
     @Operation(summary = "내 팔로우 목록 출력 API")
     @GetMapping("/follow")
-    public Page<FollowResponseDto> getFollowingList(@RequestParam int page, HttpServletRequest request) {
+    public Page<FollowResponseDto> getFollowingList(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                    HttpServletRequest request) {
         return followService.getFollowingList(page, request);
     }
 }
