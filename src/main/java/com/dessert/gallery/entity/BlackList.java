@@ -1,17 +1,12 @@
 package com.dessert.gallery.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
-@Builder
-@RequiredArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "blacklist")
 public class BlackList extends BaseTimeEntity {
 
@@ -31,6 +26,13 @@ public class BlackList extends BaseTimeEntity {
     private Store store;
 
     public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    @Builder
+    public BlackList(User user, Store store, boolean deleted) {
+        this.user = user;
+        this.store = store;
         this.deleted = deleted;
     }
 }

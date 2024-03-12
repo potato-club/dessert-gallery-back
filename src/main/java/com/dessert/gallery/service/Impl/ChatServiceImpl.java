@@ -2,17 +2,16 @@ package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.MessageStatusDto;
-import com.dessert.gallery.dto.chat.list.RedisRecentChatDto;
 import com.dessert.gallery.dto.chat.list.ChatRecentMessageDto;
 import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.entity.*;
-import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.*;
 import com.dessert.gallery.service.Interface.ChatService;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
@@ -37,14 +35,15 @@ public class ChatServiceImpl implements ChatService {
     private final SubscribeRepository subscribeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisChatMessageCache messageMap;
+    private final JPAQueryFactory jpaQueryFactory;
     private static final int transactionMessageSize = 20; // 트랜잭션에 묶일 메세지 양
-    private static final int messagePageableSize = 30; // roomId에 종속된 큐에 보관할 메세지의 양
     private final EntityManager em;
 
     @Override
+    @Transactional
     public Long createRoom(Long storeId, HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
 
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
 
         User customer = userRepository.findByEmail(email).orElseThrow();
         Store store = storeRepository.findById(storeId).orElseThrow();
@@ -60,79 +59,69 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom chatRoom = ChatRoom.builder()
                 .customer(customer)
                 .store(store)
+                .createdDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
                 .build();
 
         chatRoomRepository.save(chatRoom);
-
-        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        RedisRecentChatDto dto = new RedisRecentChatDto(chatRoom.getId(), store.getId(), null, null, time);
-
-        messageMap.putChatList(customer.getUid(), dto);
 
         return chatRoom.getId();
     }
 
     @Override
-    public void saveMessage(Long id, MessageStatusDto messageStatusDto) {
+    @Transactional
+    public String saveMessage(Long id, MessageStatusDto messageStatusDto) {
 
         Optional<User> user = userRepository.findByNickname(messageStatusDto.getSender());
 
         if (user.isEmpty()) {
-            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+            return "Not Found User";
         }
 
-        ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow(() -> {
-            throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
-        });
+        ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow();
+
+        if (!subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(chatRoom.getStore(), user.get())) {
+            return "Not Following";
+        }
 
         LocalDate currentDate = LocalDate.now();
         String time = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        RedisRecentChatDto redisRecentChatDto = new RedisRecentChatDto(messageStatusDto.getChatRoomId(),
-                chatRoom.getStore().getId(),
-                messageStatusDto.getMessage(),
-                messageStatusDto.getMessageType(),
-                messageStatusDto.getDateTime());
-
-        if (!messageMap.containsKey(id, time)) {
-            // 채팅방에 처음쓰는 글이라면 캐시가 없으므로 캐시를 생성
+        if (messageMap.isContainsKey(id, time)) {
+            // 오늘 채팅방에 처음 쓰는 글이라면 캐시가 없으므로 캐시를 생성
             Deque<MessageStatusDto> deque = new LinkedList<>();
             deque.add(messageStatusDto);
 
             messageMap.put(id, deque);
-            messageMap.putChatList(chatRoom.getCustomer().getUid(), redisRecentChatDto);
         } else {
-            Deque<MessageStatusDto> mDeque = messageMap.get(id, user.get().getUid(), time);
-            mDeque.add(messageStatusDto);
+            Deque<MessageStatusDto> deque = messageMap.get(id, time);
+            deque.add(messageStatusDto);
+
+            messageMap.put(id, deque);
 
             // 캐시 쓰기 전략 (Write Back 패턴)
-            if (mDeque.size() > transactionMessageSize + messagePageableSize) {
-                Deque<MessageStatusDto> q = new LinkedList<>();
+            if (deque.size() % transactionMessageSize == 0 && deque.size() >= transactionMessageSize) {
+                Deque<MessageStatusDto> dq = new LinkedList<>();
+
                 for (int i = 0; i < transactionMessageSize; i++) {
-                    q.add(mDeque.poll());
+                    dq.add(deque.pollLast());
                 }
 
-                commitMessageDeque(q, chatRoom); // commit
+                commitMessageDeque(dq, chatRoom); // commit
             }
-
-            messageMap.put(id, mDeque);
-            messageMap.putChatList(chatRoom.getCustomer().getUid(), redisRecentChatDto);
         }
+
+        chatRoom.updateDateTime(LocalDateTime.now());   // 채팅방 리스트를 가져올 때 최신 채팅 기준으로 정렬하기 위해 시간 최신화
+        return "ok";
     }
 
     @Override
     public ChatMessageDto getMessages(Long chatRoomId, String time, HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        Optional<User> user = userRepository.findByEmail(email);
-
-        if (user.isEmpty()) {
-            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
-        }
 
         ChatMessageDto messageList = new ChatMessageDto();
 
         // 캐시 읽기 전략 (LookAside 패턴)
-        if (!messageMap.containsKey(chatRoomId, time)) {
+        if (messageMap.isContainsKey(chatRoomId, time)) {
             // Cache Miss
             List<MessageStatusDto> messagesInDB = getMessagesInDB(chatRoomId, time);
             // DB 에도 없다면 새로 만든 방이므로 빈 리스트를 반환
@@ -146,28 +135,10 @@ public class ChatServiceImpl implements ChatService {
             assert deque.peek() != null;
             messageMap.put(chatRoomId, deque);
 
-            ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> {
-                throw new NotFoundException("Not Found Room", ErrorCode.NOT_FOUND_EXCEPTION);
-            });
-
-            String uid;
-
-            if (user.get().getUserRole().equals(UserRole.USER) || user.get().getUserRole().equals(UserRole.ADMIN)) {
-                uid = chatRoom.getCustomer().getUid();
-            } else {
-                uid = chatRoom.getStore().getUser().getUid();
-            }
-
-            messageMap.putChatList(uid, new RedisRecentChatDto(deque.getLast().getChatRoomId(),
-                    chatRoom.getStore().getId(),
-                    deque.getLast().getMessage(),
-                    deque.getLast().getMessageType(),
-                    deque.getLast().getDateTime()));
-
             messageList.setChatList(messagesInDB);
         } else {
             // Cache Hit
-            messageList.setChatList(getMessagesInCache(chatRoomId, user.get().getUid(), time));
+            messageList.setChatList(getMessagesInCache(chatRoomId, time));
         }
 
         // 현재 날짜 이후 가장 최근 채팅 일자를 불러온 뒤 싣는다.
@@ -185,36 +156,38 @@ public class ChatServiceImpl implements ChatService {
             throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
         }
 
-        List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
-        List<RedisRecentChatDto> list = messageMap.getChatList(user.get().getUid());
+        List<ChatRoom> list = jpaQueryFactory
+                .select(QChatRoom.chatRoom)
+                .from(QChatRoom.chatRoom)
+                .where(QChatRoom.chatRoom.customer.eq(user.get())
+                        .or(QChatRoom.chatRoom.store.user.eq(user.get())))
+                .orderBy(QChatRoom.chatRoom.modifiedDate.desc())
+                .offset((page - 1) * 10L)
+                .limit(10)
+                .fetch();
 
+        List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
+
+        // 채팅방 내역이 없으면 빈 리스트 반환
         if (list == null || list.size() == 0) {
             return new ChatRoomDto(0, null);
         }
 
-        for (int i = (page - 1) * 10; i < page * 10; i++) {
-            if (list.size() <= i) {
-                break;
-            }
+        // 썸네일 메시지와 메시지 타입, 최근 채팅 시간 등을 싣는다.
+        for (ChatRoom chatRoom : list) {
+            MessageStatusDto messageStatusDto = messageMap.getRecentChatData(chatRoom.getId());
 
-            ChatRecentMessageDto dto = ChatRecentMessageDto.builder()
-                    .roomId(list.get(i).getRoomId())
-                    .storeId(list.get(i).getStoreId())
-                    .thumbnailMessage(list.get(i).getThumbnailMessage())
-                    .messageType(list.get(i).getMessageType())
-                    .lastChatDatetime(list.get(i).getDateTime())
+            ChatRecentMessageDto chatRecentMessageDto = ChatRecentMessageDto.builder()
+                    .roomId(chatRoom.getId())
+                    .storeId(chatRoom.getStore().getId())
+                    .storeName(chatRoom.getStore().getName())
+                    .customerName(chatRoom.getCustomer().getNickname())
+                    .thumbnailMessage(messageStatusDto.getMessage())
+                    .messageType(messageStatusDto.getMessageType())
+                    .lastChatDatetime(messageStatusDto.getDateTime())
                     .build();
 
-            chatRecentMessageDtos.add(dto);
-        }
-
-        for (ChatRecentMessageDto chatRecentMessageDto : chatRecentMessageDtos) {
-            ChatRoom chatRoom = chatRoomRepository.findById(chatRecentMessageDto.getRoomId()).orElseThrow(() -> {
-                throw new NotFoundException("Not Found Room", ErrorCode.ACCESS_DENIED_EXCEPTION);
-            });
-
-            chatRecentMessageDto.setStoreName(chatRoom.getStore().getName());
-            chatRecentMessageDto.setCustomerName(chatRoom.getCustomer().getNickname());
+            chatRecentMessageDtos.add(chatRecentMessageDto);
         }
 
         return ChatRoomDto.builder()
@@ -224,6 +197,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void deleteRoom(Long roomId, HttpServletRequest request) {
         String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
         Optional<User> user = userRepository.findByEmail(email);
@@ -240,7 +214,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         chatRoomRepository.delete(chatRoom);
-        messageMap.deleteChatRoom(roomId, user.get().getUid()); // Redis 내 관련 정보 삭제
+        messageMap.deleteChatRoom(roomId); // Redis 내 관련 정보 삭제
     }
 
     @Override
@@ -256,15 +230,17 @@ public class ChatServiceImpl implements ChatService {
         return chatMessageRepository.findByChatRoomIdAndDateTimeBetweenOrderByDateTimeDesc(roomId, start, end);
     }
 
-    private List<MessageStatusDto> getMessagesInCache(Long roomId, String uid, String time) {
-        return messageMap.get(roomId, uid, time);
+    private List<MessageStatusDto> getMessagesInCache(Long roomId, String time) {
+        return messageMap.get(roomId, time);
     }
 
     private void commitMessageDeque(Deque<MessageStatusDto> messageDeque, ChatRoom chatRoom) {
 
         // 쓰기 지연
-        for (int i = 0; i < messageDeque.size(); i++) {
-            MessageStatusDto dto = Objects.requireNonNull(messageDeque.poll());
+        while (!messageDeque.isEmpty()) {
+            MessageStatusDto dto = messageDeque.pollLast();
+
+            assert dto != null;
             ChatMessage message = new ChatMessage(chatRoom, dto.getDateTime(), dto);
 
             em.persist(message);

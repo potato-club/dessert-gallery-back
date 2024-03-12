@@ -44,7 +44,9 @@ public class BlackListServiceImpl implements BlackListService {
         User user = this.getUserInstance(request);
         User customer = this.commonException(user, blackListRequestDto.getUserName());
 
-        Store store = storeRepository.findByUser(user);
+        Store store = storeRepository.findById(blackListRequestDto.getStoreId()).orElseThrow(() -> {
+            throw new NotFoundException("Not Found Store", ErrorCode.NOT_FOUND_EXCEPTION);
+        });
 
         if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(customer, store)) {
             BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
@@ -73,7 +75,9 @@ public class BlackListServiceImpl implements BlackListService {
         User user = this.getUserInstance(request);
         User customer = this.commonException(user, blackListRequestDto.getUserName());
 
-        Store store = storeRepository.findByUser(user);
+        Store store = storeRepository.findById(blackListRequestDto.getStoreId()).orElseThrow(() -> {
+            throw new NotFoundException("Not Found Store", ErrorCode.NOT_FOUND_EXCEPTION);
+        });
 
         if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(customer, store)) {
             BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);

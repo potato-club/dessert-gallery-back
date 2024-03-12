@@ -33,7 +33,7 @@ public class UserSignUpRequestDto {
     private LoginType loginType;
 
     public User toEntity() {
-        User user = User.builder()
+        return User.builder()
                 .uid(String.valueOf(UUID.randomUUID()))
                 .email(email)
                 .password(password)
@@ -42,7 +42,5 @@ public class UserSignUpRequestDto {
                 .loginType(loginType)
                 .deleted(false)
                 .build();
-
-        return user;
     }
 }

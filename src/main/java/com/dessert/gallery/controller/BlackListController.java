@@ -36,7 +36,8 @@ public class BlackListController {
 
     @Operation(summary = "내가 등록한 블랙리스트 출력 API")
     @GetMapping("/blacklist")
-    public Page<BlackListResponseDto> getBlackList(@RequestParam int page, HttpServletRequest request) {
+    public Page<BlackListResponseDto> getBlackList(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                   HttpServletRequest request) {
         return blackListService.getBlackList(page, request);
     }
 }
