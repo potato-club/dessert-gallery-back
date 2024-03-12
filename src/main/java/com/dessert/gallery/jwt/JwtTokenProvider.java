@@ -1,21 +1,21 @@
 package com.dessert.gallery.jwt;
 
+import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.ForbiddenException;
-import com.dessert.gallery.error.ErrorJwtCode;
+import com.dessert.gallery.error.exception.NotFoundException;
+import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.UserRepository;
 import com.dessert.gallery.service.Jwt.CustomUserDetailService;
 import com.dessert.gallery.service.Jwt.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -23,10 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.Key;
 import java.util.*;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
-@Transactional
 public class JwtTokenProvider {
 
     private final UserRepository userRepository;
@@ -37,10 +35,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    // 액세스 토큰 유효시간 | 1h
+    // 액세스 토큰 유효시간
     @Value("${jwt.accessTokenExpiration}")
     private long accessTokenValidTime;
-    // 리프레시 토큰 유효시간 | 7d
+
+    // 리프레시 토큰 유효시간
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenValidTime;
 
@@ -97,16 +96,29 @@ public class JwtTokenProvider {
             throw new ForbiddenException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-        return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isPresent()) {
+            return createAccessToken(email, user.get().getUserRole());
+        } else {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
     }
 
     public String reissueRefreshToken(String refreshToken) {
         String email = redisService.getValues(refreshToken).get("email");
+
         if (Objects.isNull(email)) {
-            throw new ForbiddenException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-        String newRefreshToken = createRefreshToken(email, userRepository.findByEmail(email).get().getUserRole());
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
+        String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
 
         redisService.delValues(refreshToken);
         redisService.setValues(newRefreshToken, email);
@@ -161,8 +173,6 @@ public class JwtTokenProvider {
             throw new UnsupportedJwtException("JWT token is unsupported");
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("JWT claims string is empty");
-        } catch (SignatureException e) {
-            throw new SignatureException("JWT signature does not match");
         }
     }
 
@@ -176,13 +186,9 @@ public class JwtTokenProvider {
         response.setHeader("refreshToken", "bearer "+ refreshToken);
     }
 
-    // RefreshToken 존재유무 확인
-    public boolean existsRefreshToken(String refreshToken) {
-        return redisService.getValues(refreshToken) != null;
-    }
-
     // Email로 권한 정보 가져오기
     public UserRole getRoles(String email) {
-        return userRepository.findByEmail(email).get().getUserRole();
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.map(User::getUserRole).orElse(null);
     }
 }

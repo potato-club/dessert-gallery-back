@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .antMatchers(HttpMethod.DELETE,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.GET,"/mypage/room/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.GET,"/kakaoMap").permitAll()
+                .antMatchers("/ws/chat").authenticated()
                 // 나머지 요청에 대해서는 권한 제한 없이 호출 가능하도록 설정
                 .anyRequest().permitAll()
                 .and()
