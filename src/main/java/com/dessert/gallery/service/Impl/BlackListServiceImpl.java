@@ -28,7 +28,6 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class BlackListServiceImpl implements BlackListService {
 
@@ -40,6 +39,7 @@ public class BlackListServiceImpl implements BlackListService {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
+    @Transactional
     public void addBlackList(BlackListRequestDto blackListRequestDto, HttpServletRequest request) {
         User user = this.getUserInstance(request);
         User customer = this.commonException(user, blackListRequestDto.getUserName());
@@ -71,6 +71,7 @@ public class BlackListServiceImpl implements BlackListService {
     }
 
     @Override
+    @Transactional
     public void removeBlackList(BlackListRequestDto blackListRequestDto, HttpServletRequest request) {
         User user = this.getUserInstance(request);
         User customer = this.commonException(user, blackListRequestDto.getUserName());

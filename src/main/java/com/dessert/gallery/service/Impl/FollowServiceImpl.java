@@ -27,7 +27,6 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class FollowServiceImpl implements FollowService {
 
@@ -39,6 +38,7 @@ public class FollowServiceImpl implements FollowService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
+    @Transactional
     public void addStoreFollowing(Long storeId, HttpServletRequest request) {
         String email = this.getUserEmail(request);
         User user = userRepository.findByEmail(email).orElseThrow();
@@ -75,6 +75,7 @@ public class FollowServiceImpl implements FollowService {
     }
 
     @Override
+    @Transactional
     public void removeFollowing(Long storeId, HttpServletRequest request) {
         String email = this.getUserEmail(request);
         UserRole userRole = jwtTokenProvider.getRoles(email);

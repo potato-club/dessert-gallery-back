@@ -22,12 +22,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class StoreListServiceImpl implements StoreListService {
 

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
@@ -31,7 +30,7 @@ public class ImageServiceImpl implements ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-
+    @Transactional
     public List<File> uploadImages(List<MultipartFile> files, Object entity) throws IOException {
         List<File> list = this.existsFiles(files);
         Class<?> entityType = entity.getClass();
@@ -56,6 +55,7 @@ public class ImageServiceImpl implements ImageService {
         return list;
     }
 
+    @Transactional
     public List<File> updateImages(Object entity, List<MultipartFile> files, List<FileRequestDto> requestDto)
             throws IOException {
 
