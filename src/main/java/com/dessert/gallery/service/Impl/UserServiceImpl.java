@@ -12,13 +12,14 @@ import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
-import com.dessert.gallery.repository.FileRepository;
-import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.repository.File.FileRepository;
+import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Interface.ImageService;
 import com.dessert.gallery.service.Interface.UserService;
-import com.dessert.gallery.service.Jwt.RedisService;
+import com.dessert.gallery.service.Jwt.RedisJwtService;
 import com.dessert.gallery.service.KakaoApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
     private final ImageService imageService;
     private final KakaoApi kakaoApi;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisService redisService;
+    private final RedisJwtService redisJwtService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -174,7 +175,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void logout(HttpServletRequest request) {
-        redisService.delValues(jwtTokenProvider.resolveRefreshToken(request));
+        redisJwtService.delValues(jwtTokenProvider.resolveRefreshToken(request));
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(request));
     }
 
@@ -206,7 +207,13 @@ public class UserServiceImpl implements UserService {
     }
 
     public void setJwtTokenInHeader(String email, HttpServletResponse response) {
-        UserRole userRole = userRepository.findByEmail(email).get().getUserRole();
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
+        UserRole userRole = user.get().getUserRole();
 
         String accessToken = jwtTokenProvider.createAccessToken(email, userRole);
         String refreshToken = jwtTokenProvider.createRefreshToken(email, userRole);
@@ -214,6 +221,6 @@ public class UserServiceImpl implements UserService {
         jwtTokenProvider.setHeaderAccessToken(response, accessToken);
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
 
-        redisService.setValues(refreshToken, email);
+        redisJwtService.setValues(refreshToken, email);
     }
 }

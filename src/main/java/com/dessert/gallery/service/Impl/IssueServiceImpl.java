@@ -22,6 +22,7 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class IssueServiceImpl implements IssueService {
+
     @Value("${github.apiUrl_front}")
     private String apiUrl;
     private final GithubConfig githubConfig;

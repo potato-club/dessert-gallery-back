@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.*;
-import com.dessert.gallery.repository.FileRepository;
+import com.dessert.gallery.repository.File.FileRepository;
 import com.dessert.gallery.service.Interface.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

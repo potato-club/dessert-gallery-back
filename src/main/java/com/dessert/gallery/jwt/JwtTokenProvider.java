@@ -6,9 +6,9 @@ import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.ForbiddenException;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
-import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Jwt.CustomUserDetailService;
-import com.dessert.gallery.service.Jwt.RedisService;
+import com.dessert.gallery.service.Jwt.RedisJwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import java.util.*;
 public class JwtTokenProvider {
 
     private final UserRepository userRepository;
-    private final RedisService redisService;
+    private final RedisJwtService redisJwtService;
     private final CustomUserDetailService customUserDetailService;
 
     // 키
@@ -91,7 +91,7 @@ public class JwtTokenProvider {
     }
 
     public String reissueAccessToken(String refreshToken) {
-        String email = redisService.getValues(refreshToken).get("email");
+        String email = redisJwtService.getValues(refreshToken).get("email");
         if (Objects.isNull(email)) {
             throw new ForbiddenException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
@@ -106,7 +106,7 @@ public class JwtTokenProvider {
     }
 
     public String reissueRefreshToken(String refreshToken) {
-        String email = redisService.getValues(refreshToken).get("email");
+        String email = redisJwtService.getValues(refreshToken).get("email");
 
         if (Objects.isNull(email)) {
             throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
@@ -120,8 +120,8 @@ public class JwtTokenProvider {
 
         String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
 
-        redisService.delValues(refreshToken);
-        redisService.setValues(newRefreshToken, email);
+        redisJwtService.delValues(refreshToken);
+        redisJwtService.setValues(newRefreshToken, email);
 
         return newRefreshToken;
     }
@@ -151,7 +151,7 @@ public class JwtTokenProvider {
         Date expiration = claims.getExpiration();
         Date now = new Date();
         if (now.after(expiration)) {
-            redisService.addTokenToBlacklist(token, expiration.getTime() - now.getTime());
+            redisJwtService.addTokenToBlacklist(token, expiration.getTime() - now.getTime());
         }
     }
 

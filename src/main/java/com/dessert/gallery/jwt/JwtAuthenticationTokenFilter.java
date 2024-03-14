@@ -1,7 +1,7 @@
 package com.dessert.gallery.jwt;
 
 import com.dessert.gallery.error.ErrorJwtCode;
-import com.dessert.gallery.service.Jwt.RedisService;
+import com.dessert.gallery.service.Jwt.RedisJwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -24,7 +24,7 @@ import java.io.IOException;
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisService redisService;
+    private final RedisJwtService redisJwtService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -47,7 +47,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         try {
             if (accessToken == null && refreshToken != null) {
-                if (jwtTokenProvider.validateToken(refreshToken) && redisService.isRefreshTokenValid(refreshToken)
+                if (jwtTokenProvider.validateToken(refreshToken) && redisJwtService.isRefreshTokenValid(refreshToken)
                     && path.contains("/reissue")) {
                     filterChain.doFilter(request, response);
                 }
@@ -55,7 +55,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             } else {
-                if (jwtTokenProvider.validateToken(accessToken) && !redisService.isTokenInBlacklist(accessToken)) {
+                if (jwtTokenProvider.validateToken(accessToken) && !redisJwtService.isTokenInBlacklist(accessToken)) {
                     this.setAuthentication(accessToken);
                 }
             }

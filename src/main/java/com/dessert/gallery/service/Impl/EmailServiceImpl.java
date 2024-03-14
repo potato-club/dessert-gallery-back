@@ -3,9 +3,9 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
-import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Interface.EmailService;
-import com.dessert.gallery.service.Jwt.RedisService;
+import com.dessert.gallery.service.Jwt.RedisJwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,7 +26,7 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender gmailSender;
     private final JavaMailSender naverSender;
-    private final RedisService redisService;
+    private final RedisJwtService redisJwtService;
     private final UserRepository userRepository;
     private final UserServiceImpl userService;
 
@@ -39,43 +39,43 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     public EmailServiceImpl(@Qualifier("gmail") JavaMailSender gmailSender,
                             @Qualifier("naver") JavaMailSender naverSender,
-                            RedisService redisService,
+                            RedisJwtService redisJwtService,
                             UserRepository userRepository,
                             UserServiceImpl userService) {
         this.gmailSender = gmailSender;
         this.naverSender = naverSender;
-        this.redisService = redisService;
+        this.redisJwtService = redisJwtService;
         this.userRepository = userRepository;
         this.userService = userService;
     }
 
     @Override
     public void sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
-        redisService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
+        redisJwtService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
         MimeMessage message = gmailSender.createMimeMessage();
 
         String ePw = createKey();
         commonMessage(recipientEmail, message, "gmail", ePw);
 
-        redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
+        redisJwtService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         gmailSender.send(message);
     }
 
     @Override
     public void sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
-        redisService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
+        redisJwtService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
         MimeMessage message = naverSender.createMimeMessage();
 
         String ePw = createKey();
         commonMessage(recipientEmail, message, "naver", ePw);
 
-        redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
+        redisJwtService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         naverSender.send(message);
     }
 
     @Override
     public void verifyEmail(String key, HttpServletResponse response) {
-        String email = redisService.getEmailOtpData(key).toString();
+        String email = redisJwtService.getEmailOtpData(key).toString();
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> {
             throw new NotFoundException("Email Not Found", ErrorCode.NOT_FOUND_EXCEPTION);
@@ -84,7 +84,7 @@ public class EmailServiceImpl implements EmailService {
         user.setEmailOtp(true);
         user.setDeleted(false);
 
-        redisService.deleteEmailOtpData(key);
+        redisJwtService.deleteEmailOtpData(key);
         userService.setJwtTokenInHeader(email, response);
     }
 

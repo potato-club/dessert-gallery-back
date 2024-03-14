@@ -1,6 +1,6 @@
 package com.dessert.gallery.service.Jwt;
 
-import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.repository.User.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

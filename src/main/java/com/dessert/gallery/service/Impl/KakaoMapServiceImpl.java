@@ -9,7 +9,7 @@ import com.dessert.gallery.enums.SearchType;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
-import com.dessert.gallery.repository.StoreRepository;
+import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
