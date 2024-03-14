@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
 
-    private final ScheduleRepository scheduleRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
 }

@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class BlackListRepositoryImpl implements BlackListRepositoryCustom {
 
-    private final BlackListRepository blackListRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }

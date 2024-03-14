@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class MemoRepositoryImpl implements MemoRepositoryCustom {
 
-    private final MemoRepository memoRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }

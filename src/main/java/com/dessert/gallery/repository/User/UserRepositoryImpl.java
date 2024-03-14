@@ -8,6 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepositoryCustom {
 
-    private final UserRepository userRepository;
     private final JPAQueryFactory jpaQueryFactory;
 }

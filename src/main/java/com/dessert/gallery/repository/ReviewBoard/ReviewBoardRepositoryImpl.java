@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class ReviewBoardRepositoryImpl implements ReviewBoardRepositoryCustom {
 
-    private final ReviewBoardRepository reviewBoardRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
 }

@@ -8,6 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class BoardCommentRepositoryImpl implements BoardCommentRepositoryCustom {
 
-    private final BoardCommentRepository boardCommentRepository;
     private final JPAQueryFactory jpaQueryFactory;
 }

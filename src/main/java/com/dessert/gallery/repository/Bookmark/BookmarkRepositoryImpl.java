@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
 
-    private final BookmarkRepository bookmarkRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }

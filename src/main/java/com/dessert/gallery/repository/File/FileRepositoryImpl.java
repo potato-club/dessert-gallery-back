@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class FileRepositoryImpl implements FileRepositoryCustom {
 
-    private final FileRepository fileRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }

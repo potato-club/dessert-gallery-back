@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreRepositoryCustom {
 
-    private final StoreRepository storeRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
 }

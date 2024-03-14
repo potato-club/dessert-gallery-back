@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class NoticeBoardRepositoryImpl implements NoticeBoardRepositoryCustom {
 
-    private final NoticeBoardRepository noticeBoardRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }

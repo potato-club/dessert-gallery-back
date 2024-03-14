@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class SubscribeRepositoryImpl implements SubscribeRepositoryCustom {
 
-    private final SubscribeRepository subscribeRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
 }

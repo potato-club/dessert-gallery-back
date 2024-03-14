@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class CalendarRepositoryImpl implements CalendarRepositoryCustom {
 
-    private final CalendarRepository calendarRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }

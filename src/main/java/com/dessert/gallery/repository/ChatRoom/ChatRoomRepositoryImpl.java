@@ -8,7 +8,5 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
-    private final ChatRoomRepository chatRoomRepository;
     private final JPAQueryFactory jpaQueryFactory;
-
 }
