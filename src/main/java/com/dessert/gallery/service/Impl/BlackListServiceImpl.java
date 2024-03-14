@@ -13,9 +13,7 @@ import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.repository.Subscribe.SubscribeRepository;
 import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Interface.BlackListService;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +34,6 @@ public class BlackListServiceImpl implements BlackListService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final JPAQueryFactory jpaQueryFactory;
 
     @Override
     @Transactional
@@ -101,32 +98,10 @@ public class BlackListServiceImpl implements BlackListService {
         }
 
         Pageable pageable = PageRequest.of(page - 1, 20);
-
         Store store = storeRepository.findByUser(user);
 
-        List<BlackListResponseDto> list = jpaQueryFactory
-                .selectDistinct(
-                        Projections.constructor(
-                                BlackListResponseDto.class,
-                                QBlackList.blackList.user.nickname.as("userName"),
-                                QFile.file.fileName.as("fileName"),
-                                QFile.file.fileUrl.as("fileUrl")
-                        )
-                )
-                .from(QBlackList.blackList)
-                .leftJoin(QFile.file).on(QFile.file.store.eq(QBlackList.blackList.store))
-                .where(QBlackList.blackList.store.eq(store)
-                        .and(QBlackList.blackList.deleted.isFalse()))
-                .orderBy(QBlackList.blackList.modifiedDate.desc())
-                .offset((page - 1) * 20L)
-                .limit(20)
-                .fetch();
-
-        JPAQuery<Long> countQuery = jpaQueryFactory
-                .select(QBlackList.blackList.count())
-                .from(QBlackList.blackList)
-                .where(QBlackList.blackList.store.eq(store)
-                        .and(QBlackList.blackList.deleted.isFalse()));
+        List<BlackListResponseDto> list = blackListRepository.getBlackListInStore(page, store);
+        JPAQuery<Long> countQuery = blackListRepository.countByStoreAndDeletedIsFalse(store);
 
         return PageableExecutionUtils.getPage(list, pageable, countQuery::fetchOne);
     }

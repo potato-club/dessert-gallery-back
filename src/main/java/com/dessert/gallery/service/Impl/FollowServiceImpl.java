@@ -12,9 +12,7 @@ import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.repository.Subscribe.SubscribeRepository;
 import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Interface.FollowService;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FollowServiceImpl implements FollowService {
 
-    private final JPAQueryFactory jpaQueryFactory;
     private final SubscribeRepository subscribeRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
@@ -111,36 +108,8 @@ public class FollowServiceImpl implements FollowService {
 
         Pageable pageable = PageRequest.of(page - 1, 20);
 
-        List<FollowResponseDto> list = jpaQueryFactory
-                .selectDistinct(
-                        Projections.constructor(
-                                FollowResponseDto.class,
-                                QSubscribe.subscribe.store.id.as("storeId"),
-                                QSubscribe.subscribe.store.name.as("storeName"),
-                                QFile.file.fileName.as("fileName"),
-                                QFile.file.fileUrl.as("fileUrl")
-                        )
-                )
-                .from(QSubscribe.subscribe)
-                .leftJoin(QFile.file).on(QFile.file.store.eq(QSubscribe.subscribe.store))
-                .leftJoin(QBlackList.blackList).on(QBlackList.blackList.user.eq(QSubscribe.subscribe.user)
-                        .and(QBlackList.blackList.store.eq(QSubscribe.subscribe.store)))
-                .where(QSubscribe.subscribe.user.email.eq(email)
-                        .and(QSubscribe.subscribe.deleted.isFalse())
-                        .and(QBlackList.blackList.id.isNull().or(QBlackList.blackList.deleted.isTrue())))
-                .orderBy(QSubscribe.subscribe.modifiedDate.desc())
-                .offset((page - 1) * 20L)
-                .limit(20)
-                .fetch();
-
-        JPAQuery<Long> countQuery = jpaQueryFactory
-                .select(QSubscribe.subscribe.count())
-                .from(QSubscribe.subscribe)
-                .leftJoin(QBlackList.blackList).on(QBlackList.blackList.user.eq(QSubscribe.subscribe.user)
-                        .and(QBlackList.blackList.store.eq(QSubscribe.subscribe.store)))
-                .where(QSubscribe.subscribe.user.email.eq(email)
-                        .and(QSubscribe.subscribe.deleted.isFalse())
-                        .and(QBlackList.blackList.id.isNull().or(QBlackList.blackList.deleted.isTrue())));
+        List<FollowResponseDto> list = subscribeRepository.findDistinctFollowResponseDtoByEmail(page, email);
+        JPAQuery<Long> countQuery = subscribeRepository.countByUserEmailAndDeletedIsFalseAndNothingBlackList(email);
 
         return PageableExecutionUtils.getPage(list, pageable, countQuery::fetchOne);
     }

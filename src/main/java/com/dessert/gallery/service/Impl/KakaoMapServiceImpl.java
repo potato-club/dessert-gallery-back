@@ -9,15 +9,12 @@ import com.dessert.gallery.enums.SearchType;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.repository.KakaoMap.KakaoMapRepositoryCustom;
 import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +35,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
     private final StoreBoardService boardService;
     private final NoticeBoardService noticeService;
     private final ReviewService reviewService;
-    private final JPAQueryFactory jpaQueryFactory;
+    private final KakaoMapRepositoryCustom kakaoMapRepository;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String GEOCODE_USER_INFO;
@@ -49,10 +46,11 @@ public class KakaoMapServiceImpl implements KakaoMapService {
     public StoreCoordinate getKakaoCoordinate(String address) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
+
         headers.set("Authorization", "KakaoAK " + GEOCODE_USER_INFO);
         headers.set("content-type", "application/json");
-        HttpEntity<String> entity = new HttpEntity<>(headers);
 
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(GEOCODE_URL + address, HttpMethod.GET, entity, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -61,6 +59,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
             // JSON 파싱을 통해 lat, lon 좌표 추출
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode responseJson = objectMapper.readTree(responseBody);
+
             double lat = responseJson.path("documents").path(0).path("y").asDouble();
             double lon = responseJson.path("documents").path(0).path("x").asDouble();
 
@@ -72,29 +71,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
 
     @Override
     public List<StoreMapList> getStoreListWithCoordinate(double lat, double lon, int radius) {
-        QStore qStore = QStore.store;
-        QFile qFile = QFile.file;
-
-        return jpaQueryFactory.select(
-                        Projections.constructor(
-                                StoreMapList.class,
-                                qStore.id.as("storeId"),
-                                qStore.name.as("storeName"),
-                                qStore.address.as("storeAddress"),
-                                qStore.score.as("score"),
-                                qStore.latitude.as("latitude"),
-                                qStore.longitude.as("longitude"),
-                                qStore.content.as("content"),
-                                qFile.fileName.as("fileName"),
-                                qFile.fileUrl.as("fileUrl")
-                        )
-                )
-                .from(qStore)
-                .leftJoin(qFile).on(qFile.store.eq(qStore))
-                .where(calculateDistance(lat, lon, radius))
-                .orderBy(QStore.store.score.desc())
-                .limit(15)
-                .fetch();
+        return kakaoMapRepository.getStoreListWithCoordinate(lat, lon, radius);
     }
 
     @Override
@@ -105,57 +82,14 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         final double lon = store.getLongitude();
         final int radius = 1500;
 
-        QStore qStore = QStore.store;
-
-        return jpaQueryFactory.select(
-                        Projections.constructor(
-                                StoreMapList.class,
-                                qStore.id.as("storeId"),
-                                qStore.name.as("storeName"),
-                                qStore.address.as("storeAddress"),
-                                qStore.score.as("score"),
-                                qStore.latitude.as("latitude"),
-                                qStore.longitude.as("longitude")
-                        )
-                )
-                .from(qStore)
-                .where(calculateDistance(lat, lon, radius))
-                .orderBy(QStore.store.score.desc())
-                .limit(15)
-                .fetch();
+        return kakaoMapRepository.getKakaoMapStoreList(lat, lon, radius);
     }
 
     @Override
     public List<StoreListInMap> getStoreListByTags(MapSearchRequest request) {
         BooleanBuilder whereBuilder = this.existsFilterOption(request);
 
-        QStore qStore = QStore.store;
-        QStoreBoard qStoreBoard = QStoreBoard.storeBoard;
-        QFile qFile = QFile.file;
-
-        return jpaQueryFactory.select(
-                        Projections.constructor(
-                                StoreListInMap.class,
-                                qStore.id.as("storeId"),
-                                qStore.name.as("storeName"),
-                                qStore.address.as("storeAddress"),
-                                qStore.content.as("content"),
-                                qStore.score.as("score"),
-                                qStore.latitude.as("latitude"),
-                                qStore.longitude.as("longitude"),
-                                qFile.fileName.as("fileName"),
-                                qFile.fileUrl.as("fileUrl")
-                        )
-                )
-                .from(qStore)
-                .leftJoin(qStoreBoard).on(qStoreBoard.store.eq(qStore))
-                .leftJoin(qFile).on(qFile.store.eq(qStore))
-                .where(whereBuilder)
-                .distinct()
-                .orderBy(request.isSortType() ? QStore.store.followers.size().desc() : QStore.store.score.desc())
-                .offset((request.getPage() - 1) * 15L)
-                .limit(15)
-                .fetch();
+        return kakaoMapRepository.getStoreListByTags(whereBuilder, request);
     }
 
     @Override
@@ -181,6 +115,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
             whereBuilder.and(QStore.store.name.like("%" + request.getKeyword() + "%"));
         } else if (request.getSearchType().equals(SearchType.TAGS)) {
             String[] keywordList = request.getKeyword().split("#");
+
             for (String option : keywordList) {
                 whereBuilder.and(QStoreBoard.storeBoard.tags.like("%" + option + "%"));
             }
@@ -189,13 +124,5 @@ public class KakaoMapServiceImpl implements KakaoMapService {
         }
 
         return whereBuilder;
-    }
-
-    private BooleanExpression calculateDistance(double lat, double lon, int radius) {
-        QStore qStore = QStore.store;
-        NumberExpression<Double> distance = qStore.latitude.subtract(lon).multiply(qStore.latitude.subtract(lon))
-                .add(qStore.longitude.subtract(lat).multiply(qStore.longitude.subtract(lat))).sqrt();
-
-        return distance.loe(radius);
     }
 }

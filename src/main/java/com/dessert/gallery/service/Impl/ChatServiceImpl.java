@@ -16,7 +16,6 @@ import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.repository.Subscribe.SubscribeRepository;
 import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Interface.ChatService;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,6 @@ public class ChatServiceImpl implements ChatService {
     private final SubscribeRepository subscribeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisChatMessageCache messageMap;
-    private final JPAQueryFactory jpaQueryFactory;
     private static final int transactionMessageSize = 20; // 트랜잭션에 묶일 메세지 양
     private final EntityManager em;
 
@@ -161,15 +159,7 @@ public class ChatServiceImpl implements ChatService {
             throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
         }
 
-        List<ChatRoom> list = jpaQueryFactory
-                .select(QChatRoom.chatRoom)
-                .from(QChatRoom.chatRoom)
-                .where(QChatRoom.chatRoom.customer.eq(user.get())
-                        .or(QChatRoom.chatRoom.store.user.eq(user.get())))
-                .orderBy(QChatRoom.chatRoom.modifiedDate.desc())
-                .offset((page - 1) * 10L)
-                .limit(10)
-                .fetch();
+        List<ChatRoom> list = chatRoomRepository.getChatRoomsList(page, user.get());
 
         List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
 
