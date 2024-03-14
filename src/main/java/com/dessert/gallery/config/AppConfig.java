@@ -1,7 +1,7 @@
 package com.dessert.gallery.config;
 
 import com.dessert.gallery.entity.User;
-import com.dessert.gallery.repository.UserRepository;
+import com.dessert.gallery.repository.User.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

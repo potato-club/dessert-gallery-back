@@ -7,7 +7,7 @@ import com.dessert.gallery.dto.schedule.ScheduleResponseDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.ScheduleType;
 import com.dessert.gallery.error.exception.NotFoundException;
-import com.dessert.gallery.repository.CalendarRepository;
+import com.dessert.gallery.repository.Calendar.CalendarRepository;
 import com.dessert.gallery.service.Interface.CalendarService;
 import com.dessert.gallery.service.Interface.MemoService;
 import com.dessert.gallery.service.Interface.ScheduleService;

@@ -5,7 +5,7 @@ import com.dessert.gallery.entity.Bookmark;
 import com.dessert.gallery.entity.QBookmark;
 import com.dessert.gallery.entity.StoreBoard;
 import com.dessert.gallery.entity.User;
-import com.dessert.gallery.repository.BookmarkRepository;
+import com.dessert.gallery.repository.Bookmark.BookmarkRepository;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.UserService;
 import com.querydsl.jpa.impl.JPAQueryFactory;
