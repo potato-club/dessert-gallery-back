@@ -36,7 +36,6 @@ import java.util.Optional;
 import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -110,6 +109,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void signUp(UserSignUpRequestDto requestDto, HttpServletResponse response) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
@@ -118,12 +118,15 @@ public class UserServiceImpl implements UserService {
         if (requestDto.getLoginType().equals(LoginType.KAKAO)) {    // 카카오 회원가입은 바로 저장 후 토큰 발급
             User user = requestDto.toEntity();
             user.setEmailOtp(true);
+
             userRepository.save(user);
             this.setJwtTokenInHeader(requestDto.getEmail(), response);
         } else if (requestDto.getLoginType().equals(LoginType.NORMAL)) {    // 일반 회원가입은 2차 인증 후 토큰 발급 예정
             requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+
             User user = requestDto.toEntity();
             user.setEmailOtp(false);
+
             userRepository.save(user);
         } else {
             throw new UnAuthorizedException("401_NOT_ALLOW", ErrorCode.NOT_ALLOW_WRITE_EXCEPTION);
@@ -136,6 +139,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException {
         User user = findUserByToken(request);
 
@@ -175,6 +179,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void withdrawalMembership(HttpServletRequest request) {
         User user = findUserByToken(request);
 

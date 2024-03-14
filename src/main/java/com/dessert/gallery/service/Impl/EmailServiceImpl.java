@@ -17,13 +17,11 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
 @Slf4j
 @Service
-@Transactional
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender gmailSender;
@@ -55,8 +53,10 @@ public class EmailServiceImpl implements EmailService {
     public void sendGmail(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
         redisService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
         MimeMessage message = gmailSender.createMimeMessage();
+
         String ePw = createKey();
-        message = commonMessage(recipientEmail, message, "gmail", ePw);
+        commonMessage(recipientEmail, message, "gmail", ePw);
+
         redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         gmailSender.send(message);
     }
@@ -65,8 +65,10 @@ public class EmailServiceImpl implements EmailService {
     public void sendNaver(String recipientEmail) throws MessagingException, UnsupportedEncodingException {
         redisService.deleteExistingOtp(recipientEmail); // 먼저 요청한 otp code 가 있었다면 제거함.
         MimeMessage message = naverSender.createMimeMessage();
+
         String ePw = createKey();
-        message = commonMessage(recipientEmail, message, "naver", ePw);
+        commonMessage(recipientEmail, message, "naver", ePw);
+
         redisService.setEmailOtpDataExpire(ePw, recipientEmail, 60 * 5L);   // 유효 시간 5분
         naverSender.send(message);
     }
@@ -78,6 +80,7 @@ public class EmailServiceImpl implements EmailService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> {
             throw new NotFoundException("Email Not Found", ErrorCode.NOT_FOUND_EXCEPTION);
         });
+
         user.setEmailOtp(true);
         user.setDeleted(false);
 
@@ -85,7 +88,7 @@ public class EmailServiceImpl implements EmailService {
         userService.setJwtTokenInHeader(email, response);
     }
 
-    public MimeMessage commonMessage(String recipientEmail, MimeMessage message, String type, String ePw) throws MessagingException, UnsupportedEncodingException {
+    private void commonMessage(String recipientEmail, MimeMessage message, String type, String ePw) throws MessagingException, UnsupportedEncodingException {
 
         message.addRecipients(MimeMessage.RecipientType.TO, recipientEmail); // to 보내는 대상
         message.setSubject("디저트 갤러리 인증 코드: "); //메일 제목
@@ -105,8 +108,6 @@ public class EmailServiceImpl implements EmailService {
         } else {
             message.setFrom(new InternetAddress(naverUsername,"DG_Admin"));
         }
-
-        return message;
     }
 
     public static String createKey() {
@@ -116,6 +117,7 @@ public class EmailServiceImpl implements EmailService {
         for (int i = 0; i < 6; i++) { // 인증코드 6자리
             key.append((rnd.nextInt(10)));
         }
+
         return key.toString();
     }
 

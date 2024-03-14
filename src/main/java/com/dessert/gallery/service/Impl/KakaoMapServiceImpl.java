@@ -25,14 +25,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
 
 @Service
 @Slf4j
-@Transactional
 @RequiredArgsConstructor
 public class KakaoMapServiceImpl implements KakaoMapService {
 
