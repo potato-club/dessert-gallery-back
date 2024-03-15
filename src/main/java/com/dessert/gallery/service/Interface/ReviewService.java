@@ -18,7 +18,5 @@ public interface ReviewService {
     List<StoreWritableReviewDto> getStoreListWritableReview(HttpServletRequest request);
     void addTestReview(ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void addReview(Long storeId, ReviewRequestDto requestDto, List<MultipartFile> images, HttpServletRequest request) throws IOException;
-    void updateReview(Long reviewId, ReviewUpdateDto updateDto,
-                      List<MultipartFile> images, HttpServletRequest request) throws IOException;
     void removeReview(Long reviewId, HttpServletRequest request);
 }

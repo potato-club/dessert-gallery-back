@@ -2,13 +2,11 @@ package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.board.BoardListResponseDto;
 import com.dessert.gallery.entity.Bookmark;
-import com.dessert.gallery.entity.QBookmark;
 import com.dessert.gallery.entity.StoreBoard;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.repository.Bookmark.BookmarkRepository;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.UserService;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +24,6 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class BookmarkServiceImpl implements BookmarkService {
-    private final JPAQueryFactory jpaQueryFactory;
     private final BookmarkRepository bookmarkRepository;
     private final UserService userService;
 
@@ -57,12 +54,7 @@ public class BookmarkServiceImpl implements BookmarkService {
 
         Pageable pageable = PageRequest.of(page - 1, 16);
 
-        List<Bookmark> bookmarkList = jpaQueryFactory.select(QBookmark.bookmark).from(QBookmark.bookmark)
-                .where(QBookmark.bookmark.user.eq(user))
-                .orderBy(QBookmark.bookmark.createdDate.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
-                .fetch();
+        List<Bookmark> bookmarkList = bookmarkRepository.findBookmarkByUser(user, pageable);
 
         boolean hasNext = false;
 

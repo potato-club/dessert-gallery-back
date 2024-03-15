@@ -53,15 +53,4 @@ public class ReviewBoard extends BaseTimeEntity {
             this.images.add(image);
         }
     }
-
-    public void removeImage(FileDto dto) {
-        this.images.removeIf(file ->
-                file.getFileName().equals(dto.getFileName())
-                        && file.getFileUrl().equals(dto.getFileUrl()));
-    }
-
-    public void updateReview(ReviewUpdateDto updateDto) {
-        this.score = updateDto.getScore();
-        this.content = updateDto.getContent();
-    }
 }
