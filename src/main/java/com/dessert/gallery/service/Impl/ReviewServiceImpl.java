@@ -162,47 +162,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void updateReview(Long reviewId, ReviewUpdateDto updateDto,
-                             List<MultipartFile> images, HttpServletRequest request) throws IOException {
-        ReviewBoard review = validateReview(reviewId, request);
-        double scoreGap = review.getScore() - updateDto.getScore();
-        review.updateReview(updateDto);
-        updateScore(review.getStore(), scoreGap);
-
-        // 삭제할 파일 리스트 저장
-        Set<FileDto> set = new HashSet<>(updateDto.getDeleteFiles());
-
-        // 기존 파일 리스트에서 삭제할 파일 리스트 비교
-        List<FileRequestDto> originImages = new ArrayList<>();
-        List<FileDto> collect = review.getImages().stream().map(FileDto::new).collect(Collectors.toList());
-
-        for (FileDto dto : collect) {
-            // 삭제할 파일 리스트에 존재 => 삭제
-            if (set.contains(dto)) {
-                originImages.add(new FileRequestDto(dto, true));
-                review.removeImage(dto);
-            }
-
-            // 삭제할 파일 리스트에 존재 X => 삭제 X
-            else {
-                originImages.add(new FileRequestDto(dto, false));
-            }
-        }
-
-        // 기존 이미지 없고 업로드할 이미지 있는 경우
-        if (CollectionUtils.isEmpty(originImages) && !CollectionUtils.isEmpty(images)) {
-            List<File> files = imageService.uploadImages(images, review);
-            review.updateImages(files);
-        }
-
-        // 기존 이미지 있는 경우 => 업데이트 진행
-        if (!CollectionUtils.isEmpty(originImages)) {
-            List<File> files = imageService.updateImages(review, images, originImages);
-            review.updateImages(files);
-        }
-    }
-
-    @Override
     public void removeReview(Long reviewId, HttpServletRequest request) {
         ReviewBoard review = validateReview(reviewId, request);
         Store store = review.getStore();
@@ -222,12 +181,6 @@ public class ReviewServiceImpl implements ReviewService {
         Long reviewCount = reviewRepository.countByStore(store);
         double scoreSum = store.getScore() * reviewCount + score;
         store.updateScore(Math.round((scoreSum / (reviewCount + 1)) * 10) / 10.0);
-    }
-
-    private void updateScore(Store store, double score) { // 리뷰 카운트 그대로 계산 / 점수는 원래점수와 새로운점수 차이 받기
-        Long reviewCount = reviewRepository.countByStore(store);
-        double scoreSum = store.getScore() * reviewCount + score;
-        store.updateScore(Math.round((scoreSum / reviewCount) * 10) / 10.0);
     }
 
     private void deleteScore(Store store, double score) { // 리뷰 카운트 - 1 로 계산 / 점수는 원래 점수 빼버리기
