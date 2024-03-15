@@ -10,8 +10,6 @@ import com.dessert.gallery.repository.BoardComment.BoardCommentRepository;
 import com.dessert.gallery.repository.StoreBoard.StoreBoardRepository;
 import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.service.Interface.*;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +42,6 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @Transactional
 @RequiredArgsConstructor
 public class StoreBoardServiceImpl implements StoreBoardService {
-    private final JPAQueryFactory jpaQueryFactory;
     private final StoreBoardRepository boardRepository;
     private final StoreRepository storeRepository;
     private final BoardCommentRepository commentRepository;
@@ -87,15 +84,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
         Pageable pageable = PageRequest.of(page - 1, 15);
 
-        BooleanBuilder whereQuery = new BooleanBuilder();
-        whereQuery.and(QStoreBoard.storeBoard.deleted.isFalse());
-
-        List<StoreBoard> list = jpaQueryFactory
-                .select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
-                .where(whereQuery.and(QStoreBoard.storeBoard.store.eq(store)))
-                .orderBy(QStoreBoard.storeBoard.createdDate.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1).fetch();
+        List<StoreBoard> list = boardRepository.findBoardsByStore(store, pageable);
 
         boolean hasNext = false;
 
@@ -116,19 +105,8 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
         Pageable pageable = PageRequest.ofSize(10);
 
-        BooleanBuilder whereQuery = new BooleanBuilder();
-        whereQuery.and(QStoreBoard.storeBoard.store.eq(store)).and(QStoreBoard.storeBoard.deleted.isFalse());
-
-        if (last != null) {
-            whereQuery.and(QStoreBoard.storeBoard.id.lt(last));
-        }
-
         // 해당 가게에서 삭제처리 되지 않은 게시글 리스트를 최신순으로 가져옴
-        List<StoreBoard> boardList = jpaQueryFactory.select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
-                .where(whereQuery)
-                .orderBy(QStoreBoard.storeBoard.createdDate.desc())
-                .limit(pageable.getPageSize() + 1)
-                .fetch();
+        List<StoreBoard> boardList = boardRepository.findBoardsForChat(store, last, pageable);
 
         return transType(boardList, pageable);
     }
@@ -146,10 +124,7 @@ public class StoreBoardServiceImpl implements StoreBoardService {
 
     @Override
     public List<BoardListResponseDtoForMap> getBoardsForMap(Store store) {
-        List<StoreBoard> boards = jpaQueryFactory.select(QStoreBoard.storeBoard).from(QStoreBoard.storeBoard)
-                .where(QStoreBoard.storeBoard.store.eq(store).and(QStoreBoard.storeBoard.deleted.isFalse()))
-                .orderBy(QStoreBoard.storeBoard.createdDate.desc())
-                .limit(4).fetch();
+        List<StoreBoard> boards = boardRepository.findBoardsForMap(store);
 
         return boards.stream().map(BoardListResponseDtoForMap::new).collect(Collectors.toList());
     }

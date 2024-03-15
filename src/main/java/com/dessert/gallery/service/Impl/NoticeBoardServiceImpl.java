@@ -3,7 +3,6 @@ package com.dessert.gallery.service.Impl;
 import com.dessert.gallery.dto.notice.NoticeListDto;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.entity.NoticeBoard;
-import com.dessert.gallery.entity.QNoticeBoard;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.NoticeType;
@@ -13,9 +12,6 @@ import com.dessert.gallery.repository.NoticeBoard.NoticeBoardRepository;
 import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.service.Interface.NoticeBoardService;
 import com.dessert.gallery.service.Interface.UserService;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +33,6 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class NoticeBoardServiceImpl implements NoticeBoardService {
 
-    private final JPAQueryFactory jpaQueryFactory;
     private final NoticeBoardRepository noticeRepository;
     private final StoreRepository storeRepository;
     private final UserService userService;
@@ -58,16 +53,9 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
     // Map 에서 보여줄 공지 2개
     @Override
     public List<NoticeListDto> getNoticesForMap(Store store) {
-        BooleanBuilder whereQuery = new BooleanBuilder();
-        whereQuery.and(QNoticeBoard.noticeBoard.deleted.isFalse()); // 삭제 안된 공지
-        whereQuery.and(QNoticeBoard.noticeBoard.exposed.isTrue()); // 노출 된 공지
-
-        List<NoticeBoard> notices = jpaQueryFactory.select(QNoticeBoard.noticeBoard).from(QNoticeBoard.noticeBoard)
-                .where(whereQuery.and(QNoticeBoard.noticeBoard.store.eq(store)))
-                .orderBy(QNoticeBoard.noticeBoard.createdDate.desc())
-                .limit(2).fetch();
-
-        return notices.stream().map(NoticeListDto::new).collect(Collectors.toList());
+        return noticeRepository.findNoticesForMap(store)
+                .stream().map(NoticeListDto::new)
+                .collect(Collectors.toList());
     }
 
     // 사장님 마이페이지 공지사항 리스트 출력
@@ -85,23 +73,20 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 
         Pageable pageable = PageRequest.ofSize(10);
 
-        BooleanBuilder whereQuery = new BooleanBuilder();
-        whereQuery.and(QNoticeBoard.noticeBoard.deleted.isFalse()); // 삭제 안된 공지
+        List<NoticeBoard> list = noticeRepository.findNoticesByStore(type, keyword, last, store, pageable);
 
-        if (type != NoticeType.ALL)
-            whereQuery.and(QNoticeBoard.noticeBoard.type.eq(type));
-        if (keyword != null)
-            whereQuery.and(QNoticeBoard.noticeBoard.title.contains(keyword)); // 키워드 검색 조건
-        if (last != null)
-            whereQuery.and(QNoticeBoard.noticeBoard.id.lt(last)); // no-offset 을 위한 마지막 id 값 확인
+        return transType(list, pageable);
+    }
 
-        JPAQuery<NoticeBoard> query = jpaQueryFactory
-                .select(QNoticeBoard.noticeBoard).from(QNoticeBoard.noticeBoard)
-                .where(whereQuery.and(QNoticeBoard.noticeBoard.store.eq(store)))
-                .orderBy(QNoticeBoard.noticeBoard.createdDate.desc())
-                .limit(pageable.getPageSize() + 1);
+    private Slice<NoticeListDto> transType(List<NoticeBoard> list, Pageable pageable) {
+        boolean hasNext = false;
 
-        return transType(query.fetch(), pageable);
+        if (list.size() > pageable.getPageSize()) {
+            hasNext = true;
+            list.remove(pageable.getPageSize());
+        }
+        Slice<NoticeBoard> slice = new SliceImpl<>(list, pageable, hasNext);
+        return slice.map(NoticeListDto::new);
     }
 
     @Override
@@ -117,18 +102,7 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
         return new NoticeRequestDto(notice);
     }
 
-    // List to Slice
-    // NoticeBoard to Dto
-    private Slice<NoticeListDto> transType(List<NoticeBoard> list, Pageable pageable) {
-        boolean hasNext = false;
 
-        if (list.size() > pageable.getPageSize()) {
-            hasNext = true;
-            list.remove(pageable.getPageSize());
-        }
-        Slice<NoticeBoard> slice = new SliceImpl<>(list, pageable, hasNext);
-        return slice.map(NoticeListDto::new);
-    }
 
     @Override
     public void createNotice(NoticeRequestDto requestDto,
