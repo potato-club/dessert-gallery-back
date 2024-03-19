@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.chat.MessageStatusDto;
 import com.dessert.gallery.dto.chat.list.ChatRecentMessageDto;
 import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
@@ -83,8 +84,14 @@ public class ChatServiceImpl implements ChatService {
 
         ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow();
 
-        if (!subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(chatRoom.getStore(), user.get())) {
-            return "Not Following";
+        if (user.get().getUserRole().equals(UserRole.USER)) {
+            if (!subscribeRepository.existsByStoreAndUserAndDeletedIsFalse(chatRoom.getStore(), user.get())) {
+                return "Not Following";
+            }
+        } else if (user.get().getUserRole().equals(UserRole.MANAGER)) {
+            if (!subscribeRepository.existsFollowingManager(chatRoom.getStore())) {
+                return "Not Following";
+            }
         }
 
         LocalDate currentDate = LocalDate.now();
