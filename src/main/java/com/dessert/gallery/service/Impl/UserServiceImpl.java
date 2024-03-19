@@ -8,6 +8,7 @@ import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
 import com.dessert.gallery.entity.File;
+import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.LoginType;
 import com.dessert.gallery.enums.UserRole;
@@ -16,6 +17,7 @@ import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.repository.File.FileRepository;
+import com.dessert.gallery.repository.Store.StoreRepository;
 import com.dessert.gallery.repository.User.UserRepository;
 import com.dessert.gallery.service.Interface.ImageService;
 import com.dessert.gallery.service.Interface.UserService;
@@ -41,6 +43,7 @@ import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
     private final FileRepository fileRepository;
     private final ImageService imageService;
     private final KakaoApi kakaoApi;
@@ -163,6 +166,19 @@ public class UserServiceImpl implements UserService {
     public UserProfileResponseDto viewProfile(HttpServletRequest request) {
         User user = findUserByToken(request);
         List<File> file = fileRepository.findByUser(user);
+
+        if (user.getUserRole().equals(UserRole.MANAGER)) {
+            Store store = storeRepository.findByUser(user);
+
+            return UserProfileResponseDto.builder()
+                    .nickname(user.getNickname())
+                    .loginType(user.getLoginType())
+                    .userRole(user.getUserRole())
+                    .storeId(store.getId())
+                    .fileName(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileName()).orElse(null))
+                    .fileUrl(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileUrl()).orElse(null))
+                    .build();
+        }
 
         return UserProfileResponseDto.builder()
                 .nickname(user.getNickname())
