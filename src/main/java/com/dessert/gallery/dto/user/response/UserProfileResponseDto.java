@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class UserProfileResponseDto {
@@ -18,6 +20,9 @@ public class UserProfileResponseDto {
 
     @Schema(description = "유저 역할", example = "USER / MANAGER")
     private UserRole userRole;
+
+    @Schema(description = "가게 Id", example = "1")
+    private Long storeId;
 
     @Schema(description = "사진 이름")
     private String fileName;
