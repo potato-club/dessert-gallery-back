@@ -7,7 +7,6 @@ import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
-import com.dessert.gallery.jwt.JwtTokenProvider;
 import com.dessert.gallery.service.Interface.BookmarkService;
 import com.dessert.gallery.service.Interface.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +30,6 @@ public class UserController {
 
     private final UserService userService;
     private final BookmarkService bookmarkService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "카카오 로그인 API")
     @GetMapping("/login/kakao")
