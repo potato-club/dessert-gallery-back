@@ -1,9 +1,7 @@
 package com.dessert.gallery.repository.Subscribe;
 
 import com.dessert.gallery.dto.follow.FollowResponseDto;
-import com.dessert.gallery.entity.QBlackList;
-import com.dessert.gallery.entity.QFile;
-import com.dessert.gallery.entity.QSubscribe;
+import com.dessert.gallery.entity.*;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -53,5 +51,15 @@ public class SubscribeRepositoryImpl implements SubscribeRepositoryCustom {
                 .where(QSubscribe.subscribe.user.email.eq(email)
                         .and(QSubscribe.subscribe.deleted.isFalse())
                         .and(QBlackList.blackList.id.isNull().or(QBlackList.blackList.deleted.isTrue())));
+    }
+
+    @Override
+    public boolean existsFollowingManager(Store store) {
+        return Boolean.TRUE.equals(jpaQueryFactory
+                .select(QSubscribe.subscribe.isNotNull())
+                .from(QSubscribe.subscribe)
+                .innerJoin(QChatRoom.chatRoom).on(QChatRoom.chatRoom.store.eq(store))
+                .where(QSubscribe.subscribe.store.eq(QChatRoom.chatRoom.store))
+                .fetchOne());
     }
 }
