@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 public class CommentResponseDto {
+    @Schema(description = "댓글 id")
+    private Long id;
     @Schema(description = "유저 닉네임")
     private String nickname;
     @Schema(description = "댓글 내용")
@@ -19,11 +21,15 @@ public class CommentResponseDto {
     private FileDto profile;
     @Schema(description = "작성 날짜")
     private LocalDateTime createdDate;
+    @Schema(description = "댓글 작성자 여부")
+    private boolean writer;
 
-    public CommentResponseDto(BoardComment comment) {
+    public CommentResponseDto(BoardComment comment, boolean writer) {
+        this.id = comment.getId();
         this.nickname = comment.getUser().getNickname();
         this.comment = comment.getComment();
         this.createdDate = comment.getCreatedDate();
         this.profile = comment.getUserProfile() == null ? null : new FileDto(comment.getUserProfile());
+        this.writer = writer;
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
 import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -40,11 +41,16 @@ public class CommentServiceImpl implements CommentService {
     private final UserService userService;
 
     @Override
-    public Slice<CommentResponseDto> getComments(Long boardId, int page) {
+    public Slice<CommentResponseDto> getComments(Long boardId, int page, HttpServletRequest request) {
+        User user = userService.findUserByToken(request);
         StoreBoard board = boardService.getBoard(boardId);
-        PageRequest request = PageRequest.of(page - 1, 10, Sort.by(Sort.Direction.DESC, "id"));
-        Slice<BoardComment> comments = commentRepository.findByBoard(request, board);
-        return comments.map(CommentResponseDto::new);
+        PageRequest pageRequest = PageRequest.of(page - 1, 10, Sort.by(Sort.Direction.DESC, "id"));
+
+        Slice<BoardComment> comments = commentRepository.findByBoard(pageRequest, board);
+        return comments.map(comment ->
+                Objects.equals(user.getNickname(), comment.getUser().getNickname()) ?
+                new CommentResponseDto(comment, true) :
+                new CommentResponseDto(comment, false));
     }
 
     @Override
@@ -69,7 +75,7 @@ public class CommentServiceImpl implements CommentService {
                 .build();
 
         BoardComment saveComment = commentRepository.save(comment);
-        return new CommentResponseDto(saveComment);
+        return new CommentResponseDto(saveComment, true);
     }
 
     @Override

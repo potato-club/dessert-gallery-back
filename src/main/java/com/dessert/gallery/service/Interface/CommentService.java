@@ -7,7 +7,7 @@ import org.springframework.data.domain.Slice;
 import javax.servlet.http.HttpServletRequest;
 
 public interface CommentService {
-    Slice<CommentResponseDto> getComments(Long boardId, int page);
+    Slice<CommentResponseDto> getComments(Long boardId, int page, HttpServletRequest request);
     CommentResponseDto addComment(Long boardId, CommentRequestDto requestDto, HttpServletRequest request);
     String removeComment(Long commentId, HttpServletRequest request);
 }

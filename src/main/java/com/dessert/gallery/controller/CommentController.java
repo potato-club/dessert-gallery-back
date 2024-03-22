@@ -24,8 +24,9 @@ public class CommentController {
     @GetMapping("/{boardId}")
     public Slice<CommentResponseDto> getComments(@PathVariable(name = "boardId") Long boardId,
                                                  @RequestParam(required = false,
-                                                         defaultValue = "1", value = "p") int page) {
-        return commentService.getComments(boardId, page);
+                                                         defaultValue = "1", value = "p") int page,
+                                                 HttpServletRequest request) {
+        return commentService.getComments(boardId, page, request);
     }
 
     @Operation(summary = "게시글 댓글 작성")
