@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,6 +36,16 @@ public class ErrorExceptionControllerAdvice {
                 .body(ErrorEntity.builder()
                         .errorCode(e.getErrorCode().getCode())
                         .errorMessage(e.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler({BindException.class})
+    public ResponseEntity<ErrorEntity> exceptionHandler(final BindException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorEntity.builder()
+                        .errorCode(ErrorCode.PARAMETER_VALID_EXCEPTION.getCode())
+                        .errorMessage(e.getBindingResult().getAllErrors().get(0).getDefaultMessage())
                         .build());
     }
 

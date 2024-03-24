@@ -12,6 +12,6 @@ import java.time.LocalDateTime;
 public interface ReviewBoardRepository extends JpaRepository<ReviewBoard, Long>, ReviewBoardRepositoryCustom {
     Long countByStore(Store store);
     Page<ReviewBoard> findAllByStore(Pageable pageable, Store store);
-    Slice<ReviewBoard> findAllByUserAndCreatedDateGreaterThanEqual(Pageable pageable, User user, LocalDateTime date);
-    Slice<ReviewBoard> findAllByUser(Pageable pageable, User user);
+    Page<ReviewBoard> findAllByUserAndCreatedDateGreaterThanEqual(Pageable pageable, User user, LocalDateTime date);
+    Page<ReviewBoard> findAllByUser(Pageable pageable, User user);
 }

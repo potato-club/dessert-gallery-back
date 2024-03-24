@@ -2,6 +2,8 @@ package com.dessert.gallery.repository.Schedule;
 
 import com.dessert.gallery.entity.Calendar;
 import com.dessert.gallery.entity.Schedule;
+import com.dessert.gallery.entity.Store;
+import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.ScheduleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,6 +16,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, Sched
                                                            LocalDateTime end, ScheduleType type);
 
     List<Schedule> findByCalendarAndDateTimeBetween(Calendar calendar, LocalDateTime start, LocalDateTime end);
+
+    List<Schedule> findAllByCalendar_StoreAndClientAndCompletedIsFalse(Store store, User client);
 
     boolean existsByCalendarAndDateTimeAndType(Calendar calendar, LocalDateTime dateTime, ScheduleType type);
 }

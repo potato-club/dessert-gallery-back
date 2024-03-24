@@ -1,17 +1,19 @@
 package com.dessert.gallery.service.Impl;
 
+import com.dessert.gallery.dto.chat.MessageStatusDto;
 import com.dessert.gallery.dto.schedule.ReservationRequestDto;
 import com.dessert.gallery.dto.schedule.ReservationResponseDto;
 import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
-import com.dessert.gallery.entity.Calendar;
-import com.dessert.gallery.entity.Schedule;
-import com.dessert.gallery.entity.User;
+import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.ScheduleType;
 import com.dessert.gallery.error.exception.BadRequestException;
 import com.dessert.gallery.error.exception.DuplicateException;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
+import com.dessert.gallery.repository.ChatRoom.ChatRoomRepository;
+import com.dessert.gallery.repository.Store.StoreRepository;
+import com.dessert.gallery.service.Interface.ChatService;
 import com.dessert.gallery.repository.Calendar.CalendarRepository;
 import com.dessert.gallery.repository.Schedule.ScheduleRepository;
 import com.dessert.gallery.repository.User.UserRepository;
@@ -31,7 +33,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import static com.dessert.gallery.enums.MessageType.REVIEW;
 import static com.dessert.gallery.error.ErrorCode.*;
 
 @Service
@@ -39,9 +46,12 @@ import static com.dessert.gallery.error.ErrorCode.*;
 @Transactional
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
+    private final StoreRepository storeRepository;
     private final CalendarRepository calendarRepository;
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatService chatService;
     private final UserService userService;
 
     @Override
@@ -112,6 +122,39 @@ public class ScheduleServiceImpl implements ScheduleService {
         Schedule newSchedule = schedule.toggleSchedule();
         calendar.removeSchedule(schedule);
         calendar.addSchedule(newSchedule);
+
+        // 픽업 완료 시 30분 뒤에 채팅방에 메시지 전송 메서드 스케줄링
+        if (newSchedule.getCompleted()) {
+            ChatRoom chatRoom = chatRoomRepository.findByStore_UserAndCustomer(user, schedule.getClient());
+            sendMessageScheduling(chatRoom, scheduleId);
+        }
+    }
+
+    private void sendMessageScheduling(ChatRoom chatRoom, Long scheduleId) {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.schedule(() -> {
+            sendMessage(chatRoom, scheduleId);
+        }, 1, TimeUnit.MINUTES);
+        scheduler.shutdown();
+    }
+
+    private void sendMessage(ChatRoom room, Long scheduleId) {
+        // 만약 잘못 체크해서 30분내에 픽업 체크를 해제했다면 saveMessage를 호출하지 못하게 함
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        if (schedule.getCompleted()) {
+            // 채팅 메시지 어떻게 보낼건지??
+            MessageStatusDto message = MessageStatusDto.builder()
+                    .message("1분 뒤 test message 저장되나?")
+                    .sender("park")
+                    .messageType(REVIEW)
+                    .dateTime(now)
+                    .build();
+
+            chatService.saveMessage(room.getId(), message);
+        }
     }
 
     @Override
@@ -147,6 +190,29 @@ public class ScheduleServiceImpl implements ScheduleService {
     public List<Schedule> getSchedulesForOwner(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate) {
         return scheduleRepository.
                 findByCalendarAndDateTimeBetween(calendar, startDate, endDate);
+    }
+
+    @Override
+    public List<ReservationResponseDto> getReservationsForChat(Long storeId, String nickname, HttpServletRequest request) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException("해당 가게를 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
+
+        User owner = userService.findUserByToken(request);
+
+        if (store.getUser() != owner) {
+            throw new UnAuthorizedException("요청에 대한 권한이 없습니다.", ACCESS_DENIED_EXCEPTION);
+        }
+
+        User client = userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new NotFoundException("해당 유저를 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
+
+        List<Schedule> reservationList = scheduleRepository
+                .findAllByCalendar_StoreAndClientAndCompletedIsFalse(store, client);
+
+        return reservationList.stream()
+                .map(r -> new ReservationResponseDto(r, nickname))
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @Override

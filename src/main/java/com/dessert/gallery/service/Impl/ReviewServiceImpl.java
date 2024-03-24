@@ -61,12 +61,12 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Slice<MyReviewListDto> getReviewListByUser(int page, int month, HttpServletRequest request) {
+    public Page<MyReviewListDto> getReviewListByUser(int page, int month, HttpServletRequest request) {
         PageRequest paging = PageRequest.of(page - 1, 10,
                 Sort.by(Sort.Direction.DESC, "createdDate"));
 
         User user = userService.findUserByToken(request);
-        Slice<ReviewBoard> reviews;
+        Page<ReviewBoard> reviews;
 
         if (month != 0) {
             LocalDateTime now = LocalDateTime.now();
@@ -123,6 +123,8 @@ public class ReviewServiceImpl implements ReviewService {
             throw new UnAuthorizedException("픽업 완료한 가게만 리뷰 작성 가능", NOT_ALLOW_WRITE_EXCEPTION);
         }
 
+        addScore(store, requestDto.getScore());
+
         ReviewBoard review = new ReviewBoard(requestDto, store, user);
         ReviewBoard saveReview = reviewRepository.save(review);
 
@@ -131,7 +133,6 @@ public class ReviewServiceImpl implements ReviewService {
             saveReview.updateImages(files);
         }
 
-        addScore(store, requestDto.getScore());
         schedule.submitReview();
     }
 
@@ -160,6 +161,6 @@ public class ReviewServiceImpl implements ReviewService {
     private void deleteScore(Store store, double score) { // 리뷰 카운트 - 1 로 계산 / 점수는 원래 점수 빼버리기
         Long reviewCount = reviewRepository.countByStore(store);
         double scoreSum = store.getScore() * reviewCount - score;
-        store.updateScore(Math.round((scoreSum / reviewCount - 1) * 10) / 10.0);
+        store.updateScore(Math.round((scoreSum / (reviewCount - 1)) * 10) / 10.0);
     }
 }
