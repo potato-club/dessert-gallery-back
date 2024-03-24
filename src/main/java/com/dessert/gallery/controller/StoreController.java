@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
 import com.dessert.gallery.dto.memo.MemoRequestDto;
 import com.dessert.gallery.dto.schedule.ReservationRequestDto;
+import com.dessert.gallery.dto.schedule.ReservationResponseDto;
 import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
 import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -106,6 +108,15 @@ public class StoreController {
                                                                   @Parameter(name = "last", description = "이전 조회된 게시글의 마지막 id값")
                                                                  @RequestParam(value = "last", required = false) Long last) {
         return boardService.getBoardListForChat(storeId, last);
+    }
+
+    @Operation(summary = "채팅방에서 특정 가게에 대한 유저의 미완료 예약 리스트 반환")
+    @GetMapping("/{storeId}/chat/reservations")
+    public List<ReservationResponseDto> getReservationListForChat(@PathVariable(name = "storeId") Long storeId,
+                                                                  @Parameter(name = "nickname", description = "예약 유저의 닉네임")
+                                                                  @RequestParam(value = "nickname") String nickname,
+                                                                  HttpServletRequest request) {
+        return scheduleService.getReservationsForChat(storeId, nickname, request);
     }
 
     @Operation(summary = "가게 생성 API")

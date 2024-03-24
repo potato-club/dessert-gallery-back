@@ -2,12 +2,11 @@ package com.dessert.gallery.dto.chat;
 
 import com.dessert.gallery.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class MessageStatusDto {
 
@@ -25,8 +24,4 @@ public class MessageStatusDto {
 
     @Schema(description = "글쓴 시간", example = "yyyy-MM-dd HH:mm:ss")
     private String dateTime;
-
-    public MessageStatusDto() {
-
-    }
 }
