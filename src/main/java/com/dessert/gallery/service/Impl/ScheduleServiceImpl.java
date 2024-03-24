@@ -1,10 +1,7 @@
 package com.dessert.gallery.service.Impl;
 
 import com.dessert.gallery.dto.chat.MessageStatusDto;
-import com.dessert.gallery.dto.schedule.ReservationRequestDto;
-import com.dessert.gallery.dto.schedule.ReservationResponseDto;
-import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
-import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
+import com.dessert.gallery.dto.schedule.*;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.ScheduleType;
 import com.dessert.gallery.error.exception.BadRequestException;
@@ -193,7 +190,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<ReservationResponseDto> getReservationsForChat(Long storeId, String nickname, HttpServletRequest request) {
+    public List<ReservationResponseForChat> getReservationsForChat(Long storeId, String nickname, HttpServletRequest request) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new NotFoundException("해당 가게를 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
 
@@ -210,7 +207,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .findAllByCalendar_StoreAndClientAndCompletedIsFalse(store, client);
 
         return reservationList.stream()
-                .map(r -> new ReservationResponseDto(r, nickname))
+                .map(ReservationResponseForChat::new)
                 .sorted()
                 .collect(Collectors.toList());
     }

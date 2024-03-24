@@ -4,10 +4,7 @@ import com.dessert.gallery.dto.board.BoardListResponseDtoForChat;
 import com.dessert.gallery.dto.calendar.CalendarOwnerResponseDto;
 import com.dessert.gallery.dto.calendar.CalendarResponseDto;
 import com.dessert.gallery.dto.memo.MemoRequestDto;
-import com.dessert.gallery.dto.schedule.ReservationRequestDto;
-import com.dessert.gallery.dto.schedule.ReservationResponseDto;
-import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
-import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
+import com.dessert.gallery.dto.schedule.*;
 import com.dessert.gallery.dto.store.StoreOwnerResponseDto;
 import com.dessert.gallery.dto.store.StoreRequestDto;
 import com.dessert.gallery.dto.store.StoreResponseDto;
@@ -112,10 +109,10 @@ public class StoreController {
 
     @Operation(summary = "채팅방에서 특정 가게에 대한 유저의 미완료 예약 리스트 반환")
     @GetMapping("/{storeId}/chat/reservations")
-    public List<ReservationResponseDto> getReservationListForChat(@PathVariable(name = "storeId") Long storeId,
-                                                                  @Parameter(name = "nickname", description = "예약 유저의 닉네임")
+    public List<ReservationResponseForChat> getReservationListForChat(@PathVariable(name = "storeId") Long storeId,
+                                                                      @Parameter(name = "nickname", description = "예약 유저의 닉네임")
                                                                   @RequestParam(value = "nickname") String nickname,
-                                                                  HttpServletRequest request) {
+                                                                      HttpServletRequest request) {
         return scheduleService.getReservationsForChat(storeId, nickname, request);
     }
 
