@@ -1,10 +1,7 @@
 package com.dessert.gallery.service.Interface;
 
 
-import com.dessert.gallery.dto.schedule.ReservationRequestDto;
-import com.dessert.gallery.dto.schedule.ReservationResponseDto;
-import com.dessert.gallery.dto.schedule.ScheduleDetailResponseDto;
-import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
+import com.dessert.gallery.dto.schedule.*;
 import com.dessert.gallery.entity.Calendar;
 import com.dessert.gallery.entity.Schedule;
 
@@ -19,7 +16,7 @@ public interface ScheduleService {
     void removeSchedule(Long scheduleId, HttpServletRequest request);
     List<Schedule> getSchedules(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate);
     List<Schedule> getSchedulesForOwner(Calendar calendar, LocalDateTime startDate, LocalDateTime endDate);
-    List<ReservationResponseDto> getReservationsForChat(Long storeId, String nickname, HttpServletRequest request);
+    List<ReservationResponseForChat> getReservationsForChat(Long storeId, String nickname, HttpServletRequest request);
     ScheduleDetailResponseDto getDetailScheduleByDate(int year, int month, int day, HttpServletRequest request);
     boolean getTodayIsHoliday(HttpServletRequest request, LocalDateTime today);
 }
