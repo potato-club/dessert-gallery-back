@@ -123,19 +123,19 @@ public class ScheduleServiceImpl implements ScheduleService {
         // 픽업 완료 시 30분 뒤에 채팅방에 메시지 전송 메서드 스케줄링
         if (newSchedule.getCompleted()) {
             ChatRoom chatRoom = chatRoomRepository.findByStore_UserAndCustomer(user, schedule.getClient());
-            sendMessageScheduling(chatRoom, scheduleId);
+            sendMessageScheduling(chatRoom, scheduleId, user.getNickname());
         }
     }
 
-    private void sendMessageScheduling(ChatRoom chatRoom, Long scheduleId) {
+    private void sendMessageScheduling(ChatRoom chatRoom, Long scheduleId, String ownerNickname) {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.schedule(() -> {
-            sendMessage(chatRoom, scheduleId);
+            sendMessage(chatRoom, scheduleId, ownerNickname);
         }, 1, TimeUnit.MINUTES);
         scheduler.shutdown();
     }
 
-    private void sendMessage(ChatRoom room, Long scheduleId) {
+    private void sendMessage(ChatRoom room, Long scheduleId, String ownerNickname) {
         // 만약 잘못 체크해서 30분내에 픽업 체크를 해제했다면 saveMessage를 호출하지 못하게 함
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다.", NOT_FOUND_EXCEPTION));
@@ -145,7 +145,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             // 채팅 메시지 어떻게 보낼건지??
             MessageStatusDto message = MessageStatusDto.builder()
                     .message("1분 뒤 test message 저장되나?")
-                    .sender("park")
+                    .sender(ownerNickname)
                     .messageType(REVIEW)
                     .dateTime(now)
                     .build();
