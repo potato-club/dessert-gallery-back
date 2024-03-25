@@ -47,6 +47,11 @@ public class CommentServiceImpl implements CommentService {
         PageRequest pageRequest = PageRequest.of(page - 1, 10, Sort.by(Sort.Direction.DESC, "id"));
 
         Slice<BoardComment> comments = commentRepository.findByBoard(pageRequest, board);
+
+        if (user == null) {
+            return comments.map(comment -> new CommentResponseDto(comment, false));
+        }
+
         return comments.map(comment ->
                 Objects.equals(user.getNickname(), comment.getUser().getNickname()) ?
                 new CommentResponseDto(comment, true) :
