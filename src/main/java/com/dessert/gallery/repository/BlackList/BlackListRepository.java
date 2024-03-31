@@ -9,6 +9,8 @@ public interface BlackListRepository extends JpaRepository<BlackList, Long>, Bla
 
     BlackList findByStoreAndUser(Store store, User user);
 
+    boolean existsByUserAndStore(User user, Store store);
+
     boolean existsByUserAndStoreAndDeletedIsFalse(User user, Store store);
 
     boolean existsByUserAndStoreAndDeletedIsTrue(User user, Store store);
