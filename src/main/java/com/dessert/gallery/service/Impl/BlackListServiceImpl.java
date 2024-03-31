@@ -5,6 +5,7 @@ import com.dessert.gallery.dto.blacklist.BlackListResponseDto;
 import com.dessert.gallery.entity.*;
 import com.dessert.gallery.enums.UserRole;
 import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.BadRequestException;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.jwt.JwtTokenProvider;
@@ -45,17 +46,15 @@ public class BlackListServiceImpl implements BlackListService {
             throw new NotFoundException("Not Found Store", ErrorCode.NOT_FOUND_EXCEPTION);
         });
 
-        // 이전에 한 번 블랙리스트에 등록됐었던 경우
         if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(customer, store)) {
+            // 이전에 한 번 블랙리스트에 등록됐었던 경우
             BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
             Subscribe subscribe = subscribeRepository.findByUserAndStore(customer, store);
 
             blackList.setDeleted(false);
             subscribe.setDeleted(true);
-        }
-
-        // 블랙리스트에 등록된 적이 없었던 경우
-        if (blackListRepository.existsByUserAndStore(customer, store)) {
+        } else if (blackListRepository.existsByUserAndStore(customer, store)) {
+            // 블랙리스트에 등록된 적이 없었던 경우
             BlackList blackList = BlackList.builder()
                     .user(customer)
                     .store(store)
@@ -68,6 +67,8 @@ public class BlackListServiceImpl implements BlackListService {
             }
 
             blackListRepository.save(blackList);
+        } else {
+            throw new BadRequestException("이미 블랙리스트에 등록된 사람입니다.", ErrorCode.BAD_REQUEST_EXCEPTION);
         }
     }
 
