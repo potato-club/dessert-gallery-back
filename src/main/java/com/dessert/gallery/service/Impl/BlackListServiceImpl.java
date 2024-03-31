@@ -45,13 +45,17 @@ public class BlackListServiceImpl implements BlackListService {
             throw new NotFoundException("Not Found Store", ErrorCode.NOT_FOUND_EXCEPTION);
         });
 
+        // 이전에 한 번 블랙리스트에 등록됐었던 경우
         if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(customer, store)) {
             BlackList blackList = blackListRepository.findByStoreAndUser(store, customer);
             Subscribe subscribe = subscribeRepository.findByUserAndStore(customer, store);
 
             blackList.setDeleted(false);
             subscribe.setDeleted(true);
-        } else {
+        }
+
+        // 블랙리스트에 등록된 적이 없었던 경우
+        if (blackListRepository.existsByUserAndStore(customer, store)) {
             BlackList blackList = BlackList.builder()
                     .user(customer)
                     .store(store)
