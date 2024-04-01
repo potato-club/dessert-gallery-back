@@ -131,7 +131,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.schedule(() -> {
             sendMessage(chatRoom, scheduleId, ownerNickname);
-        }, 1, TimeUnit.MINUTES);
+        }, 30, TimeUnit.MINUTES);
         scheduler.shutdown();
     }
 
@@ -144,7 +144,8 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (schedule.getCompleted()) {
             // 채팅 메시지 어떻게 보낼건지??
             MessageStatusDto message = MessageStatusDto.builder()
-                    .message("1분 뒤 test message 저장되나?")
+                    .message(schedule.getClient().getNickname() +
+                            " 님 상품을 잘 받으셨나요?\n만족하셨다면 후기를 작성해주세요 :)")
                     .sender(ownerNickname)
                     .messageType(REVIEW)
                     .dateTime(now)
