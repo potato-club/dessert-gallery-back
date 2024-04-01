@@ -53,7 +53,8 @@ public class BlackListServiceImpl implements BlackListService {
 
             blackList.setDeleted(false);
             subscribe.setDeleted(true);
-        } else if (blackListRepository.existsByUserAndStore(customer, store)) {
+
+        } else if (!blackListRepository.existsByUserAndStore(customer, store)) {
             // 블랙리스트에 등록된 적이 없었던 경우
             BlackList blackList = BlackList.builder()
                     .user(customer)
