@@ -6,27 +6,35 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
-@Builder
 public class UserProfileResponseDto {
 
     @Schema(description = "닉네임")
-    private String nickname;
+    private final String nickname;
 
     @Schema(description = "로그인 타입", example = "NORMAL / KAKAO")
-    private LoginType loginType;
+    private final LoginType loginType;
 
     @Schema(description = "유저 역할", example = "USER / MANAGER")
-    private UserRole userRole;
+    private final UserRole userRole;
 
     @Schema(description = "가게 Id", example = "1")
-    private Long storeId;
+    private final Long storeId;
 
     @Schema(description = "사진 이름")
-    private String fileName;
+    private final String fileName;
 
     @Schema(description = "사진 URL")
-    private String fileUrl;
+    private final String fileUrl;
+
+    @Builder
+    public UserProfileResponseDto(String nickname, LoginType loginType, UserRole userRole,
+                                  Long storeId, String fileName, String fileUrl) {
+        this.nickname = nickname;
+        this.loginType = loginType;
+        this.userRole = userRole;
+        this.storeId = storeId;
+        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+    }
 }
