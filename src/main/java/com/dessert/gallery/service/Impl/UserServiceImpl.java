@@ -7,7 +7,6 @@ import com.dessert.gallery.dto.user.response.UserKakaoResponseDto;
 import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
 import com.dessert.gallery.dto.user.response.UserLoginResponseDto;
 import com.dessert.gallery.dto.user.response.UserProfileResponseDto;
-import com.dessert.gallery.entity.File;
 import com.dessert.gallery.entity.Store;
 import com.dessert.gallery.entity.User;
 import com.dessert.gallery.enums.LoginType;
@@ -43,8 +42,8 @@ import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final StoreRepository storeRepository;
     private final FileRepository fileRepository;
+    private final StoreRepository storeRepository;
     private final ImageService imageService;
     private final KakaoApi kakaoApi;
     private final JwtTokenProvider jwtTokenProvider;
@@ -147,7 +146,7 @@ public class UserServiceImpl implements UserService {
     public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException {
         User user = findUserByToken(request);
 
-        if (requestDto.getFile().size() == 0) {
+        if (requestDto.getFile().size() != 0) {
             List<FileRequestDto> fileList = new ArrayList<>();
             FileRequestDto fileDto = FileRequestDto.builder()
                     .fileName(requestDto.getFileName())
@@ -164,29 +163,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponseDto viewProfile(HttpServletRequest request) {
-        User user = findUserByToken(request);
-        List<File> file = fileRepository.findByUser(user);
+        User user = this.findUserByToken(request);
 
         if (user.getUserRole().equals(UserRole.MANAGER)) {
             Store store = storeRepository.findByUser(user);
-
-            return UserProfileResponseDto.builder()
-                    .nickname(user.getNickname())
-                    .loginType(user.getLoginType())
-                    .userRole(user.getUserRole())
-                    .storeId(store.getId())
-                    .fileName(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileName()).orElse(null))
-                    .fileUrl(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileUrl()).orElse(null))
-                    .build();
+            return fileRepository.getUserProfileAsManager(user, store);
         }
 
-        return UserProfileResponseDto.builder()
-                .nickname(user.getNickname())
-                .loginType(user.getLoginType())
-                .userRole(user.getUserRole())
-                .fileName(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileName()).orElse(null))
-                .fileUrl(Optional.ofNullable(file).filter(f -> !f.isEmpty()).map(f -> f.get(0).getFileUrl()).orElse(null))
-                .build();
+        return fileRepository.getUserProfileAsUser(user);
     }
 
     @Override
@@ -207,8 +191,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findUserByToken(HttpServletRequest request) {
         String token = jwtTokenProvider.resolveAccessToken(request);
-        return token == null ? null : userRepository.
-                findByEmail(jwtTokenProvider.getUserEmail(token)).orElseThrow();
+        return token == null ? null : userRepository.findByEmail(jwtTokenProvider.getUserEmail(token)).orElseThrow();
     }
 
     @Override

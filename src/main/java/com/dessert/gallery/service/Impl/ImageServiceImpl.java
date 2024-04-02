@@ -78,6 +78,7 @@ public class ImageServiceImpl implements ImageService {
         // 기존 파일 리스트와 새로 업로드한 파일 리스트를 비교하여
         // 바뀐 파일만 업로드하고, 기존 파일 중 사용하지 않는 파일은 삭제
         List<File> list = new ArrayList<>();
+
         if (!CollectionUtils.isEmpty(files)) {
             list = this.existsFiles(files);
         }
