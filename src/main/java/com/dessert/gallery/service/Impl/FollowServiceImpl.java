@@ -48,7 +48,7 @@ public class FollowServiceImpl implements FollowService {
             throw new UnAuthorizedException("Not Found data", ErrorCode.ACCESS_DENIED_EXCEPTION);
         });
 
-        if (blackListRepository.existsByUserAndStoreAndDeletedIsTrue(user, store)) {
+        if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(user, store)) {
             throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
