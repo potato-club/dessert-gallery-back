@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 @Getter
 @NoArgsConstructor
@@ -18,6 +15,7 @@ public class ReviewRequestDto {
     private String content;
 
     @Schema(description = "리뷰 점수")
+    @NotNull(message = "점수는 필수입니다.")
     @Min(value = 0, message = "최소 0점까지 가능합니다.")
     @Max(value = 5, message = "최대 5점까지 가능합니다.")
     private Double score;

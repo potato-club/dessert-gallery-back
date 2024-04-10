@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -121,7 +122,7 @@ public class StoreController {
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> createStore(@Parameter(description = "가게 정보 - StoreRequestDto", content =
     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                              @RequestPart StoreRequestDto requestDto,
+                                              @Valid @RequestPart StoreRequestDto requestDto,
                                               @Parameter(description = "업로드 할 이미지", content =
                                               @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                               @RequestPart(required = false) MultipartFile image,
@@ -132,7 +133,7 @@ public class StoreController {
 
     @Operation(summary = "가게 캘린더 스케줄 (휴무일 / 이벤트) 등록 API")
     @PostMapping(value = "/schedule")
-    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequestDto requestDto,
+    public ResponseEntity<String> createSchedule(@Valid @RequestBody ScheduleRequestDto requestDto,
                                                  HttpServletRequest request) {
         scheduleService.addSchedule(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("스케줄 등록 완료");
@@ -140,7 +141,7 @@ public class StoreController {
 
     @Operation(summary = "가게 픽업 예약 API")
     @PostMapping(value = "/reservation")
-    public ResponseEntity<String> createReservation(@RequestBody ReservationRequestDto requestDto,
+    public ResponseEntity<String> createReservation(@Valid @RequestBody ReservationRequestDto requestDto,
                                                     HttpServletRequest request) {
         scheduleService.addReservation(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("픽업 예약 완료");
@@ -148,7 +149,7 @@ public class StoreController {
 
     @Operation(summary = "가게 캘린더 메모 작성 API")
     @PostMapping(value = "/memo")
-    public ResponseEntity<String> createSchedule(@RequestBody MemoRequestDto requestDto,
+    public ResponseEntity<String> createSchedule(@Valid @RequestBody MemoRequestDto requestDto,
                                                  HttpServletRequest request) {
         memoService.addMemo(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("메모 작성 완료");

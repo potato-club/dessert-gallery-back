@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -50,7 +51,7 @@ public class NoticeBoardController {
 
     @Operation(summary = "가게 공지글 작성")
     @PostMapping("/myStore")
-    public ResponseEntity<String> createNoticeBoard(@RequestBody NoticeRequestDto requestDto,
+    public ResponseEntity<String> createNoticeBoard(@Valid @RequestBody NoticeRequestDto requestDto,
                                                     HttpServletRequest request) {
         noticeService.createNotice(requestDto, request);
         return ResponseEntity.status(HttpStatus.CREATED).body("공지사항 생성 완료");
@@ -59,7 +60,7 @@ public class NoticeBoardController {
     @Operation(summary = "가게 공지글 수정")
     @PutMapping("/{noticeId}")
     public ResponseEntity<String> updateNoticeBoard(@PathVariable(name = "noticeId") Long noticeId,
-                                                    @RequestBody NoticeRequestDto updateDto,
+                                                    @Valid @RequestBody NoticeRequestDto updateDto,
                                                     HttpServletRequest request) {
         noticeService.updateNotice(noticeId, updateDto, request);
         return ResponseEntity.ok("공지사항 수정 완료");
