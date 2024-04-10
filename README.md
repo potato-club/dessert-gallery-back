@@ -22,6 +22,7 @@
   - Spring Boot - 스프링 기반 프레임워크
 - Amazon Linux 2 + Nginx - 서버 컴퓨터 환경
 - MySQL - 기본 데이터베이스
+- Redis - 인메모리 기반 데이터베이스
 - AWS RDS - 클라우드 데이터베이스
 - Spring Data JPA + QueryDsl - Type ORM 기술
 - Docker - 배포를 위한 컨테이너 가상화
