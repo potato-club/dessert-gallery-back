@@ -18,7 +18,7 @@ public class NoticeBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     @Column(columnDefinition = "TINYINT(1)")
