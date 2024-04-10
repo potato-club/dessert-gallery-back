@@ -15,12 +15,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class StoreBoardController {
     @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> createStoreBoard(@Parameter(description = "게시글 정보 - BoardRequestDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                        @Validated
+                                                        @Valid
                                                             @RequestPart(required = false) BoardRequestDto boardDto,
                                                    @Parameter(description = "업로드 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
@@ -78,7 +78,7 @@ public class StoreBoardController {
     public ResponseEntity<String> updateStoreBoard(@PathVariable(name = "boardId") Long boardId,
                                                    @Parameter(description = "수정할 게시글 정보 - BoardUpdateDto", content =
                                                     @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                        @Validated
+                                                        @Valid
                                                             @RequestPart(name = "updateDto") BoardUpdateDto updateDto,
                                                    @Parameter(description = "추가할 이미지 리스트", content =
                                                     @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))

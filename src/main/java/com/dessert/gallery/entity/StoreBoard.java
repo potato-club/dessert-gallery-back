@@ -43,9 +43,14 @@ public class StoreBoard extends BaseTimeEntity {
     public StoreBoard(BoardRequestDto requestDto, Store store) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
-        this.tags = requestDto.getTags();
+        this.tags = removeTagSpace(requestDto.getTags());
         this.store = store;
         this.deleted = false;
+    }
+
+    // 띄어쓰기 삭제
+    private String removeTagSpace(String tags) {
+        return tags.replaceAll("\\s", "");
     }
 
     public void updateImages(List<File> images) {
@@ -61,7 +66,7 @@ public class StoreBoard extends BaseTimeEntity {
     public void updateBoard(BoardUpdateDto requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
-        this.tags = requestDto.getTags();
+        this.tags = removeTagSpace(requestDto.getTags());
     }
 
     public int increaseView() {
