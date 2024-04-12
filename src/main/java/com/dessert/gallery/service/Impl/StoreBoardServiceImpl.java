@@ -4,6 +4,7 @@ import com.dessert.gallery.dto.board.*;
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.dto.file.FileRequestDto;
 import com.dessert.gallery.entity.*;
+import com.dessert.gallery.error.exception.BadRequestException;
 import com.dessert.gallery.error.exception.NotFoundException;
 import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.dessert.gallery.repository.BoardComment.BoardCommentRepository;
@@ -58,6 +59,11 @@ public class StoreBoardServiceImpl implements StoreBoardService {
         if (user == null) throw new NotFoundException("존재하지 않는 유저", NOT_FOUND_EXCEPTION);
 
         Store store = storeRepository.findByUser(user);
+
+        if (!validateTag(requestDto.getTags())) {
+            throw new BadRequestException("해시태그는 10개까지 입력 가능합니다.", PARAMETER_VALID_EXCEPTION);
+        }
+
         StoreBoard board = new StoreBoard(requestDto, store);
         StoreBoard saveBoard = boardRepository.save(board);
 
@@ -65,6 +71,13 @@ public class StoreBoardServiceImpl implements StoreBoardService {
             List<File> files = imageService.uploadImages(images, saveBoard);
             saveBoard.updateImages(files);
         }
+    }
+
+    private boolean validateTag(String tags) {
+        char target = '#';
+        long count = tags.chars().filter(ch -> ch == target).count();
+
+        return count <= 10;
     }
 
     @Override
