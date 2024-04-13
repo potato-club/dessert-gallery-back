@@ -21,6 +21,6 @@ public class BoardRequestDto {
 
     @Schema(description = "게시글 해시태그 (예시 - \"#태그1#태그2#태그3\")")
     @NotBlank(message = "해시태그 입력값이 적절하지 않습니다.")
-    @Pattern(regexp = "^(#(?:[가-힣a-zA-Z0-9]+))*$", message = "해시태그를 올바르게 입력해주세요.")
+    @Pattern(regexp = "^(#(?:[가-힣ㄱ-ㅎa-zA-Z0-9]+))*$", message = "해시태그를 올바르게 입력해주세요.")
     private String tags;
 }
