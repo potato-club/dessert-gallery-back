@@ -6,13 +6,14 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
 public class ReservationRequestDto {
     @Schema(description = "픽업 예약 시간", example = "2023-01-01THH:mm", required = true)
-    @NotBlank(message = "예약 시간 정보는 필수입니다.")
+    @NotNull(message = "예약 시간 정보는 필수입니다.")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime dateTime;
 
