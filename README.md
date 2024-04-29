@@ -12,7 +12,7 @@
 
 <h3>ERD 구성도</h3>
 
-![dessert-gallery-erd](https://github.com/potato-club/dessert-gallery-back/assets/84797433/f9221c23-20e3-4b9e-ae59-11937ef2a778)
+![dessertgallery](https://github.com/potato-club/dessert-gallery-back/assets/84797433/bb5753ff-bf4f-45de-a768-87887dd38635)
 
 <br/>
 
