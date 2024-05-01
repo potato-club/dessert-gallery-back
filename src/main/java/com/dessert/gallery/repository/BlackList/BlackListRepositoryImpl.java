@@ -30,7 +30,7 @@ public class BlackListRepositoryImpl implements BlackListRepositoryCustom {
                         )
                 )
                 .from(QBlackList.blackList)
-                .leftJoin(QFile.file).on(QFile.file.store.eq(QBlackList.blackList.store))
+                .leftJoin(QFile.file).on(QFile.file.user.eq(QBlackList.blackList.user))
                 .where(QBlackList.blackList.store.eq(store)
                         .and(QBlackList.blackList.deleted.isFalse()))
                 .orderBy(QBlackList.blackList.modifiedDate.desc())
