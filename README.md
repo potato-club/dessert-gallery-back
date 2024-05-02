@@ -89,6 +89,12 @@
 - `AWS S3 Service`
     - S3 저장소에 사진을 저장하는데 사용하는 서비스로 각 서비스에서 사용 중.
     - 사진을 저장 & 수정 & 삭제 시 데이터베이스의 fileName, fileUrl 컬럼에 반영함.
+ 
+- `Blacklist Service`
+    - 악성 유저들을 블랙리스트에 등록하여 해당 가게에서 기능 이용을 제한함.
+    - 등록되는 순간 팔로우 관계가 자동으로 취소됨.
+    - 해당 가게에서 등록되면 1대1 채팅, 댓글 작성 등이 제한됨.
+    - 등록되기 전 작성한 채팅 목록이나 댓글들은 유지됨.
 
 <br/>
 
@@ -152,11 +158,19 @@
   ![마이페이지](https://github.com/potato-club/dessert-gallery-back/assets/84797433/0edb883a-e21a-4d34-97ae-e5b127e16f94)
 
 - 마이페이지 : 팔로우 관리
-    - 팔로우 한 가게 or 손님들 목록을 한 페이지 당 15개씩 보여줌.
+    - 팔로우 한 가게 목록을 한 페이지 당 15개씩 보여줌.
     - 한 쪽에서 먼저 팔로우를 취소하면 같이 취소됨.
     - 팔로우 신청은 가게 메인페이지에서 팔로우 버튼을 누르면 맺어짐.
 
-  ![팔로우](https://github.com/potato-club/dessert-gallery-back/assets/84797433/f2af2619-6dc0-4e8e-9250-1011792e6356)
+  ![팔로우 관리_유저](https://github.com/potato-club/dessert-gallery-back/assets/84797433/6c80b320-db8f-46c5-a47d-65c1409b26bd)
+
+- 마이페이지 : 블랙리스트 관리
+    - 블랙리스트에 등록된 유저는 자동으로 팔로우가 취소됨.
+    - 해당 가게와 이용 중이던 채팅 및 댓글 작성도 중지됨.
+    - 기존 채팅 내역과 댓글은 유지됨.
+
+  </br>
+  <img width="1435" alt="블랙리스트" src="https://github.com/potato-club/dessert-gallery-back/assets/84797433/86e54406-a514-4076-8a7b-7765882da04e">
 
 - 마이페이지 : 1대1 채팅
     - 팔로우가 정상적으로 맺어졌다면 이용 가능한 서비스.
@@ -170,7 +184,7 @@
     - 유저는 가게 게시글에 대해 북마크 등록 가능.
     - 마이페이지를 통해 본인이 북마크 등록한 게시글 목록 조회 가능.
 
-  ![북마크](https://github.com/potato-club/dessert-gallery-back/assets/84797433/8f16c5c8-0230-41fc-b96a-a886e23674be)
+  ![북마크](https://github.com/potato-club/dessert-gallery-back/assets/84797433/b67e7e43-d326-49c3-bc7c-e5c57461b18b)
 
 - 마이페이지 : 내가 쓴 글
     - 유저 본인이 작성한 후기 목록 조회 가능.
@@ -184,7 +198,7 @@
     - 후자는 미리 특정된 좌표가 있기 때문에 해당 가게의 위치와 주변 가게들의 리스트를 반환함.
     - 옆의 검색으로 해시태그 등을 입력해 원하는 가게들을 검색할 수 있고 리스트의 가게를 누르면 상세 정보와 위치가 나타남.
 
-  ![카카오맵](https://github.com/potato-club/dessert-gallery-back/assets/84797433/e5af4672-4d9c-48a1-bed9-b7aa4b32c4cd)
+  ![카카오맵](https://github.com/potato-club/dessert-gallery-back/assets/84797433/99c78458-d067-4333-817a-c44e8389b216)
 
 <br/>
 
