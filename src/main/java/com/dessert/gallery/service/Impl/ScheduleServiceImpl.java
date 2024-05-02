@@ -56,6 +56,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         User user = userService.findUserByToken(request);
         Calendar calendar = calendarRepository.findByStore_User(user);
 
+        if (calendar == null) {
+            throw new NotFoundException("캘린더가 존재하지 않습니다.", NOT_FOUND_EXCEPTION);
+        }
+
         LocalDateTime dateTime = LocalDate.parse(requestDto.getDate(),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay();
 
@@ -86,6 +90,10 @@ public class ScheduleServiceImpl implements ScheduleService {
     public void addReservation(ReservationRequestDto requestDto, HttpServletRequest request) {
         User owner = userService.findUserByToken(request);
         Calendar calendar = calendarRepository.findByStore_User(owner);
+
+        if (calendar == null) {
+            throw new NotFoundException("캘린더가 존재하지 않습니다.", NOT_FOUND_EXCEPTION);
+        }
 
         User client = userRepository.findByNickname(requestDto.getClient())
                 .orElseThrow(() -> {

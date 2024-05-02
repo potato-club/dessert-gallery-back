@@ -13,6 +13,7 @@ public class BoardComment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String comment;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -21,7 +22,4 @@ public class BoardComment extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_board_id")
     private StoreBoard board;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    private File userProfile;
 }

@@ -3,6 +3,8 @@ package com.dessert.gallery.entity;
 import com.dessert.gallery.dto.notice.NoticeRequestDto;
 import com.dessert.gallery.enums.NoticeType;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
@@ -31,8 +33,9 @@ public class NoticeBoard extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private NoticeType type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "store_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Store store;
 
     public NoticeBoard(NoticeRequestDto requestDto, Store store) {

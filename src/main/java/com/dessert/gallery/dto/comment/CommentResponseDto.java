@@ -2,6 +2,7 @@ package com.dessert.gallery.dto.comment;
 
 import com.dessert.gallery.dto.file.FileDto;
 import com.dessert.gallery.entity.BoardComment;
+import com.dessert.gallery.entity.File;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,12 +25,12 @@ public class CommentResponseDto {
     @Schema(description = "댓글 작성자 여부")
     private boolean writer;
 
-    public CommentResponseDto(BoardComment comment, boolean writer) {
+    public CommentResponseDto(BoardComment comment, boolean writer, File userImage) {
         this.id = comment.getId();
         this.nickname = comment.getUser().getNickname();
         this.comment = comment.getComment();
         this.createdDate = comment.getCreatedDate();
-        this.profile = comment.getUserProfile() == null ? null : new FileDto(comment.getUserProfile());
+        this.profile = userImage == null ? null : new FileDto(userImage);
         this.writer = writer;
     }
 }

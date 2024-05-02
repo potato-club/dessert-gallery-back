@@ -52,24 +52,6 @@ public class ReviewController {
         return ResponseEntity.ok(reviewList);
     }
 
-    @Operation(summary = "테스트 리뷰 작성 API")
-    @PostMapping(value = "/test",
-            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> addTestReview(@Valid
-                                                @Parameter(description = "리뷰 정보 - ReviewRequestDto", content =
-                                                @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-                                                @RequestPart ReviewRequestDto requestDto,
-
-                                                @Parameter(description = "업로드 이미지 리스트", content =
-                                                @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                @RequestPart(required = false) List<MultipartFile> images,
-
-                                                HttpServletRequest request) throws IOException {
-        reviewService.addTestReview(requestDto, images, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("리뷰 등록 완료");
-    }
-
-
     @Operation(summary = "가게에 대한 리뷰 등록")
     @PostMapping(value = "/stores/{storeId}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
