@@ -198,7 +198,7 @@
     - 후자는 미리 특정된 좌표가 있기 때문에 해당 가게의 위치와 주변 가게들의 리스트를 반환함.
     - 옆의 검색으로 해시태그 등을 입력해 원하는 가게들을 검색할 수 있고 리스트의 가게를 누르면 상세 정보와 위치가 나타남.
 
-  ![카카오맵](https://github.com/potato-club/dessert-gallery-back/assets/84797433/e5af4672-4d9c-48a1-bed9-b7aa4b32c4cd)
+  ![카카오맵](https://github.com/potato-club/dessert-gallery-back/assets/84797433/99c78458-d067-4333-817a-c44e8389b216)
 
 <br/>
 
