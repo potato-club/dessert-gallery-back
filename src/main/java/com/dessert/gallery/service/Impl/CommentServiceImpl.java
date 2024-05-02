@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
 import static com.dessert.gallery.error.ErrorCode.NOT_FOUND_EXCEPTION;
@@ -48,14 +50,32 @@ public class CommentServiceImpl implements CommentService {
 
         Slice<BoardComment> comments = commentRepository.findByBoard(pageRequest, board);
 
+        List<User> userList = comments.getContent()
+                .stream().map(BoardComment::getUser)
+                .collect(Collectors.toList());
+
+        List<File> userImageList = fileRepository.findByUserIn(userList);
+
         if (user == null) {
-            return comments.map(comment -> new CommentResponseDto(comment, false));
+            return comments.map(comment -> {
+                Optional<File> image = userImageList.stream()
+                        .filter(file -> file.getUser().equals(comment.getUser()))
+                        .findFirst();
+
+
+                return new CommentResponseDto(comment, false, image.orElse(null));
+            });
         }
 
-        return comments.map(comment ->
-                Objects.equals(user.getNickname(), comment.getUser().getNickname()) ?
-                new CommentResponseDto(comment, true) :
-                new CommentResponseDto(comment, false));
+        return comments.map(comment -> {
+            Optional<File> image = userImageList.stream()
+                    .filter(file -> file.getUser().equals(comment.getUser()))
+                    .findFirst();
+
+            boolean isWriter = Objects.equals(user.getNickname(), comment.getUser().getNickname());
+
+            return new CommentResponseDto(comment, isWriter, image.orElse(null));
+        });
     }
 
     @Override
@@ -64,23 +84,16 @@ public class CommentServiceImpl implements CommentService {
         StoreBoard board = boardService.getBoard(boardId);
         blackListService.validateBlackList(board.getStore(), user);
 
-        List<File> files = fileRepository.findByUser(user);
-
-        BoardComment comment = !files.isEmpty() ?
-                BoardComment.builder()
-                .comment(requestDto.getComment())
-                .board(board)
-                .userProfile(files.get(0))
-                .user(user)
-                .build() :
-                BoardComment.builder()
+        BoardComment comment = BoardComment.builder()
                 .comment(requestDto.getComment())
                 .board(board)
                 .user(user)
                 .build();
 
         BoardComment saveComment = commentRepository.save(comment);
-        return new CommentResponseDto(saveComment, true);
+        List<File> userImage = fileRepository.findByUser(user);
+        return new CommentResponseDto(saveComment, true,
+                userImage.size() == 0 ? null : userImage.get(0));
     }
 
     @Override

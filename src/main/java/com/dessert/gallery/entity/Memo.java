@@ -3,6 +3,8 @@ package com.dessert.gallery.entity;
 import com.dessert.gallery.dto.memo.MemoRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -28,6 +30,7 @@ public class Memo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Calendar calendar;
 
     public Memo(MemoRequestDto memoDto, Calendar calendar) {

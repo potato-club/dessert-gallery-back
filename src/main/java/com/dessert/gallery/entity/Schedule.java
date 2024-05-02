@@ -5,6 +5,8 @@ import com.dessert.gallery.dto.schedule.ScheduleRequestDto;
 import com.dessert.gallery.enums.ScheduleType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class Schedule extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Calendar calendar;
 
     @Column
