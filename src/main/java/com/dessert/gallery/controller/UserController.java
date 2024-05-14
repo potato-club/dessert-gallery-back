@@ -1,6 +1,7 @@
 package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.board.BoardListResponseDto;
+import com.dessert.gallery.dto.user.request.UserCancel;
 import com.dessert.gallery.dto.user.request.UserLoginRequestDto;
 import com.dessert.gallery.dto.user.request.UserSignUpRequestDto;
 import com.dessert.gallery.dto.user.request.UserUpdateRequestDto;
@@ -92,6 +93,13 @@ public class UserController {
     public ResponseEntity<String> withdrawalMembership(HttpServletRequest request) {
         userService.withdrawalMembership(request);
         return ResponseEntity.ok("회원탈퇴 처리 되었습니다");
+    }
+
+    @Operation(summary = "회원탈퇴 취소 API")
+    @PutMapping("/cancel")
+    public ResponseEntity<String> cancelWithdrawal(@RequestBody UserCancel cancelDto) {
+        userService.cancelWithdrawal(cancelDto.getEmail(), cancelDto.isAgreement());
+        return ResponseEntity.ok("회원탈퇴 처리가 취소되었습니다");
     }
 
     @Operation(summary = "토큰 재발급 API")
