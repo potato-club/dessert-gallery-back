@@ -29,6 +29,8 @@ public interface UserService {
 
     void withdrawalMembership(HttpServletRequest request);
 
+    void cancelWithdrawal(String email, boolean agreement);
+
     User findUserByToken(HttpServletRequest request);
 
     void reissueToken(HttpServletRequest request, HttpServletResponse response);

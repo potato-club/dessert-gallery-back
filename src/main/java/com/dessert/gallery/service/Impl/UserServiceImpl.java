@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.dessert.gallery.error.ErrorCode.ACCESS_DENIED_EXCEPTION;
+import static com.dessert.gallery.error.ErrorCode.NOT_ALLOW_WRITE_EXCEPTION;
 
 @Service
 @RequiredArgsConstructor
@@ -132,7 +133,7 @@ public class UserServiceImpl implements UserService {
 
             userRepository.save(user);
         } else {
-            throw new UnAuthorizedException("401_NOT_ALLOW", ErrorCode.NOT_ALLOW_WRITE_EXCEPTION);
+            throw new UnAuthorizedException("401_NOT_ALLOW", NOT_ALLOW_WRITE_EXCEPTION);
         }
     }
 
@@ -186,6 +187,22 @@ public class UserServiceImpl implements UserService {
 
         user.setDeleted(true);
         this.logout(request);
+    }
+
+    @Override
+    @Transactional
+    public void cancelWithdrawal(String email, boolean agreement) {
+        if (userRepository.existsByEmailAndDeleted(email, true) && agreement) {
+            User user = userRepository.findByEmail(email).orElseThrow(() -> {
+                throw new UnAuthorizedException("401", ACCESS_DENIED_EXCEPTION);
+            });
+
+            user.setDeleted(false);
+            userRepository.save(user);
+
+        } else {
+            throw new UnAuthorizedException("401_NOT_ALLOW", NOT_ALLOW_WRITE_EXCEPTION);
+        }
     }
 
     @Override
