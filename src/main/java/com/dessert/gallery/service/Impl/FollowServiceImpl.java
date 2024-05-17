@@ -41,19 +41,19 @@ public class FollowServiceImpl implements FollowService {
         User user = userRepository.findByEmail(email).orElseThrow();
 
         if (user.getUserRole().equals(UserRole.MANAGER)) {
-            throw new UnAuthorizedException("Do not subscribe store.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Do not subscribe store.", ErrorCode.ACCESS_DENIED_MANAGER_EXCEPTION);
         }
 
         Store store = storeRepository.findById(storeId).orElseThrow(() -> {
-            throw new UnAuthorizedException("Not Found data", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new NotFoundException("Not Found data", ErrorCode.NOT_FOUND_EXCEPTION);
         });
 
         if (blackListRepository.existsByUserAndStoreAndDeletedIsFalse(user, store)) {
-            throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_BLACKLIST_EXCEPTION);
         }
 
         if (store.getUser().equals(user)) {
-            throw new UnAuthorizedException("Do not subscribe same user.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Do not subscribe same user.", ErrorCode.ACCESS_DENIED_MANAGER_EXCEPTION);
         }
 
         if (subscribeRepository.existsByStoreAndUser(store, user)) {
@@ -78,7 +78,8 @@ public class FollowServiceImpl implements FollowService {
         UserRole userRole = jwtTokenProvider.getRoles(email);
 
         if (userRole.equals(UserRole.MANAGER)) {
-            throw new UnAuthorizedException("Access isn't permitted on the unfollowing.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Access isn't permitted on the unfollowing.",
+                    ErrorCode.ACCESS_DENIED_MANAGER_EXCEPTION);
         }
 
         User user = userRepository.findByEmail(email).orElseThrow();
@@ -99,7 +100,8 @@ public class FollowServiceImpl implements FollowService {
         UserRole userRole = jwtTokenProvider.getRoles(email);
 
         if (userRole.equals(UserRole.MANAGER)) {
-            throw new UnAuthorizedException("Access isn't permitted on the following.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Access isn't permitted on the following.",
+                    ErrorCode.ACCESS_DENIED_MANAGER_EXCEPTION);
         }
 
         if (page < 1) {
