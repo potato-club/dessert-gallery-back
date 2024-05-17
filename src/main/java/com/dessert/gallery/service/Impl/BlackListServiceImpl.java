@@ -99,7 +99,8 @@ public class BlackListServiceImpl implements BlackListService {
         User user = this.getUserInstance(request);
 
         if (user.getUserRole().equals(UserRole.USER)) {
-            throw new UnAuthorizedException("Access isn't permitted on the blacklist.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Access isn't permitted on the blacklist.",
+                    ErrorCode.ACCESS_DENIED_USER_EXCEPTION);
         }
 
         if (page < 1) {
@@ -120,7 +121,7 @@ public class BlackListServiceImpl implements BlackListService {
         BlackList blackList = blackListRepository.findByStoreAndUser(store, user);
 
         if (blackList != null && !blackList.isDeleted()) {
-            throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("This user is blacklisted.", ErrorCode.ACCESS_DENIED_BLACKLIST_EXCEPTION);
         }
     }
 
@@ -131,7 +132,7 @@ public class BlackListServiceImpl implements BlackListService {
 
     private User commonException(User user, String username) {
         if (user.getUserRole().equals(UserRole.USER)) {
-            throw new UnAuthorizedException("Do not access blacklist.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Do not access blacklist.", ErrorCode.ACCESS_DENIED_BLACKLIST_EXCEPTION);
         }
 
         User customer = userRepository.findByNickname(username).orElseThrow(() -> {
@@ -139,7 +140,7 @@ public class BlackListServiceImpl implements BlackListService {
         });
 
         if (customer.equals(user)) {
-            throw new UnAuthorizedException("Do not black myself.", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new UnAuthorizedException("Do not black myself.", ErrorCode.ACCESS_DENIED_MANAGER_EXCEPTION);
         }
 
         return customer;
