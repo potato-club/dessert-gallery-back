@@ -37,7 +37,7 @@ public class KakaoMapServiceImpl implements KakaoMapService {
     private final ReviewService reviewService;
     private final KakaoMapRepositoryCustom kakaoMapRepository;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    @Value("${spring.security.oauth2.client.registration.kakao-domain.client-id}")
     private String GEOCODE_USER_INFO;
 
     private static final String GEOCODE_URL = "http://dapi.kakao.com/v2/local/search/address.json?query=";

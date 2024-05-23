@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public interface UserService {
-    UserKakaoResponseDto kakaoLogin(String code, HttpServletResponse response);
+    UserKakaoResponseDto kakaoLogin(String code, HttpServletRequest request, HttpServletResponse response);
 
     UserLoginResponseDto login(UserLoginRequestDto requestDto, HttpServletResponse response);
 

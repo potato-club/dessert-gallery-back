@@ -10,37 +10,45 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class KakaoApi {
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    @Value("${spring.security.oauth2.client.registration.kakao-domain.client-id}")
     private String kakaoClientId;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String kakaoRedirectUri;
+    @Value("${spring.security.oauth2.client.registration.kakao-domain.redirect-uri}")
+    private String kakaoDomainRedirectUri;
+
+    @Value("${spring.security.oauth2.client.registration.kakao-local.redirect-uri}")
+    private String kakaoLocalRedirectUri;
 
     private final RestTemplate restTemplate;
 
-    public String getAccessToken(String authorize_code) {
-        String access_Token = "";
+    public String getAccessToken(String authorize_code, HttpServletRequest request) {
+        String access_Token;
         String reqURL = "https://kauth.kakao.com/oauth/token";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+        String redirectUri = this.selectRedirectUri(request);
+
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.add("grant_type", "authorization_code");
         parameters.add("client_id", kakaoClientId);
-        parameters.add("redirect_uri", kakaoRedirectUri);
+        parameters.add("redirect_uri", redirectUri);
         parameters.add("code", authorize_code);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(parameters, headers);
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(parameters, headers);
 
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(reqURL, request, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(reqURL, requestEntity, String.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
-            JsonObject jsonObject = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject();
+            JsonObject jsonObject = JsonParser.parseString(Objects.requireNonNull(responseEntity.getBody())).getAsJsonObject();
             access_Token = jsonObject.get("access_token").getAsString();
         } else {
             throw new RuntimeException("Failed to get access token from Kakao API!");
@@ -61,7 +69,7 @@ public class KakaoApi {
         ResponseEntity<String> responseEntity = restTemplate.exchange(reqURL, HttpMethod.GET, request, String.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
-            JsonObject jsonObject = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject();
+            JsonObject jsonObject = JsonParser.parseString(Objects.requireNonNull(responseEntity.getBody())).getAsJsonObject();
             JsonObject kakaoAccount = jsonObject.getAsJsonObject("kakao_account");
             email = kakaoAccount.getAsJsonObject().get("email").getAsString();
         } else {
@@ -69,5 +77,15 @@ public class KakaoApi {
         }
 
         return email;
+    }
+
+    private String selectRedirectUri(HttpServletRequest request) {
+        String originHeader = request.getHeader("Origin");
+
+        if (originHeader.contains("dessert-gallery.com")) {
+            return kakaoDomainRedirectUri;
+        } else {
+            return kakaoLocalRedirectUri;
+        }
     }
 }

@@ -34,8 +34,9 @@ public class UserController {
 
     @Operation(summary = "카카오 로그인 API")
     @GetMapping("/login/kakao")
-    public UserKakaoResponseDto kakaoLogin(@RequestParam String code, HttpServletResponse response) {
-        return userService.kakaoLogin(code, response);
+    public UserKakaoResponseDto kakaoLogin(@RequestParam String code, HttpServletRequest request,
+                                           HttpServletResponse response) {
+        return userService.kakaoLogin(code, request, response);
     }
 
     @Operation(summary = "일반 로그인 API")
@@ -75,7 +76,7 @@ public class UserController {
     @GetMapping("/bookmark")
     public Slice<BoardListResponseDto> viewBookmark(HttpServletRequest request,
                                                     @Parameter(name = "page", description = "페이지 정보")
-                                                   @RequestParam(value = "page",
+                                                    @RequestParam(value = "page",
                                                            required = false,
                                                            defaultValue = "1") int page) {
         return bookmarkService.getBookmarks(request, page);

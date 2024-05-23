@@ -52,8 +52,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserKakaoResponseDto kakaoLogin(String code, HttpServletResponse response) {
-        String access_token = kakaoApi.getAccessToken(code);
+    public UserKakaoResponseDto kakaoLogin(String code, HttpServletRequest request, HttpServletResponse response) {
+        String access_token = kakaoApi.getAccessToken(code, request);
         String email = kakaoApi.getUserInfo(access_token);
 
         if (userRepository.existsByEmailAndDeleted(email, false)) {

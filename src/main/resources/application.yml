@@ -41,9 +41,17 @@ spring:
     oauth2:
       client:
         registration:
-          kakao:
+          kakao-domain:
             client-id: ENC(RXaEtTItfS679Ihq2CWcSvrnqFd4Rt71jMWTLYoVaXGSIx4QrNoALUc5bBbKJsQA)
             redirect-uri: ENC(GaLdhQNWU0EKpnhlnXlpR9Jysm8zTTuTHfHIQkkMf5r69HUGJU/9wYRqpPanbOJj)
+            authorization-grant-type: authorization_code
+            client-authentication-method: POST
+            client-name: Kakao
+            scope:
+              - account_email
+          kakao-local:
+            client-id: ENC(RXaEtTItfS679Ihq2CWcSvrnqFd4Rt71jMWTLYoVaXGSIx4QrNoALUc5bBbKJsQA)
+            redirect-uri: ENC(csLBfBxMoD3El18bKvQvOXPflRdBsShKADRdZmKsmtd8ExlviE4SJpCWbxkr+ksz)
             authorization-grant-type: authorization_code
             client-authentication-method: POST
             client-name: Kakao
