@@ -168,35 +168,23 @@ public class ChatServiceImpl implements ChatService {
 
         List<ChatRoom> list = chatRoomRepository.getChatRoomsList(page, user.get());
 
-        List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
-
-        // 채팅방 내역이 없으면 빈 리스트 반환
-        if (list == null || list.size() == 0) {
-            return new ChatRoomDto(0, null);
-        }
-
-        // 썸네일 메시지와 메시지 타입, 최근 채팅 시간 등을 싣는다.
-        for (ChatRoom chatRoom : list) {
-            MessageStatusDto messageStatusDto = messageMap.getRecentChatData(chatRoom.getId());
-
-            ChatRecentMessageDto chatRecentMessageDto = ChatRecentMessageDto.builder()
-                    .roomId(chatRoom.getId())
-                    .storeId(chatRoom.getStore().getId())
-                    .storeName(chatRoom.getStore().getName())
-                    .customerName(chatRoom.getCustomer().getNickname())
-                    .thumbnailMessage(messageStatusDto.getMessage())
-                    .messageType(messageStatusDto.getMessageType())
-                    .lastChatDatetime(messageStatusDto.getDateTime())
-                    .build();
-
-            chatRecentMessageDtos.add(chatRecentMessageDto);
-        }
-
-        return ChatRoomDto.builder()
-                .maxPage(list.size() / 10 + 1)
-                .chatList(chatRecentMessageDtos)
-                .build();
+        return this.commonComponent(list);
     }
+
+    @Override
+    public ChatRoomDto searchChatRoom(int page, String name, HttpServletRequest request) {
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Not Found User", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
+        List<ChatRoom> list = chatRoomRepository.searchChatRoomsList(page, user.get().getUserRole(), user.get(), name);
+
+        return this.commonComponent(list);
+    }
+
 
     @Override
     @Transactional
@@ -249,5 +237,38 @@ public class ChatServiceImpl implements ChatService {
         }
 
         em.flush();
+    }
+
+    // 채팅방 내역 출력 및 검색 서비스 공통 컴포넌트
+    private ChatRoomDto commonComponent(List<ChatRoom> list) {
+
+        List<ChatRecentMessageDto> chatRecentMessageDtos = new ArrayList<>();
+
+        // 채팅방 내역이 없으면 빈 리스트 반환
+        if (list == null || list.size() == 0) {
+            return new ChatRoomDto(0, null);
+        }
+
+        // 썸네일 메시지와 메시지 타입, 최근 채팅 시간 등을 싣는다.
+        for (ChatRoom chatRoom : list) {
+            MessageStatusDto messageStatusDto = messageMap.getRecentChatData(chatRoom.getId());
+
+            ChatRecentMessageDto chatRecentMessageDto = ChatRecentMessageDto.builder()
+                    .roomId(chatRoom.getId())
+                    .storeId(chatRoom.getStore().getId())
+                    .storeName(chatRoom.getStore().getName())
+                    .customerName(chatRoom.getCustomer().getNickname())
+                    .thumbnailMessage(messageStatusDto.getMessage())
+                    .messageType(messageStatusDto.getMessageType())
+                    .lastChatDatetime(messageStatusDto.getDateTime())
+                    .build();
+
+            chatRecentMessageDtos.add(chatRecentMessageDto);
+        }
+
+        return ChatRoomDto.builder()
+                .maxPage(list.size() / 10 + 1)
+                .chatList(chatRecentMessageDtos)
+                .build();
     }
 }
