@@ -2,6 +2,7 @@ package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.MessageStatusDto;
+import com.dessert.gallery.dto.chat.list.ChatRecentMessageDto;
 import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.repository.RedisChatMessageCache;
 import com.dessert.gallery.service.Interface.ChatService;
@@ -16,6 +17,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,6 +59,13 @@ public class ChatController {
     public ChatRoomDto getMyChatRoomsList(@RequestParam(value = "page", defaultValue = "1") int page,
                                           HttpServletRequest request) {
         return chatService.getMyChatRoomsList(page, request);
+    }
+
+    @Operation(summary = "채팅방 내 키워드 검색 API")
+    @GetMapping("/mypage/room/search")
+    public ChatRoomDto searchChatRoom(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                     @RequestParam String name, HttpServletRequest request) {
+        return chatService.searchChatRoom(page, name, request);
     }
 
     @Operation(summary = "채팅방 나가기 API")
