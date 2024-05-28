@@ -20,7 +20,7 @@ public class UserUpdateRequestDto {
     @Schema(description = "유저 역할")
     private UserRole userRole;
 
-    @Schema(description = "신규 프로필 사진", defaultValue = " ")
+    @Schema(description = "신규 프로필 사진")
     private List<MultipartFile> file;
 
     @Schema(description = "기존 프로필 사진 이름 (사진 변경 때만 필요)")
