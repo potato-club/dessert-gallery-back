@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
     public void updateUser(UserUpdateRequestDto requestDto, HttpServletRequest request) throws IOException {
         User user = findUserByToken(request);
 
-        if (!requestDto.getFile().get(0).isEmpty()) {
+        if (requestDto.getFile() != null) {
             List<FileRequestDto> fileList = new ArrayList<>();
             FileRequestDto fileDto = FileRequestDto.builder()
                     .fileName(requestDto.getFileName())
