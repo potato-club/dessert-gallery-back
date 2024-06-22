@@ -68,6 +68,12 @@ public class RedisChatMessageCache {
         List<String> sortedKeys = new ArrayList<>(keys);
 
         Collections.sort(sortedKeys);
+
+        // redis 에 오늘 채팅친 내역이 없으면 가장 최근 내역을 반환함.
+        if (!sortedKeys.contains(roomId + ":" + recentDateTime) && sortedKeys.size() > 0) {
+            return sortedKeys.get(sortedKeys.size() - 1);
+        }
+
         int index = sortedKeys.indexOf(roomId + ":" + recentDateTime);
 
         if (index > 0) {
