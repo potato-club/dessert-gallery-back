@@ -205,7 +205,7 @@ public class ChatServiceImpl implements ChatService {
             throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
-//        chatMessageRepository.delete
+        chatMessageRepository.deleteByChatRoom(chatRoom);
         chatRoomRepository.delete(chatRoom);
         messageMap.deleteChatRoom(roomId); // Redis 내 관련 정보 삭제
     }
