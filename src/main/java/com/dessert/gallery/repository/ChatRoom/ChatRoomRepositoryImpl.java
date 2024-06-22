@@ -35,9 +35,11 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         BooleanBuilder whereBuilder = new BooleanBuilder();
 
         if (userRole.equals(UserRole.USER) || userRole.equals(UserRole.ADMIN)) {
-            whereBuilder.and(QChatRoom.chatRoom.customer.eq(user).and(QChatRoom.chatRoom.store.name.eq(name)));
+            whereBuilder.and(QChatRoom.chatRoom.customer.eq(user)
+                    .and(QChatRoom.chatRoom.store.name.like("%" + name + "%")));
         } else {
-            whereBuilder.and(QChatRoom.chatRoom.store.user.eq(user).and(QChatRoom.chatRoom.customer.nickname.eq(name)));
+            whereBuilder.and(QChatRoom.chatRoom.store.user.eq(user)
+                    .and(QChatRoom.chatRoom.customer.nickname.like("%" + name + "%")));
         }
 
         return jpaQueryFactory
