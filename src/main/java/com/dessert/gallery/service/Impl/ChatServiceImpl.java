@@ -135,7 +135,7 @@ public class ChatServiceImpl implements ChatService {
             // Cache Miss
             List<MessageStatusDto> messagesInDB = getMessagesInDB(chatRoomId, time);
 
-            // DB 에도 없다면 오늘 채팅은 처음이므로 최근 채팅 내역 반환.
+            // DB 에도 없다면 오늘 채팅은 처음이므로 null을 반환하고 최근 채팅 일자를 싣는다.
             if (messagesInDB.isEmpty()) {
                 messageList.setLastDatetime(messageMap.getLastChatDateTime(chatRoomId, time));
                 return messageList;
@@ -205,6 +205,7 @@ public class ChatServiceImpl implements ChatService {
             throw new UnAuthorizedException("Unauthorized User", ErrorCode.ACCESS_DENIED_EXCEPTION);
         }
 
+//        chatMessageRepository.delete
         chatRoomRepository.delete(chatRoom);
         messageMap.deleteChatRoom(roomId); // Redis 내 관련 정보 삭제
     }
