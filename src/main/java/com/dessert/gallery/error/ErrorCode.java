@@ -13,6 +13,8 @@ public enum ErrorCode {
     SCHEDULE_EXCEPTION_1(HttpStatus.BAD_REQUEST, "S0001", "리뷰 등록된 스케줄"),
     SCHEDULE_EXCEPTION_2(HttpStatus.BAD_REQUEST, "S0002", "삭제 불가능한 예약 스케줄"),
     ACCESS_DENIED_EXCEPTION(HttpStatus.UNAUTHORIZED, "401", "401 UnAuthorized"),
+    KAKAO_ACCESS_TOKEN_FAILED(HttpStatus.UNAUTHORIZED, "K4001", "Failed to get access token!"),
+    KAKAO_USER_INFO_FAILED(HttpStatus.UNAUTHORIZED, "K4002", "Failed to get user info!"),
     ACCESS_DENIED_BLACKLIST_EXCEPTION(HttpStatus.UNAUTHORIZED, "F4001", "401 BlackList"),
     ACCESS_DENIED_MANAGER_EXCEPTION(HttpStatus.UNAUTHORIZED, "F4002", "401 Not Access Manager"),
     ACCESS_DENIED_USER_EXCEPTION(HttpStatus.UNAUTHORIZED, "F4002", "401 Not Access User"),

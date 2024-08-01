@@ -2,7 +2,6 @@ package com.dessert.gallery.controller;
 
 import com.dessert.gallery.dto.chat.ChatMessageDto;
 import com.dessert.gallery.dto.chat.MessageStatusDto;
-import com.dessert.gallery.dto.chat.list.ChatRecentMessageDto;
 import com.dessert.gallery.dto.chat.list.ChatRoomDto;
 import com.dessert.gallery.repository.RedisChatMessageCache;
 import com.dessert.gallery.service.Interface.ChatService;
@@ -17,7 +16,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

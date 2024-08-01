@@ -1,5 +1,7 @@
 package com.dessert.gallery.service;
 
+import com.dessert.gallery.error.ErrorCode;
+import com.dessert.gallery.error.exception.UnAuthorizedException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +29,11 @@ public class KakaoApi {
     private String kakaoLocalRedirectUri;
 
     private final RestTemplate restTemplate;
+    private static final String reqAccessTokenURL = "https://kauth.kakao.com/oauth/token";
+    private static final String reqUserInfoURL = "https://kapi.kakao.com/v2/user/me";
 
     public String getAccessToken(String authorize_code, HttpServletRequest request) {
         String access_Token;
-        String reqURL = "https://kauth.kakao.com/oauth/token";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -45,20 +48,19 @@ public class KakaoApi {
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(parameters, headers);
 
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(reqURL, requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(reqAccessTokenURL, requestEntity, String.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
             JsonObject jsonObject = JsonParser.parseString(Objects.requireNonNull(responseEntity.getBody())).getAsJsonObject();
             access_Token = jsonObject.get("access_token").getAsString();
         } else {
-            throw new RuntimeException("Failed to get access token from Kakao API!");
+            throw new UnAuthorizedException("Failed to get access token!", ErrorCode.KAKAO_ACCESS_TOKEN_FAILED);
         }
 
         return access_Token;
     }
 
     public String getUserInfo(String accessToken) {
-        String reqURL = "https://kapi.kakao.com/v2/user/me";
         String email;
 
         HttpHeaders headers = new HttpHeaders();
@@ -66,14 +68,14 @@ public class KakaoApi {
 
         HttpEntity request = new HttpEntity(headers);
 
-        ResponseEntity<String> responseEntity = restTemplate.exchange(reqURL, HttpMethod.GET, request, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(reqUserInfoURL, HttpMethod.GET, request, String.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
             JsonObject jsonObject = JsonParser.parseString(Objects.requireNonNull(responseEntity.getBody())).getAsJsonObject();
             JsonObject kakaoAccount = jsonObject.getAsJsonObject("kakao_account");
             email = kakaoAccount.getAsJsonObject().get("email").getAsString();
         } else {
-            throw new RuntimeException("Failed to get user info from Kakao API!");
+            throw new UnAuthorizedException("Failed to get user info!", ErrorCode.KAKAO_USER_INFO_FAILED);
         }
 
         return email;
