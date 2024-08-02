@@ -56,23 +56,15 @@ public class CommentServiceImpl implements CommentService {
 
         List<File> userImageList = fileRepository.findByUserIn(userList);
 
-        if (user == null) {
-            return comments.map(comment -> {
-                Optional<File> image = userImageList.stream()
-                        .filter(file -> file.getUser().equals(comment.getUser()))
-                        .findFirst();
-
-
-                return new CommentResponseDto(comment, false, image.orElse(null));
-            });
-        }
-
         return comments.map(comment -> {
             Optional<File> image = userImageList.stream()
                     .filter(file -> file.getUser().equals(comment.getUser()))
                     .findFirst();
 
-            boolean isWriter = Objects.equals(user.getNickname(), comment.getUser().getNickname());
+            boolean isWriter = false;
+            if (user != null) {
+                isWriter = Objects.equals(user.getNickname(), comment.getUser().getNickname());
+            }
 
             return new CommentResponseDto(comment, isWriter, image.orElse(null));
         });
